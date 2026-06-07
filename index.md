@@ -16,7 +16,7 @@ A browser-based interface for [nb](https://github.com/xwmx/nb) — the plain-tex
 
 ## TL;DR
 
-- Browse, search, and edit all your nb notebooks in a split-pane, mardkown rendering web UI
+- Browse, search, and edit all your nb notebooks in a split-pane, markdown rendering web UI
 - Full CRUD: add notes, bookmarks, todos, and contacts with per-notebook templates
 - **Wikilinks** — `[[Note Title]]` links between notes, resolved live on click
 - **Live codeblocks** — embed Taskwarrior queries, hledger reports, git logs, and timeclock status directly in notes
