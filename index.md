@@ -1,6 +1,6 @@
 ---
-title: nb-web docs and test site
-caption: index caption goes here
+title: nb-web README.md
+caption: top-level documentation
 footnote: footnote! lots here, more to come
 tags: [nb, test]
 SEO:
