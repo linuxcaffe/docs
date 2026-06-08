@@ -146,4 +146,4 @@ Shows the clocked-in account, elapsed time, and a period report. The argument is
 
 ## Broader Context
 
-The NbWeb-codeblocks plugin is nb-web's implementation of the [mkd-codeblocks](https://codeberg.org/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app. The `hledger` block is already released as a standalone package; the others are planned for extraction as the project matures.
+The NbWeb-codeblocks plugin is nb-web's implementation of the [mkd-codeblocks](https://github.com/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app. The `hledger` block is already released as a standalone package; the others are planned for extraction as the project matures.
