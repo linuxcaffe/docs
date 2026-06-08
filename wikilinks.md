@@ -68,6 +68,30 @@ Terminal links render with a `▶` prefix and monospace yellow styling so they'r
 
 If the terminal pane is already open, the command is sent to the running session. If not, the pane opens first and then runs the command.
 
+### File variables
+
+Commands can reference the **current note** using `{variable}` placeholders, resolved at click time:
+
+| Variable | Resolves to |
+|----------|-------------|
+| `{file}` | Full path to the note file — `/home/you/.nb/home/note.md` |
+| `{dir}` | Directory containing the note — `/home/you/.nb/home` |
+| `{name}` | Filename without extension — `note` |
+| `{selector}` | nb selector — `home:42` |
+| `{notebook}` | Notebook name — `home` |
+| `{title}` | Note title from frontmatter |
+
+```markdown
+[Open in vim](term:vim {file})
+[Run as script](term:bash {file})
+[→ PDF](term:pandoc {file} -o {dir}/{name}.pdf)
+[Git history](term:git -C {dir} log --oneline -- {file})
+[Encrypt](term:nb encrypt {selector})
+[Spellcheck](term:aspell check {file})
+```
+
+Variables are especially useful in **notebook templates** — a `[Run](term:bash {file})` link in a template gives every note in that notebook a run button automatically.
+
 Terminal links work anywhere Markdown renders — note bodies, templates, requirements cards, and wikilinked docs. They are **not** published by Quartz (the `term:` scheme has no meaning in a static site).
 
 ---
