@@ -8,7 +8,7 @@ SEO:
 
 # Wikilinks
 
-[[#Basic Syntax|Basic Syntax]] · [[#Anchor Links|Anchor Links]] · [[#Backlinks|Backlinks]] · [[#Quartz Compatibility|Quartz Compatibility]]
+[[#Basic Syntax|Basic Syntax]] · [[#Anchor Links|Anchor Links]] · [[#Terminal Links|Terminal Links]] · [[#Backlinks|Backlinks]] · [[#Quartz Compatibility|Quartz Compatibility]]
 
 ---
 
@@ -46,6 +46,29 @@ Heading matching is case-insensitive and compares against the heading text direc
 [[#contact import]]   ✓  lowercase also works
 [[#contact-import]]   ✗  slug/hyphen form does not match
 ```
+
+---
+
+## Terminal Links
+
+Any standard Markdown link with a `term:` URL runs a shell command in the built-in terminal pane when clicked:
+
+```markdown
+[label](term:command)
+```
+
+| Example | What it does |
+|---------|-------------|
+| `[Preview site](term:cd ~/dev/mysite && npx quartz build --serve)` | Starts a local Quartz preview server |
+| `[Sync notes](term:nb sync)` | Runs nb sync in the terminal |
+| `[Today's tasks](term:task due:today)` | Opens Taskwarrior filtered to today |
+| `[Open task UI](term:task)` | Launches the Taskwarrior TUI |
+
+Terminal links render with a `▶` prefix and monospace yellow styling so they're visually distinct from navigation links.
+
+If the terminal pane is already open, the command is sent to the running session. If not, the pane opens first and then runs the command.
+
+Terminal links work anywhere Markdown renders — note bodies, templates, requirements cards, and wikilinked docs. They are **not** published by Quartz (the `term:` scheme has no meaning in a static site).
 
 ---
 
