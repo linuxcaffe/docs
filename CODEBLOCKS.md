@@ -175,7 +175,9 @@ field[.format] [: code, code, …] [| filter: value, …]
 | `actor.phone: JD, AM` | Field lookup — phone numbers for listed actors |
 | `location.address: LG` | Field lookup — address for location LG |
 
-Filters stack: `shots.sheet | day: 1, actor: JD`
+Filters stack: `shots.line | day: 1, actor: JD`
+
+---
 
 The **+** button on a `storylines` block adds a story card inline — type a title, press Enter. The **▦/▤** toggle switches between small and large card views; preference is saved per notebook.
 
