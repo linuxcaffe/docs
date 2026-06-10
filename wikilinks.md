@@ -8,7 +8,7 @@ SEO:
 
 # Wikilinks
 
-[[#Basic Syntax|Basic Syntax]] · [[#Anchor Links|Anchor Links]] · [[#Terminal Links|Terminal Links]] · [[#Backlinks|Backlinks]] · [[#Quartz Compatibility|Quartz Compatibility]]
+[[#Basic Syntax|Basic Syntax]] · [[#Anchor Links|Anchor Links]] · [[#Terminal Links|Terminal Links]] · [[#Backlinks|Backlinks]] · [[#Quartz Compatibility|Quartz Compatibility]] · [[#Display Label Priority|Display Label Priority]]
 
 ---
 
@@ -35,6 +35,16 @@ For a plain `[[text]]` wikilink, nb-web tries in order:
 2. **Filename stem match** — a note whose filename without extension equals the text
 
 The filename-stem fallback means you can freely set a descriptive `title:` on a note without breaking existing links that use its short filename. For example, if `1b.md` has `title: 1-1b — Wide establishing shot`, the link `[[1b]]` still resolves because `1b` matches the filename stem `1b.md`.
+
+### Display label priority
+
+Once a wikilink resolves to a note, nb-web chooses its display label in this order:
+
+1. **`alias:`** frontmatter field — a short mutable label (scene number, version code, etc.)
+2. **`title:`** frontmatter field (or inferred title)
+3. **Filename stem** as fallback
+
+The `alias:` field is intended for content whose short identifier changes over time (scene numbers, draft versions) while the filename stays fixed. Change `alias: 4` to `alias: 7` and every `[[filename]]` link in the notebook immediately displays `7` — no link edits needed. Display labels are session-cached; Ctrl+R picks up alias changes.
 
 ---
 
