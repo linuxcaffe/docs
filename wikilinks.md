@@ -20,12 +20,21 @@ nb-web supports `[[wikilink]]` syntax in note bodies for linking between notes. 
 
 | Syntax | Effect |
 |--------|--------|
-| `[[Note Title]]` | Link by title; display text resolved automatically |
+| `[[Note Title]]` | Link by title or filename stem; display text resolved automatically |
 | `[[Note Title\|display text]]` | Link with custom display text |
 | `[[notebook:id]]` | Link by explicit nb selector (e.g. `[[docs:3]]`) |
 | `[[42]]` | Link by bare note ID within the current notebook |
 
-Plain-title wikilinks are resolved within the current notebook first. Matching is case-insensitive — `[[shop]]` and `[[Shop]]` both find a note titled "Shop".
+Plain-text wikilinks are resolved within the current notebook. Matching is case-insensitive — `[[shop]]` and `[[Shop]]` both find a note titled "Shop".
+
+### Resolution order
+
+For a plain `[[text]]` wikilink, nb-web tries in order:
+
+1. **Title match** — a note whose `title:` frontmatter (or inferred title) equals the text
+2. **Filename stem match** — a note whose filename without extension equals the text
+
+The filename-stem fallback means you can freely set a descriptive `title:` on a note without breaking existing links that use its short filename. For example, if `1b.md` has `title: 1-1b — Wide establishing shot`, the link `[[1b]]` still resolves because `1b` matches the filename stem `1b.md`.
 
 ---
 
@@ -124,9 +133,12 @@ See [[CODEBLOCKS]] for the full `nb` block reference.
 
 | Syntax | nb-web | Quartz |
 |--------|--------|--------|
-| `[[Note Title]]` | ✓ title search in current notebook | ✓ native |
+| `[[Note Title]]` | ✓ title → filename stem fallback | ✓ native |
 | `[[Note Title\|label]]` | ✓ | ✓ |
+| `[[filename-stem]]` | ✓ filename stem match (nb-web only) | ✗ |
 | `[[notebook:selector]]` | ✓ direct nb selector | ✗ |
 | `[[42]]` | ✓ bare ID | ✗ |
+
+For notes that may be published to Quartz, prefer `[[Note Title]]` using the full descriptive title — Quartz resolves by title and filename natively, so descriptive titles work on both sides.
 
 See [[NbWeb-quartz]] for publishing workflow.
