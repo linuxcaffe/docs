@@ -53,6 +53,7 @@ These work any time focus is not inside a text field.
 | `C` | Switch to **Contacts** |
 | `T` | Open the terminal pane |
 | `,` | Open Settings |
+| `.` | Toggle **extras** (frontmatter table + annotation foot) |
 
 ---
 

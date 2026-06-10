@@ -5,7 +5,7 @@ caption: Live interactive widgets rendered from fenced code blocks in notes
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#t — Timeclock|t]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -141,6 +141,43 @@ today
 ````
 
 Shows the clocked-in account, elapsed time, and a period report. The argument is a period expression (`today`, `thisweek`, `lastmonth`). The **⎋** button opens the full timeclock UI.
+
+---
+
+### cine — Film Production
+
+Requires the **[NbWeb-cine](https://github.com/linuxcaffe/nbweb-cine)** plugin installed and a `.nb-cine.json` anchor file in the notebook. See the NbWeb-cine README for the full query reference.
+
+````markdown
+```cine
+shots.strip | day: 1
+```
+````
+
+#### Query syntax
+
+```
+field[.format] [: code, code, …] [| filter: value, …]
+```
+
+#### Key queries
+
+| Query | Result |
+|-------|--------|
+| `shots` | Compact shot list — all shots, all days |
+| `shots \| day: 1` | Shot list for shoot day 1 |
+| `shots.strip` | Draggable stripboard — drag to resequence |
+| `shots.strip \| day: 1` | Stripboard filtered to one day |
+| `shots.sheet \| day: 1` | Call sheet cards — verbose, print-friendly |
+| `scenes` | Scene index: all scenes, colour-coded by I/E · D/N |
+| `storylines` | 2D story structure board — draggable cards across named lanes |
+| `storylines.large` | Same board with full card detail (scenes, metadata) |
+| `actor.phone: JD, AM` | Field lookup — phone numbers for listed actors |
+| `location.address: LG` | Field lookup — address for location LG |
+
+Filters stack: `shots.sheet | day: 1, actor: JD`
+
+The **+** button on a `storylines` block adds a story card inline — type a title, press Enter. The **▦/▤** toggle switches between small and large card views; preference is saved per notebook.
 
 ---
 
