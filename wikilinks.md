@@ -150,6 +150,8 @@ Inline queries work best when the output is a **single value or a short flat lis
 
 The quick test: if `hledger <query>` in your terminal produces more than one or two lines of data, it belongs in a codeblock.
 
+> **`--depth 1` is almost always required for inline `bal` queries.** Adding a period flag (`-p thismonth`) does not reduce depth — without `--depth 1` you get one line per leaf account, which `_iq_strip` joins into a wall of text. Always pair period filters with `--depth 1 --no-total` for inline use.
+
 ---
 
 ## Backlinks
