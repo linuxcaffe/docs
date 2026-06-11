@@ -115,6 +115,31 @@ Terminal links work anywhere Markdown renders — note bodies, templates, requir
 
 ---
 
+## Inline Live Queries
+
+`{{provider: query}}` — live data injected inline into note prose at render time.
+
+```
+Current cash: {{hledger: bal Assets:Cash --no-total}}
+Pending tasks: {{tw: count status:pending +work}}
+Today: {{date: %A, %B %d}}
+```
+
+| Provider | What it runs | Example |
+|----------|-------------|---------|
+| `hledger` | hledger query against the notebook's journal | `{{hledger: bal Assets:Cash --depth 1}}` |
+| `tw` | Taskwarrior filter (returns count by default) | `{{tw: count due:today}}` |
+| `nb` | nb count/list | `{{nb: count home:}}` |
+| `date` | strftime format | `{{date: %Y-%m-%d}}` / `{{date: %A}}` |
+
+Results appear as plain text inline. While loading, a `⋯` placeholder is shown. On error, the raw `{{...}}` is shown dimmed with the error in a tooltip.
+
+Patterns inside `` `code` `` or fenced blocks are never evaluated.
+
+For multi-line or tabular output, use a fenced codeblock instead — see [[CODEBLOCKS]].
+
+---
+
 ## Backlinks
 
 A `backlinks` codeblock shows all notes that link to the current note's title:
