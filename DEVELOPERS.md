@@ -5,7 +5,7 @@ caption: nb-web internals, rendering pipeline, extension points
 
 # DEVELOPERS
 
-[[#Markdown|Markdown]] · [[#Wikilinks|Wikilinks]] · [[#term: Links|term: Links]] · [[#Hashtags|Hashtags]] · [[#Code Blocks|Code Blocks]] · [[#Images|Images]] · [[#UUIDs|UUIDs]]
+[[#Markdown|Markdown]] · [[#Wikilinks|Wikilinks]] · [[#term: Links|term: Links]] · [[#Hashtags|Hashtags]] · [[#Code Blocks|Code Blocks]] · [[#Images|Images]] · [[#UUIDs|UUIDs]] · [[#Tools|Tools]]
 
 ---
 
@@ -110,3 +110,53 @@ Relative image paths in notes are rewritten to `/api/file?selector=…` at rende
 ## UUIDs
 
 Bare UUID strings (8-4-4-4-12 hex format) in note bodies are auto-detected and rendered as linked references. Clicking resolves the UUID to its note or task.
+
+---
+
+## Tools
+
+### org-to-nb-notes.py
+
+`tools/org-to-nb-notes.py` — one-shot converter from an Org-mode tutorial file to a set of nb-formatted Markdown notes.
+
+```bash
+python3 tools/org-to-nb-notes.py <source.org> <nb-folder-path> [notebook-name]
+
+# Example — hledger beginner tutorial into accts:tutorial/
+python3 tools/org-to-nb-notes.py \
+    ~/dev/awesome-hledger/contrib-resources/hledger-beginner-tutorial.org \
+    ~/.nb/accts/tutorial \
+    accts
+```
+
+Each H2 section in the org file becomes one note; the preamble (before the first H2) becomes `00_overview.md`. Filenames are `NN_slug.md` where `NN` is the section sequence number.
+
+**Transformations applied:**
+
+| Input | Output |
+|-------|--------|
+| Org `; prose` comment lines | Prose text (`;` prefix stripped) |
+| `; ` lines inside code fences | Preserved — hledger comment syntax |
+| ` ```ledger ` (pandoc commonmark output) | ` ```ledger ` (space removed) — Prism display only, **not** executed |
+| `$ hledger cmd` lines | `[cmd](term:cmd%20url%20encoded)` clickable terminal link |
+| `$ hledger cmd  # note` | term: link + `— *note*` annotation |
+| Section title mentions in body text | `[[NN_slug\|Title]]` cross-wikilinks |
+| H3 headings within a section | Demoted to H2 (sub-sections stay sub-sections) |
+
+**Pandoc gotchas this script handles:**
+- commonmark outputs ` ``` ledger` with a space before the language — the script strips it
+- `--` flags in commands are converted to `–` (en-dash) by pandoc smart typography — restored in `_term_link`
+- `term:` href spaces must be percent-encoded (`urllib.parse.quote`) — CommonMark disallows bare spaces in link URLs
+
+**Output frontmatter:**
+```yaml
+---
+title: "Section Title"
+type: tutorial
+tags: [hledger, tutorial]
+---
+```
+
+After writing all notes the script updates `.index`, then runs `git add -A && git commit` in the notebook root.
+
+**Dependencies:** `pandoc` on `$PATH`.
