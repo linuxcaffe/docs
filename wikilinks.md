@@ -8,7 +8,7 @@ SEO:
 
 # Wikilinks
 
-[[#Basic Syntax|Basic Syntax]] · [[#Anchor Links|Anchor Links]] · [[#Terminal Links|Terminal Links]] · [[#Backlinks|Backlinks]] · [[#Quartz Compatibility|Quartz Compatibility]] · [[#Display Label Priority|Display Label Priority]]
+[[#Basic Syntax|Basic Syntax]] · [[#Anchor Links|Anchor Links]] · [[#Terminal Links|Terminal Links]] · [[#Inline Live Queries|Inline Queries]] · [[#Inline Note Includes|Inline Includes]] · [[#Backlinks|Backlinks]] · [[#Quartz Compatibility|Quartz Compatibility]] · [[#Display Label Priority|Display Label Priority]]
 
 ---
 
@@ -131,6 +131,7 @@ Today: {{date: %A, %B %d}}
 | `tw` | Taskwarrior filter (returns count by default) | `{{tw: count due:today}}` |
 | `nb` | nb count/list | `{{nb: count home:}}` |
 | `date` | strftime format | `{{date: %Y-%m-%d}}` / `{{date: %A}}` |
+| `inline` | Render another note's body in-place (see [[#Inline Note Includes]]) | `{{inline: ../notes/shared.md}}` |
 
 Results appear as plain text inline. While loading, a `⋯` placeholder is shown. On error, the raw `{{...}}` is shown dimmed with the error in a tooltip.
 
@@ -151,6 +152,25 @@ Inline queries work best when the output is a **single value or a short flat lis
 The quick test: if `hledger <query>` in your terminal produces more than one or two lines of data, it belongs in a codeblock.
 
 > **`--depth 1` is almost always required for inline `bal` queries.** Adding a period flag (`-p thismonth`) does not reduce depth — without `--depth 1` you get one line per leaf account, which `_iq_strip` joins into a wall of text. Always pair period filters with `--depth 1 --no-total` for inline use.
+
+---
+
+## Inline Note Includes
+
+`{{inline: path}}` — render another note's body inline, as if its content were part of the current note.
+
+```markdown
+{{inline: ../shared/header.md}}
+{{inline: accts:tutorial/06_credit_card_transactions.md}}
+```
+
+The path is resolved relative to the current note's location. You can use `../` to step up folders, or prefix with a notebook name (`accts:`) for cross-notebook includes. Frontmatter is stripped — only the body renders.
+
+Included content is rendered in a bordered block (a left-rule bar with a slight background tint) so it's visually distinct from the surrounding note. Wikilinks, term: links, and inline queries inside the included note are all live — the full rendering pipeline runs on included content.
+
+**Depth guard:** includes do not nest. If an included note itself contains `{{inline:}}` patterns, they are silently dropped to prevent infinite recursion.
+
+**Not published:** `{{inline:}}` is nb-web-only. Quartz does not evaluate it; the raw `{{...}}` appears as literal text in static builds.
 
 ---
 
