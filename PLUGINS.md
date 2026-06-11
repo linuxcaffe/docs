@@ -2,6 +2,7 @@
 title: PLUGINS
 caption: nbweb-plugins, customize and extend nb-web
 draft:
+toc: true
 ---
 
 # PLUGINS
