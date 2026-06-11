@@ -3,6 +3,7 @@ title: nb-web README.md
 caption: top-level documentation
 footnote: footnote! lots here, more to come
 tags: [nb, test]
+toc: true
 SEO:
 ---
 - Project: https://github.com/linuxcaffe/nb-web
