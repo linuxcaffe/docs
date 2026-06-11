@@ -136,7 +136,19 @@ Results appear as plain text inline. While loading, a `⋯` placeholder is shown
 
 Patterns inside `` `code` `` or fenced blocks are never evaluated.
 
-For multi-line or tabular output, use a fenced codeblock instead — see [[CODEBLOCKS]].
+### What works inline vs what needs a codeblock
+
+Inline queries work best when the output is a **single value or a short flat list**. Queries that produce formatted reports — with headers, separator lines, or multiple account rows — will be collapsed into a `·`-joined string that rarely reads well in prose.
+
+| Use inline `{{...}}` | Use a fenced codeblock |
+|----------------------|----------------------|
+| `bal Assets --depth 1 --no-total` | `bs`, `is`, `activity` (report format) |
+| `bal Income -p thismonth --no-total` | `bal` without `--depth` on a deep tree |
+| `tw: count status:pending` | `bal Assets Liabilities` (two rows) |
+| `date: %A, %B %d` | any query where rows = insight |
+| `files`, `stats` (single-line output) | multi-commodity balances |
+
+The quick test: if `hledger <query>` in your terminal produces more than one or two lines of data, it belongs in a codeblock.
 
 ---
 
