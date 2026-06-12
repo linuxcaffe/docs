@@ -1,6 +1,7 @@
 ---
 title: SYNC
 caption: Git sync model, the Git menu, wiring remotes, and troubleshooting
+toc: true
 ---
 
 # Sync
