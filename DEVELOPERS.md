@@ -1,6 +1,7 @@
 ---
 title: DEVELOPERS
 caption: nb-web internals, rendering pipeline, extension points
+toc: true
 ---
 
 # DEVELOPERS
