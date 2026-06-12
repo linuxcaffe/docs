@@ -1,6 +1,7 @@
 ---
 title: CONTACTS
 caption: Contact cards, VCF import, and the contacts notebook
+toc: true
 ---
 
 # Contacts
