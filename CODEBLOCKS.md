@@ -6,7 +6,7 @@ toc: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -152,6 +152,48 @@ The hledger panel's **Files** tab handles bulk import and export between daily n
 Use ` ```ledger ` (not ` ```hledger `) for example journal entries in tutorial or documentation notes. These are rendered as static syntax-highlighted code via Prism — never executed against your real journal.
 
 Requires `hledger` on `$PATH`. See [hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock) — this block is also released as a standalone package.
+
+---
+
+### chart — Financial Charts
+
+````markdown
+```chart
+cashflow thisyear
+```
+````
+
+Interactive Chart.js visualisations driven by hledger data. Requires the **NbWeb-hledger** plugin with a configured journal.
+
+**Syntax:** `` ```chart\n<report> [period] [depth:N]\n``` ``
+
+**Report types:**
+
+| Report | Chart | Description |
+|--------|-------|-------------|
+| `cashflow` | bar + line | Monthly income vs expenses, cumulative net change |
+| `networth` | line | Assets, liabilities, and net worth over time |
+| `expenses` | stacked bar | Monthly expense breakdown by category |
+| `expenses-pie` | doughnut | Expense share by category for the period |
+| `assets-pie` | doughnut | Asset allocation snapshot |
+| `income-pie` | doughnut | Income sources for the period |
+
+**Period** is any hledger period expression: `thismonth`, `thisyear`, `lastyear`, `last3months`, `2025`, `2025-01..2025-06`, etc.
+
+**`depth:N`** controls account depth for category breakdown (default `2`):
+
+````markdown
+```chart
+expenses thisyear depth:3
+```
+````
+
+**Header controls** — every chart block has:
+
+- **▾ / ▸** — click title or toggle to collapse/expand
+- **mo / yr / prev** — quick period switcher (reloads chart, no re-fetch on toggle)
+- **◕ / ▦** — doughnut ↔ bar toggle (only on `*-pie` and `expenses`; redraws from cached data)
+- **↺** — force reload from hledger
 
 ---
 
