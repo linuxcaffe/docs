@@ -1,6 +1,7 @@
 ---
 title: NOTEBOOKS
 caption: Creating, managing, wiring, and removing notebooks
+toc: true
 ---
 
 # Notebooks
