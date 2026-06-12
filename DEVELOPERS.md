@@ -86,6 +86,18 @@ Example — open the current note's folder in a file manager:
 
 ---
 
+## Frontmatter
+
+Special keys recognised by nb-web beyond standard `title:`, `tags:`, and `type:`:
+
+| Key | Value | Behaviour |
+|-----|-------|-----------|
+| `pinned: yes` | `yes` | Note is auto-pinned whenever it is opened, as if you had clicked the pin toolbar button. Unpinning via the toolbar also clears this key from the file. |
+| `toc: true` | `true` | Generates a collapsible Table of Contents at the top of the rendered note. The TOC header bar shows the note's file path, size, and last-modified date. Headings become anchor links; clicking scrolls the page without changing the URL hash. Defaults to collapsed. |
+| `lock: yes` | `yes` | Marks the note read-only in the editor. The `+` Add button on live codeblocks also checks this flag — it shows a 🔒 indicator for 2.5 s if clicked while locked. |
+
+---
+
 ## Code Blocks
 
 Two categories:
