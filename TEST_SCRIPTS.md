@@ -183,3 +183,53 @@ hledger-ok
 ## Your Journal
 ...
 ````
+
+---
+
+## Status Panels
+
+The most powerful pattern: a dedicated `status.md` note containing only Form 2 test blocks, included at the top of any note via `{{inline:}}`.
+
+```markdown
+{{inline: accts:status.md}}
+
+# My Note
+...
+```
+
+`status.md` has **zero visual footprint** when everything is healthy — the inline renders nothing, and the note appears exactly as if the line wasn't there. The moment any test fails, its output surfaces right at the top of whatever note you happen to be reading.
+
+Because `{{inline:}}` runs the full rendering pipeline on included content, test blocks in `status.md` receive the **host note's context** — `NB_NOTEBOOK` reflects the notebook you're currently in, so `nb-dirty` reports on the right notebook automatically.
+
+### Creating a status file
+
+A status file is just a note with tightly-packed Form 2 blocks and nothing else:
+
+````markdown
+```test
+hledger-ok
+```
+```test
+nb-dirty
+```
+```test
+disk-warn
+```
+````
+
+No headings, no prose — the file should be entirely invisible when healthy. Give it a name that makes its scope clear: `status.md`, `accts:status.md`, `home:status.md`.
+
+### Scoped status files
+
+Different notebooks have different concerns. Include the right status file in each context:
+
+```markdown
+{{inline: accts:status.md}}     ← hledger journal health, uncommitted accts changes
+{{inline: home:status.md}}      ← disk space, overdue tasks, nb-dirty for home
+```
+
+Or include multiple in a master hub note to get a unified view across all concerns.
+
+### The key insight
+
+You would never know a note had a status panel until errors started appearing. The diagnostic layer is woven into the note invisibly — no separate dashboard to remember to check, no polling, no notification system. The note itself becomes aware of problems in its context.
