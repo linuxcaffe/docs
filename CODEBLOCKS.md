@@ -127,7 +127,29 @@ bal expenses --monthly -3
 ```
 ````
 
-Any hledger subcommand: `bal`, `reg`, `is`, `bs`, `cf`. Positive and negative amounts are coloured. The **+** button opens an inline journal entry form.
+Any hledger subcommand: `bal`, `reg`, `is`, `bs`, `cf`. Positive and negative amounts are coloured.
+
+**Add Transaction (`+` button)**
+
+Opens an inline posting form. Two smart pre-fills happen automatically:
+
+- **Account from query** — if the fence body contains an account name (e.g. `reg Assets:Bank`), the first account field in the form is pre-populated with it. hledger command words, flags, and query filters (`date:`, `amt:`, etc.) are skipped; the first remaining alphanumeric-or-colon token is used.
+- **Date from filename** — if the currently open note is a daily note named `YYYYMMDD.md`, the date field is pre-filled from the filename instead of today's date.
+
+**Bookkeeper panel**
+
+The hledger panel (☰ → hledger or via a `hledger` codeblock) has a persistent **+ Add Transaction** section at the top that also applies both smart pre-fills above.
+
+**Files tab**
+
+The hledger panel's **Files** tab handles bulk import and export between daily notes and journal files:
+
+- **Export** — scans `YYYYMMDD.md` daily notes in the active notebook for ` ```hledger ``` ` fenced blocks and writes their contents to a `.journal` file. Optionally filtered by date range.
+- **Import** — parses an existing `.journal` file and appends each dated transaction block to the matching `YYYYMMDD.md` daily note (creating the note if it doesn't exist), then commits.
+
+**Static `ledger` blocks**
+
+Use ` ```ledger ` (not ` ```hledger `) for example journal entries in tutorial or documentation notes. These are rendered as static syntax-highlighted code via Prism — never executed against your real journal.
 
 Requires `hledger` on `$PATH`. See [hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock) — this block is also released as a standalone package.
 
