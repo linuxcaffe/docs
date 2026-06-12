@@ -4,6 +4,7 @@ caption: import files, export in various formats, archive notebooks
 aliases:
   - Import / Export
   - Import/Export
+toc: true
 ---
 
 [[#Notebook Archive|Notebook Archive (.nbz)]] · [[#Contact Import|Contact Import]] · [[#Note Export|Note Export]]
