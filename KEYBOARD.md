@@ -1,6 +1,7 @@
 ---
 title: KEYBOARD
 caption: Keyboard shortcuts for navigating and editing in nb-web
+toc: true
 ---
 
 # Keyboard
