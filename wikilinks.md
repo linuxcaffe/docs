@@ -173,6 +173,29 @@ Included content is rendered in a bordered block (a left-rule bar with a slight 
 
 **Not published:** `{{inline:}}` is nb-web-only. Quartz does not evaluate it; the raw `{{...}}` appears as literal text in static builds.
 
+### Stitched documents with `toc: true`
+
+`{{inline:}}` and `toc: true` compose naturally to build a single navigable document from modular notes. Create a hub note:
+
+```markdown
+---
+title: The Complete Guide
+toc: true
+---
+
+# The Complete Guide
+
+{{inline: accts:guide/setup.md}}
+{{inline: accts:guide/daily.md}}
+{{inline: accts:guide/review.md}}
+```
+
+The TOC is rebuilt **after all inline fetches complete** — it indexes headings from the fully-expanded content, not the source. The included notes remain independently navigable; the hub assembles them on demand.
+
+Use fully-qualified selectors (`accts:guide/setup.md`) rather than relative paths — the hub note is the stable reference point and absolute selectors are portable.
+
+**Save as HTML** (toolbar → Export → HTML) captures the fully-rendered DOM after all inlines settle — the exported file is a self-contained, navigable document as if it were always written as one.
+
 ---
 
 ## Backlinks
