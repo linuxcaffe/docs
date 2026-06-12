@@ -239,6 +239,7 @@ The full documentation lives in the `docs` notebook — importable as `docs.nbz`
 | [[TEMPLATES]] | Placeholder syntax, per-notebook defaults |
 | [[WIKILINKS]] | Syntax, anchor links, backlinks |
 | [[CODEBLOCKS]] | All live block types and configuration |
+| [[BOOKS]] | `type: book` — stitched documents with diagnostic TOC |
 | [[SEARCH_TAGS]] | Search, tag filter, cross-notebook search |
 | [[CONTACTS]] | Contact notes, VCF import |
 | [[Import / Export]] | .nbz archive format, import workflow |

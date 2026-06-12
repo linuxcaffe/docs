@@ -20,7 +20,7 @@ Scripts are called with no arguments. They receive context about the current not
 | 0 | has content | Output rendered as markdown |
 | non-zero | anything | Output rendered as markdown with red left border |
 
-Output is rendered as full markdown — headings, tables, lists, blockquotes, `{{hledger: query}}` inline expressions, `[[wikilinks]]`, and `term:` links all work.
+Output is rendered as full markdown — headings, tables, lists, blockquotes, `{{hledger: query}}` inline expressions, `[[wikilinks]]`, `term:` links, and `note:` links all work.
 
 ---
 
@@ -233,3 +233,13 @@ Or include multiple in a master hub note to get a unified view across all concer
 ### The key insight
 
 You would never know a note had a status panel until errors started appearing. The diagnostic layer is woven into the note invisibly — no separate dashboard to remember to check, no polling, no notification system. The note itself becomes aware of problems in its context.
+
+---
+
+## Books — the diagnostic TOC
+
+When Form 2 test blocks are embedded in chapter notes inside a `type: book`, something remarkable happens: failing checks produce `### ⚠ Heading` output that gets picked up by the book's TOC rebuild. The table of contents becomes simultaneously a chapter navigator and a live health dashboard — diagnostic entries appear in the navigation, positioned exactly where the problem lives in the document.
+
+A healthy book shows a clean TOC. A book with configuration problems shows `⚠` entries inline with chapter headings. No separate dashboard, no extra code — it's an emergent property of the test + inline + TOC pipeline.
+
+See [[BOOKS]] for the full pattern, design guidance, and The Bookkeeper's Guide as a worked example.
