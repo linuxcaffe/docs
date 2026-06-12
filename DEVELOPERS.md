@@ -5,7 +5,7 @@ caption: nb-web internals, rendering pipeline, extension points
 
 # DEVELOPERS
 
-[[#Markdown|Markdown]] · [[#Wikilinks|Wikilinks]] · [[#term: Links|term: Links]] · [[#Hashtags|Hashtags]] · [[#Code Blocks|Code Blocks]] · [[#Images|Images]] · [[#UUIDs|UUIDs]] · [[#Tools|Tools]]
+[[#Markdown|Markdown]] · [[#Wikilinks|Wikilinks]] · [[#term: Links|term: Links]] · [[#Hashtags|Hashtags]] · [[#Frontmatter|Frontmatter]] · [[#Code Blocks|Code Blocks]] · [[#Images|Images]] · [[#UUIDs|UUIDs]] · [[#Tools|Tools]]
 
 ---
 
