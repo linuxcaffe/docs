@@ -44,7 +44,7 @@ Every block header carries the same universal controls:
 |---------|--------|
 | **▼/▶** | Collapse / expand the block body. State is persisted in `localStorage` keyed on block type + query, so collapsed blocks stay collapsed across reloads and note switches. |
 | **↻** | Refresh — re-fetch data on demand |
-| **+** | Open inline add form (where supported: `tw`, `hledger`) |
+| **+** | Open inline add form (where supported: `tw`, `hledger`). If the note has `lock: yes` in its frontmatter, the button shows 🔒 for 2.5 s instead of opening the form. |
 | **⎋** | Launch external app (where supported: `t`) |
 
 ---
