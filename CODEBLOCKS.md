@@ -6,7 +6,7 @@ toc: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -245,6 +245,73 @@ Filters stack: `shots.line | day: 1, actor: JD`
 ---
 
 The **+** button on a `storylines` block adds a story card inline — type a title, press Enter. The **▦/▤** toggle switches between small and large card views; preference is saved per notebook.
+
+---
+
+### nav — Folder Navigator
+
+````markdown
+```nav
+accts:guide/
+```
+````
+
+Renders a stateful folder navigator in the preview pane. Clicking folders drills in; clicking notes opens them. The breadcrumb header is fully clickable — navigate back up to any level or to the notebooks root.
+
+**Query formats:**
+
+| Format | Example | Navigates to |
+|--------|---------|-------------|
+| nb selector | `accts:guide/` | Notebook folder |
+| Filesystem path | `~/.nb/accts/guide` | Same, via path |
+| Hidden dir path | `~/.nb/.test` | Raw filesystem listing |
+
+The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (test scripts), `~/.nb/.templates`, etc. Files open in the preview pane; the selector is derived from the absolute path.
+
+**Controls:**
+
+- **▼ / ▶** (top-left) — collapse / expand; state persists in `localStorage` keyed by the starting path
+- **↻** — refresh current location without resetting navigation
+- Breadcrumb: `nb › notebook › folder` — each segment is clickable; current location is bold
+
+**Default collapsed:** the hidden-dir (`~/.nb/.*`) variant defaults collapsed on first render.
+
+---
+
+### test — Embedded Assertions
+
+Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/` and are plain bash. See [[TEST_SCRIPTS]] for the full reference.
+
+**Form 1 — on-demand (with label):**
+
+````markdown
+```test
+recent-txn | Recent transactions
+```
+````
+
+Renders a `▶ Recent transactions` button. Click to run the script; output replaces the button area. Resets after a passing run (no output + exit 0).
+
+**Form 2 — automatic (no label):**
+
+````markdown
+```test
+hledger-ok
+```
+````
+
+Runs at render time. **If exit 0 and no output: the block vanishes completely** — invisible in the note. If there is output or a non-zero exit, the output renders as full markdown (wikilinks, `{{hledger:}}` inline queries, `term:` links all work).
+
+A note can be peppered with Form 2 blocks; you'd never know they were there unless something needs attention.
+
+**Script context vars** injected as environment variables:
+
+| Variable | Value |
+|---|---|
+| `NB_DIR` | `~/.nb` |
+| `NB_NOTE_SELECTOR` | Selector of the currently open note |
+| `NB_NOTEBOOK` | Notebook portion of the selector |
+| `NB_NOTE_PATH` | Absolute path to the note file |
 
 ---
 
