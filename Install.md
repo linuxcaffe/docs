@@ -1,6 +1,7 @@
 ---
 title: INSTALL
 caption: how to get nb-web
+toc: true
 ---
 
 ## Requirements
