@@ -118,6 +118,13 @@ echo '```'
 | Script | Form | Purpose |
 |---|---|---|
 | `hledger-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
+| `hledger-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
+| `budget-has-periodic` | 2 | Guides setup if no `~ monthly` rules found |
+| `budget-balanced` | 2 | Detects unbalanced budget transactions; computes fix amount |
+| `budget-include-check` | 2 | Verifies periodic journal is included in main journal |
+| `budget-has-actuals` | 2 | Checks that actual transactions exist to compare against budget |
+| `budget-has-income` | 2 | Checks that income postings exist in the budget |
+| `budget-runs` | 2 | Verifies `hledger bal --budget` runs without error |
 | `nb-dirty` | 2 | Silent when committed; lists dirty files in current notebook |
 | `disk-warn` | 2 | Silent under 80% disk usage; warns above that |
 | `tw-due` | 2 | Silent with no due tasks; lists overdue/today tasks |
@@ -233,6 +240,85 @@ Or include multiple in a master hub note to get a unified view across all concer
 ### The key insight
 
 You would never know a note had a status panel until errors started appearing. The diagnostic layer is woven into the note invisibly — no separate dashboard to remember to check, no polling, no notification system. The note itself becomes aware of problems in its context.
+
+---
+
+## Good Test Output
+
+A well-written Form 2 script is invisible when everything is fine and informative when it isn't. These conventions make failure output consistent, readable, and actionable.
+
+### Anatomy of a good error block
+
+**`budget-has-periodic.sh`** is the reference example — read it before writing a new script.
+
+````markdown
+### ⚠ Short description of the problem
+
+One sentence: what is wrong and why it matters. No preamble, no "note that".
+
+**Fix** — what to do, named specifically:
+
+```ledger
+~ monthly from 2025-01-01
+    Expenses:Food   CAD 800
+    [Budget]
+```
+
+If a second fix exists, name it **Fix 2** with a concrete example.
+
+An embedded block lets the user verify the fix without leaving the note:
+
+```test
+budget-include-check
+```
+
+[Open actual-filename.journal](note:/absolute/path/to/file)
+````
+
+### Rules
+
+**Heading** — always `### ⚠` (H3, warning sign, space, short phrase). This is what appears in book TOCs.
+
+**First line of body** — one sentence of context. Why does this matter? What breaks if you ignore it? No "Note:" or "Warning:".
+
+**Fix blocks** — `**Fix**` or `**Fix 1**` / `**Fix 2**` for alternatives. Always include a concrete code block. `ledger` fence for journal snippets; `bash` for shell commands.
+
+**Verify block** — if there is a cheaper test that confirms the fix worked, embed it as a `test` block right after the fix. The user sees it pass (and vanish) in the same note.
+
+**Open link — last line** — always end with `[Open actual-filename.ext](note:/absolute/path)`. Use `$(basename "$journal")` to show the real filename, not a generic label like "journal". The link lets the user jump directly to the file they need to edit.
+
+**Related files at the bottom** — when a note documents this design, link to the scripts themselves so the reader can read the reference implementation.
+
+### What to avoid
+
+- Long preambles or repeated context before the fix
+- Generic `[Open journal](note:...)` — use the actual filename
+- Skipping the verify block when a quick check exists
+- Output on exit 0 (causes the block to render instead of disappear)
+
+---
+
+## Test Script Files
+
+Browse and edit all scripts in place:
+
+````markdown
+```nav
+~/.nb/.test
+```
+````
+
+Key scripts — read these for reference before writing new ones:
+
+- [budget-has-periodic.sh](note:/home/djp/.nb/.test/budget-has-periodic.sh) — gold standard: heading, context, fix block, embedded verify, open link
+- [budget-balanced.sh](note:/home/djp/.nb/.test/budget-balanced.sh) — computes fix amount, shows mtime so user knows if edit landed
+- [hledger-strict.sh](note:/home/djp/.nb/.test/hledger-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
+- [hledger-ok.sh](note:/home/djp/.nb/.test/hledger-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
+- [budget-include-check.sh](note:/home/djp/.nb/.test/budget-include-check.sh) — used as an embedded verify block inside budget-has-periodic
+- [nb-dirty.sh](note:/home/djp/.nb/.test/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
+- [disk-warn.sh](note:/home/djp/.nb/.test/disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
+- [recent-txn.sh](note:/home/djp/.nb/.test/recent-txn.sh) — Form 1 (label, on-demand); markdown table output
+- [hledger-balances.sh](note:/home/djp/.nb/.test/hledger-balances.sh) — Form 1 with table and blockquote timestamp
 
 ---
 
