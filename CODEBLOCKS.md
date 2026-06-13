@@ -362,6 +362,50 @@ Runs at render time. **If exit 0 and no output: the block vanishes completely** 
 
 A note can be peppered with Form 2 blocks; you'd never know they were there unless something needs attention.
 
+**Form 3 — group (multiple scripts):**
+
+Multiple scripts, one per line. All run in parallel. The label rules from Form 1/2 apply to the group as a whole:
+
+````markdown
+```test
+hl-ok
+tw-due
+nb-dirty
+```
+````
+
+Form 2 group — auto-runs all three. All pass → block vanishes. Any fail → `N of M checks failed` header with a **collapsible toggle row per failure**. Click a row to expand its full script output inline; click again to collapse.
+
+````markdown
+```test
+hl-ok | Health checks
+tw-due
+nb-dirty
+```
+````
+
+Form 1 group — renders a `▶ Health checks` button. On click, runs all scripts and shows failures as toggle rows. Per-script labels are used as the row label; script name is the fallback.
+
+A bare `| Label` line (no script before the pipe) sets the group label without labelling any individual script:
+
+````markdown
+```test
+| Dashboard checks
+hl-ok
+tw-due
+```
+````
+
+**Grouped test scripts (`subtest:` links):**
+
+A script can output `[label](subtest:scriptname)` links in its markdown. These render as toggle rows that fetch and expand the named script's full output on click — no pre-run needed. `hl-optional` uses this pattern: it runs a radar sweep of all optional hledger checks and surfaces each failure as a drill-down link.
+
+````markdown
+```test
+hl-optional
+```
+````
+
 **Script context vars** injected as environment variables:
 
 | Variable | Value |
@@ -370,6 +414,15 @@ A note can be peppered with Form 2 blocks; you'd never know they were there unle
 | `NB_NOTE_SELECTOR` | Selector of the currently open note |
 | `NB_NOTEBOOK` | Notebook portion of the selector |
 | `NB_NOTE_PATH` | Absolute path to the note file |
+
+**Script naming convention:**
+
+| Prefix | App | Examples |
+|--------|-----|---------|
+| `hl-` | hledger | `hl-ok`, `hl-strict`, `hl-optional`, `hl-budget-*` |
+| `nb-` | nb | `nb-dirty` |
+| `tw-` | Taskwarrior | `tw-due` |
+| `note-` | system/global | `note-disk-warn`, `note-context` |
 
 ---
 
