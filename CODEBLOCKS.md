@@ -344,7 +344,7 @@ Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/` 
 
 ````markdown
 ```test
-recent-txn | Recent transactions
+hl-recent-txn | Recent transactions
 ```
 ````
 
@@ -354,7 +354,7 @@ Renders a `▶ Recent transactions` button. Click to run the script; output repl
 
 ````markdown
 ```test
-hledger-ok
+hl-ok
 ```
 ````
 

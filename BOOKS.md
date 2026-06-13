@@ -43,14 +43,14 @@ Each chapter note can carry **Form 2 test blocks** — script-driven checks that
 
 ````markdown
 ```test
-budget-has-periodic
+hl-budget-has-periodic
 ```
 
 ## Periodic transactions
 ...
 ````
 
-When `budget-has-periodic` fails, it outputs:
+When `hl-budget-has-periodic` fails, it outputs:
 
 ```markdown
 ### ⚠ No periodic transactions found
@@ -73,14 +73,14 @@ Each chapter is a standalone note that also reads well in isolation. The stitchi
 
 ```markdown
 ```test
-budget-has-periodic          ← must pass before ## Periodic transactions makes sense
+hl-budget-has-periodic          ← must pass before ## Periodic transactions makes sense
 ```
 
 ## Periodic transactions
 ...
 
 ```test
-budget-runs                  ← must pass before the bal --budget block is useful
+hl-budget-runs                  ← must pass before the bal --budget block is useful
 ```
 
 ```hledger

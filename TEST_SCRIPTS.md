@@ -37,8 +37,8 @@ All scripts live in `~/.nb/.test/`. Browse them with:
 Scripts are resolved by name — `.sh` extension is optional:
 
 ```test
-hledger-ok        # finds ~/.nb/.test/hledger-ok.sh
-hledger-ok.sh     # same
+hl-ok        # finds ~/.nb/.test/hl-ok.sh
+hl-ok.sh     # same
 ```
 
 ---
@@ -117,20 +117,20 @@ echo '```'
 
 | Script | Form | Purpose |
 |---|---|---|
-| `hledger-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
-| `hledger-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
-| `budget-has-periodic` | 2 | Guides setup if no `~ monthly` rules found |
-| `budget-balanced` | 2 | Detects unbalanced budget transactions; computes fix amount |
-| `budget-include-check` | 2 | Verifies periodic journal is included in main journal |
-| `budget-has-actuals` | 2 | Checks that actual transactions exist to compare against budget |
-| `budget-has-income` | 2 | Checks that income postings exist in the budget |
-| `budget-runs` | 2 | Verifies `hledger bal --budget` runs without error |
+| `hl-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
+| `hl-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
+| `hl-budget-has-periodic` | 2 | Guides setup if no `~ monthly` rules found |
+| `hl-budget-balanced` | 2 | Detects unbalanced budget transactions; computes fix amount |
+| `hl-budget-include-check` | 2 | Verifies periodic journal is included in main journal |
+| `hl-budget-has-actuals` | 2 | Checks that actual transactions exist to compare against budget |
+| `hl-budget-has-income` | 2 | Checks that income postings exist in the budget |
+| `hl-budget-runs` | 2 | Verifies `hledger bal --budget` runs without error |
 | `nb-dirty` | 2 | Silent when committed; lists dirty files in current notebook |
-| `disk-warn` | 2 | Silent under 80% disk usage; warns above that |
+| `note-disk-warn` | 2 | Silent under 80% disk usage; warns above that |
 | `tw-due` | 2 | Silent with no due tasks; lists overdue/today tasks |
-| `recent-txn` | 1 | `recent-txn \| Recent transactions` — last 14 days from journal |
+| `hl-recent-txn` | 1 | `hl-recent-txn \| Recent transactions` — last 14 days from journal |
 | `note-context` | 1 | `note-context \| Note context` — markdown table of all context vars |
-| `hledger-balances` | 1 | `hledger-balances \| Account balances` — depth-1 balance table |
+| `hl-balances` | 1 | `hl-balances \| Account balances` — depth-1 balance table |
 
 Browse and edit them in-place:
 
@@ -147,9 +147,9 @@ Browse and edit them in-place:
 **Health dashboard** — drop Form 2 checks at the top of a hub note. They're invisible when everything is fine; they surface when something needs attention:
 
 ```markdown
-{{test: hledger-ok}}
+{{test: hl-ok}}
 {{test: nb-dirty}}
-{{test: disk-warn}}
+{{test: note-disk-warn}}
 {{test: tw-due}}
 
 # My Hub Note
@@ -160,7 +160,7 @@ Wait — the syntax is a fenced block, not an inline expression. Correct form:
 
 ````markdown
 ```test
-hledger-ok
+hl-ok
 ```
 
 ```test
@@ -172,11 +172,11 @@ nb-dirty
 
 ````markdown
 ```test
-recent-txn | Recent transactions
+hl-recent-txn | Recent transactions
 ```
 
 ```test
-hledger-balances | Account balances
+hl-balances | Account balances
 ```
 ````
 
@@ -184,7 +184,7 @@ hledger-balances | Account balances
 
 ````markdown
 ```test
-hledger-ok
+hl-ok
 ```
 
 ## Your Journal
@@ -214,13 +214,13 @@ A status file is just a note with tightly-packed Form 2 blocks and nothing else:
 
 ````markdown
 ```test
-hledger-ok
+hl-ok
 ```
 ```test
 nb-dirty
 ```
 ```test
-disk-warn
+note-disk-warn
 ```
 ````
 
@@ -249,7 +249,7 @@ A well-written Form 2 script is invisible when everything is fine and informativ
 
 ### Anatomy of a good error block
 
-**`budget-has-periodic.sh`** is the reference example — read it before writing a new script.
+**`hl-budget-has-periodic.sh`** is the reference example — read it before writing a new script.
 
 ````markdown
 ### ⚠ Short description of the problem
@@ -269,7 +269,7 @@ If a second fix exists, name it **Fix 2** with a concrete example.
 An embedded block lets the user verify the fix without leaving the note:
 
 ```test
-budget-include-check
+hl-budget-include-check
 ```
 
 [Open actual-filename.journal](note:/absolute/path/to/file)
@@ -310,15 +310,15 @@ Browse and edit all scripts in place:
 
 Key scripts — read these for reference before writing new ones:
 
-- [budget-has-periodic.sh](note:/home/djp/.nb/.test/budget-has-periodic.sh) — gold standard: heading, context, fix block, embedded verify, open link
-- [budget-balanced.sh](note:/home/djp/.nb/.test/budget-balanced.sh) — computes fix amount, shows mtime so user knows if edit landed
-- [hledger-strict.sh](note:/home/djp/.nb/.test/hledger-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
-- [hledger-ok.sh](note:/home/djp/.nb/.test/hledger-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
-- [budget-include-check.sh](note:/home/djp/.nb/.test/budget-include-check.sh) — used as an embedded verify block inside budget-has-periodic
+- [hl-budget-has-periodic.sh](note:/home/djp/.nb/.test/hl-budget-has-periodic.sh) — gold standard: heading, context, fix block, embedded verify, open link
+- [hl-budget-balanced.sh](note:/home/djp/.nb/.test/hl-budget-balanced.sh) — computes fix amount, shows mtime so user knows if edit landed
+- [hl-strict.sh](note:/home/djp/.nb/.test/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
+- [hl-ok.sh](note:/home/djp/.nb/.test/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
+- [hl-budget-include-check.sh](note:/home/djp/.nb/.test/hl-budget-include-check.sh) — used as an embedded verify block inside hl-budget-has-periodic
 - [nb-dirty.sh](note:/home/djp/.nb/.test/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
-- [disk-warn.sh](note:/home/djp/.nb/.test/disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
-- [recent-txn.sh](note:/home/djp/.nb/.test/recent-txn.sh) — Form 1 (label, on-demand); markdown table output
-- [hledger-balances.sh](note:/home/djp/.nb/.test/hledger-balances.sh) — Form 1 with table and blockquote timestamp
+- [note-disk-warn.sh](note:/home/djp/.nb/.test/note-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
+- [hl-recent-txn.sh](note:/home/djp/.nb/.test/hl-recent-txn.sh) — Form 1 (label, on-demand); markdown table output
+- [hl-balances.sh](note:/home/djp/.nb/.test/hl-balances.sh) — Form 1 with table and blockquote timestamp
 
 ---
 
