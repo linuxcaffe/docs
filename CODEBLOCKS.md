@@ -6,7 +6,7 @@ toc: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#front — Frontmatter Filter|front]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -275,6 +275,64 @@ The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for br
 - Breadcrumb: `nb › notebook › folder` — each segment is clickable; current location is bold
 
 **Default collapsed:** the hidden-dir (`~/.nb/.*`) variant defaults collapsed on first render.
+
+---
+
+### front — Frontmatter Filter
+
+````markdown
+```front
+shot: | All shots
+```
+````
+
+Renders a collapsible list of notes matching **frontmatter field conditions**. Results are clickable — opening the note in the preview pane. Hover any row to see all frontmatter fields in a tooltip.
+
+**Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks.
+
+````markdown
+```front
+Takeout shot: | Shots in Takeout notebook
+```
+
+```front
+accts home status:active | Active items across two notebooks
+```
+````
+
+**Filter conditions** (AND logic — all must match):
+
+| Syntax | Meaning |
+|--------|---------|
+| `field:value` | Field equals value (case-insensitive) |
+| `field:` | Field exists (any value) |
+| `field:""` | Field absent or empty |
+
+**`\| Label`** — optional label shown in the header bar (space before `|` required; space after optional).
+
+**Header bar:** `▶ count (notebook) Label ↻` — the entire bar is the collapse toggle; `↻` is right-justified and refreshes independently.
+
+**Defaults collapsed** on first render. Open state is preserved across refreshes.
+
+**Examples:**
+
+````markdown
+```front
+shot: | All shots (all notebooks)
+```
+
+```front
+Takeout type:shot loc:LG | Lee Gardens shots
+```
+
+```front
+model:true | Example / model notes
+```
+
+```front
+accts status: | Notes with any status field
+```
+````
 
 ---
 
