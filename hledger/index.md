@@ -8,7 +8,7 @@ Generated from `hledger help` (v1.51.2).
 
 ## Sections
 
-- [[acct:hledger/concepts]] — Encoding, files, options, output formats
+- [[acct:/hledger/concepts]] — Encoding, files, options, output formats
 - [[hledger/journal]]  — Journal format: transactions, directives
 - [[hledger/csv]]      — CSV/TSV rules file reference
 - [[hledger/commands]] — All commands by category
