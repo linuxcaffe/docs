@@ -6,7 +6,7 @@ title: hledger Commands
 
 ## HELP
 
-- [[accts:/hledger/cmd-commands|commands]]
+- [[docs:/hledger/cmd-commands|commands]]
 - [[hledger/cmd-demo|demo]]
 - [[hledger/cmd-help|help]]
 
