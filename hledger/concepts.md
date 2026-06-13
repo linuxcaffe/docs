@@ -1,5 +1,6 @@
 ---
 title: hledger — Concepts & Options
+toc: true
 ---
 
 hledger is a robust, user-friendly, cross-platform set of programs for
