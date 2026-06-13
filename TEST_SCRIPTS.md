@@ -119,6 +119,11 @@ echo '```'
 |---|---|---|
 | `hl-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
 | `hl-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
+| `hl-ordereddates` | 2 | Transactions out of date order within a file |
+| `hl-recentassertions` | 2 | Balance assertions older than 7 days; guides reconciliation |
+| `hl-tags` | 2 | Undeclared tag names (opt-in strict check) |
+| `hl-payees` | 2 | Undeclared payees (opt-in strict check) |
+| `hl-uniqueleafnames` | 2 | Two accounts share a leaf name (opt-in strict check) |
 | `hl-budget-has-periodic` | 2 | Guides setup if no `~ monthly` rules found |
 | `hl-budget-balanced` | 2 | Detects unbalanced budget transactions; computes fix amount |
 | `hl-budget-include-check` | 2 | Verifies periodic journal is included in main journal |
@@ -310,10 +315,15 @@ Browse and edit all scripts in place:
 
 Key scripts — read these for reference before writing new ones:
 
+- [hl-ok.sh](note:/home/djp/.nb/.test/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
+- [hl-strict.sh](note:/home/djp/.nb/.test/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
+- [hl-ordereddates.sh](note:/home/djp/.nb/.test/hl-ordereddates.sh) — out-of-order date check; explains secondary-date workaround
+- [hl-recentassertions.sh](note:/home/djp/.nb/.test/hl-recentassertions.sh) — stale assertion check; shows `hledger close --assert` workflow
+- [hl-tags.sh](note:/home/djp/.nb/.test/hl-tags.sh) — undeclared tags; warns about accidental tags in comments
+- [hl-payees.sh](note:/home/djp/.nb/.test/hl-payees.sh) — undeclared payees; links to `payees` command for discovery
+- [hl-uniqueleafnames.sh](note:/home/djp/.nb/.test/hl-uniqueleafnames.sh) — duplicate leaf names; shows grep to find all affected postings
 - [hl-budget-has-periodic.sh](note:/home/djp/.nb/.test/hl-budget-has-periodic.sh) — gold standard: heading, context, fix block, embedded verify, open link
 - [hl-budget-balanced.sh](note:/home/djp/.nb/.test/hl-budget-balanced.sh) — computes fix amount, shows mtime so user knows if edit landed
-- [hl-strict.sh](note:/home/djp/.nb/.test/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
-- [hl-ok.sh](note:/home/djp/.nb/.test/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
 - [hl-budget-include-check.sh](note:/home/djp/.nb/.test/hl-budget-include-check.sh) — used as an embedded verify block inside hl-budget-has-periodic
 - [nb-dirty.sh](note:/home/djp/.nb/.test/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
 - [note-disk-warn.sh](note:/home/djp/.nb/.test/note-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
