@@ -117,6 +117,7 @@ echo '```'
 
 | Script | Form | Purpose |
 |---|---|---|
+| `hl-test` | 2 | hledger binary self-test; silent when all 245 pass; surfaces failing test names |
 | `hl-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
 | `hl-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
 | `hl-optional` | 2 | Radar sweep — all 5 optional checks; silent when all pass |
@@ -316,6 +317,7 @@ Browse and edit all scripts in place:
 
 Key scripts — read these for reference before writing new ones:
 
+- [hl-test.sh](note:/home/djp/.nb/.test/hl-test.sh) — "is the tool intact?" check; complements hl-ok which checks data, not binary
 - [hl-ok.sh](note:/home/djp/.nb/.test/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
 - [hl-strict.sh](note:/home/djp/.nb/.test/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
 - [hl-optional.sh](note:/home/djp/.nb/.test/hl-optional.sh) — radar sweep of all 5 optional checks; surfaces failures, defers to individual scripts for fixes
