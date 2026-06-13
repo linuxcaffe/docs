@@ -119,6 +119,7 @@ echo '```'
 |---|---|---|
 | `hl-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
 | `hl-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
+| `hl-optional` | 2 | Radar sweep — all 5 optional checks; silent when all pass |
 | `hl-ordereddates` | 2 | Transactions out of date order within a file |
 | `hl-recentassertions` | 2 | Balance assertions older than 7 days; guides reconciliation |
 | `hl-tags` | 2 | Undeclared tag names (opt-in strict check) |
@@ -317,6 +318,7 @@ Key scripts — read these for reference before writing new ones:
 
 - [hl-ok.sh](note:/home/djp/.nb/.test/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
 - [hl-strict.sh](note:/home/djp/.nb/.test/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
+- [hl-optional.sh](note:/home/djp/.nb/.test/hl-optional.sh) — radar sweep of all 5 optional checks; surfaces failures, defers to individual scripts for fixes
 - [hl-ordereddates.sh](note:/home/djp/.nb/.test/hl-ordereddates.sh) — out-of-order date check; explains secondary-date workaround
 - [hl-recentassertions.sh](note:/home/djp/.nb/.test/hl-recentassertions.sh) — stale assertion check; shows `hledger close --assert` workflow
 - [hl-tags.sh](note:/home/djp/.nb/.test/hl-tags.sh) — undeclared tags; warns about accidental tags in comments
