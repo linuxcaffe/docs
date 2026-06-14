@@ -52,6 +52,8 @@ xref: [hledger:, accts:tutorial/]
 
 A YAML list. Each target is fetched independently (in parallel); ref numbers are assigned sequentially across all targets. The word `[1]` might come from `hledger:`, `[2]` from `accts:tutorial/`, etc.
 
+**YAML note:** `hledger:` (trailing colon) inside a YAML flow sequence is parsed by some tools as a mapping key rather than a plain string. nb-web detects and unwraps this automatically, so the syntax above works as written — no quoting needed.
+
 ---
 
 ## Domain stop words
@@ -140,7 +142,18 @@ Reconciliation<sup class="nb-xref-ref" data-xref-sel="hledger:5">[1]</sup>
 
 ## Books and inline notes
 
-Notes with `type: book` that use `{{inline:}}` to pull in chapter files generate their headings only after all inlines have loaded. xref waits for the `nb-inlines-settled` event before scanning headings, so book-level xref works correctly — but it's slower. For best performance, add `xref:` to individual chapter notes rather than the book root.
+Notes with `type: book` that use `{{inline:}}` to pull in chapter files work fully — xref scans headings across every chapter.
+
+The loading sequence for a book:
+
+1. **Eager inlines** (chapters near the viewport) load sequentially; `nb-inlines-settled` fires when they're done.
+2. xref wakes up, checks whether deferred chapters remain, and if so calls `forceAll()` — triggering every outstanding inline fetch immediately rather than waiting for the user to scroll.
+3. `nb-inlines-complete` fires when the last chapter resolves.
+4. xref scans all headings across all chapters.
+
+The side effect: opening a book with `xref:` front-loads all chapter fetches rather than loading them lazily on scroll. On a local server this is imperceptible; the status pill counts them all down at once up front.
+
+For best performance on very long books, add `xref:` to individual chapter notes instead of the book root — chapters have no inlines to force and xref runs immediately.
 
 ---
 
