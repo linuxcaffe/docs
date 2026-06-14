@@ -195,6 +195,29 @@ refBtn.addEventListener('click', () => _loadMyBlock(el));
 
 ---
 
+## previewRenderer plugins: use NbMain.renderMarkdown
+
+If your plugin registers a `previewRenderer`, **never call `marked.parse(body)` directly** on note body content. Use `NbMain.renderMarkdown(body, note.selector)` instead.
+
+`marked.parse()` runs the bare markdown parser. `NbMain.renderMarkdown()` runs the nb-web-augmented version that:
+- Converts fenced code blocks to live widget divs (`<div class="nb-chart-block">` etc.) so `NbWeb.renderCodeblocks` can find and render them
+- Pre-processes `[[wikilinks]]` into clickable spans
+- Rewrites relative image paths to `/api/file?selector=…`
+
+Calling `marked.parse()` directly means any `chart`, `hledger`, `tw`, or other live blocks in the note body silently render as static code, and the StatusPill never fires for them.
+
+```javascript
+// Wrong — bypasses codeblock renderers and wikilinks
+const bodyHtml = marked.parse(body);
+
+// Right
+const bodyHtml = NbMain.renderMarkdown(body, note.selector || '');
+```
+
+The only safe use of `marked.parse()` directly is for content you own entirely (e.g. synthesised strings with no user-authored fenced blocks or wikilinks).
+
+---
+
 ## Checklist
 
 - [ ] `NbWeb.statusPill?.add(blocks.length)` called before work begins
@@ -205,3 +228,4 @@ refBtn.addEventListener('click', () => _loadMyBlock(el));
 - [ ] `_initCollapseToggle` called if the block has a header
 - [ ] `html()` escapes `"` → `&quot;` in data attributes
 - [ ] `querySelectorAll` result spread to `[...]` before async work begins
+- [ ] `previewRenderer` uses `NbMain.renderMarkdown()`, not `marked.parse()`
