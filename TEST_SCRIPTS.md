@@ -134,6 +134,7 @@ echo '```'
 | `hl-budget-runs` | 2 | Verifies `hledger bal --budget` runs without error |
 | `nb-dirty` | 2 | Silent when committed; lists dirty files in current notebook |
 | `note-disk-warn` | 2 | Silent under 80% disk usage; warns above that |
+| `note-slow` | 2 | Silent for fast notes; notice (no red border) when file >50 KB or ≥5 inline includes |
 | `tw-due` | 2 | Silent with no due tasks; lists overdue/today tasks |
 | `hl-recent-txn` | 1 | `hl-recent-txn \| Recent transactions` — last 14 days from journal |
 | `note-context` | 1 | `note-context \| Note context` — markdown table of all context vars |
@@ -331,6 +332,7 @@ Key scripts — read these for reference before writing new ones:
 - [hl-budget-include-check.sh](note:/home/djp/.nb/.test/hl-budget-include-check.sh) — used as an embedded verify block inside hl-budget-has-periodic
 - [nb-dirty.sh](note:/home/djp/.nb/.test/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
 - [note-disk-warn.sh](note:/home/djp/.nb/.test/note-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
+- [note-slow.sh](note:/home/djp/.nb/.test/note-slow.sh) — informational notice (exit 0, no red border) for large files or books with many chapters
 - [hl-recent-txn.sh](note:/home/djp/.nb/.test/hl-recent-txn.sh) — Form 1 (label, on-demand); markdown table output
 - [hl-balances.sh](note:/home/djp/.nb/.test/hl-balances.sh) — Form 1 with table and blockquote timestamp
 
