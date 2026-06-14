@@ -6,9 +6,9 @@ toc: true
 
 # Render Pipeline Redesign
 
-**Status:** Design phase — implementation not started  
+**Status:** Tiers 1 + 2a complete; _StatusPill shipped  
 **Priority:** High — rendering is the primary UX bottleneck for books and complex notes  
-**Tracking:** Tier 1 is the current work target
+**Tracking:** Tier 2b next; Tier 3 on deck
 
 ---
 
@@ -226,6 +226,39 @@ spans (not a stored decrement) so it's always accurate:
 ```
 
 `note-slow.sh` is retired — the JS handles detection. The amber CSS stays.
+
+#### 1d. _StatusPill — generic render progress indicator ✅ (commit 92dd2cf, 2026-06-13)
+
+A type-blind async-work counter pill in the preview toolbar (`.nb-toolbar-left`,
+right of ☰ and ◉). Shows `⟳ N` while any render work is pending, flashes `✓`
+on completion. **Clicking the pill force-loads all pending lazy spans immediately.**
+
+**API:** `NbWeb.statusPill` — shared reference, safe to call from any plugin.
+- `NbWeb.statusPill.add(n)` — register n units of pending work
+- `NbWeb.statusPill.tick()` — one unit complete
+- `NbWeb.statusPill.registerForce(fn)` — register a lazy-span force-load callback
+
+**Coverage** (every async render path is wired):
+- Inline includes (eager + lazy) — per span
+- Non-inline `{{date:}}` / `{{weather:}}` queries — per span
+- All codeblock renderers: `tw`, `hledger`, `nav`, `front`, `t`, `nb`, `git`, `test` — per block
+
+**Design principle:** the pill knows nothing about render types. Any new async
+render path (future plugins, new block types) wires in with two lines:
+`NbWeb.statusPill?.add(blocks.length)` before the batch and
+`NbWeb.statusPill?.tick()` per completion.
+
+**Also fixed in this commit:**
+- Bug: `nb-tests-settled` listener in `_finishRendered` removed notice prematurely
+  (now retired — bar + pill replace the in-content notice entirely)
+- Bug: TOC only showed eager chapters — `_scheduleTocRebuild` (debounced 400ms)
+  replaces the `rebuilt` flag; each lazy chapter load triggers a debounced rebuild
+- `_watchInlineTocRebuild` listens for `nb-inlines-settled` or `nb-tests-settled`
+  and calls `_scheduleTocRebuild` (not a one-shot rebuild); lazy chapters each call
+  it directly from `_deferInlineInclude`
+
+**Also shipped:** `_RenderBar` — thin amber stripe across top of content for eager
+inlines. Settings: Auto (n≥5) / Always / Never (Appearance section of settings.html).
 
 ---
 
