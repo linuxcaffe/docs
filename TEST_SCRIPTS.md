@@ -95,6 +95,18 @@ echo ""
 echo "> *as of $(date '+%Y-%m-%d')*"
 ```
 
+### Amber banner output
+
+For informational notices that aren't errors — approval status, configuration hints, soft warnings — output a `<div class="nb-alert-banner">` instead of a heading or blockquote. This renders in the app's amber alert palette (the same colour as the render progress bar) without the red left-border of a failure.
+
+```bash
+echo '<div class="nb-alert-banner">⚠ This note is pending approval.</div>'
+```
+
+Exit 0 with this output: the block renders the amber notice. Exit 0 with no output: the block vanishes silently (pass). The `.nb-alert-banner` class is defined in `styles.css` and available to any test script.
+
+`note-approved` is the reference implementation — read it before writing a new amber-banner script.
+
 ### Scoped to current note
 
 Use `NB_NOTEBOOK` to scope checks to the notebook the note lives in:
@@ -136,6 +148,7 @@ echo '```'
 | `note-disk-warn` | 2 | Silent under 80% disk usage; warns above that |
 | `note-slow` | 2 | Silent for fast notes; notice (no red border) when file >50 KB or ≥5 inline includes |
 | `tw-due` | 2 | Silent with no due tasks; lists overdue/today tasks |
+| `note-approved` | 2 | Silent when `approved:` frontmatter has a value; amber banner when blank |
 | `hl-recent-txn` | 1 | `hl-recent-txn \| Recent transactions` — last 14 days from journal |
 | `note-context` | 1 | `note-context \| Note context` — markdown table of all context vars |
 | `hl-balances` | 1 | `hl-balances \| Account balances` — depth-1 balance table |
@@ -332,6 +345,7 @@ Key scripts — read these for reference before writing new ones:
 - [hl-budget-include-check.sh](note:/home/djp/.nb/.test/hl-budget-include-check.sh) — used as an embedded verify block inside hl-budget-has-periodic
 - [nb-dirty.sh](note:/home/djp/.nb/.test/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
 - [note-disk-warn.sh](note:/home/djp/.nb/.test/note-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
+- [note-approved.sh](note:/home/djp/.nb/.test/note-approved.sh) — reference implementation for amber `.nb-alert-banner` output; reads frontmatter with awk
 - [note-slow.sh](note:/home/djp/.nb/.test/note-slow.sh) — informational notice (exit 0, no red border) for large files or books with many chapters
 - [hl-recent-txn.sh](note:/home/djp/.nb/.test/hl-recent-txn.sh) — Form 1 (label, on-demand); markdown table output
 - [hl-balances.sh](note:/home/djp/.nb/.test/hl-balances.sh) — Form 1 with table and blockquote timestamp
