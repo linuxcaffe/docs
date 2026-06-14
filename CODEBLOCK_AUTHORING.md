@@ -1,4 +1,207 @@
-# CODEBLOCK_AUTHORING
+---
+title: CODEBLOCK_AUTHORING
+caption: Best practices for writing codeblock renderers in nb-web plugins
+toc: true
+---
 
---notebook docs
+# Codeblock Authoring
 
+Guide for writing `codeblockRenderers` entries in nb-web plugins. See [[CODEBLOCKS]] for the user-facing reference and [[DEVELOPERS]] for the broader plugin API.
+
+---
+
+## Anatomy of a renderer
+
+Each entry in `codeblockRenderers` has three fields:
+
+```javascript
+{
+    lang:   'myblock',
+    html:   text => `<div class="nb-my-block" data-query="..."></div>`,
+    render: async container => { /* fetch, build, tick */ },
+}
+```
+
+| Field | Purpose |
+|---|---|
+| `lang` | Fence language tag — ` ```myblock ` triggers this renderer |
+| `html` | Synchronous: raw fence text → placeholder HTML injected into the note |
+| `render` | Async: called once per container with all blocks of this type |
+
+---
+
+## Required: status pill wiring
+
+Every renderer **must** call `NbWeb.statusPill` so the toolbar counter tracks its work:
+
+```javascript
+render: async container => {
+    const blocks = [...container.querySelectorAll('.nb-my-block')];
+    if (!blocks.length) return;
+    NbWeb.statusPill?.add(blocks.length);          // register N pending items
+    await Promise.all(blocks.map(async el => {
+        await _loadMyBlock(el);
+        NbWeb.statusPill?.tick();                  // one tick per completion
+    }));
+},
+```
+
+**`?.` (optional chaining)** — the pill is injected by `main.js`; `?.` keeps renderers safe in contexts where the pill isn't present.
+
+**Spread to `[...]`** — `querySelectorAll` returns a live NodeList; freezing it before async work starts prevents mutations during rendering from affecting iteration.
+
+**Sequential instead of parallel** — use a `for...of` loop when blocks share initialisation state (e.g. `chart`, which touches a shared canvas library):
+
+```javascript
+for (const el of blocks) {
+    await _loadMyBlock(el);
+    NbWeb.statusPill?.tick();
+}
+```
+
+---
+
+## html() — the placeholder
+
+```javascript
+html: text => `<div class="nb-my-block" data-query="${text.trim().replace(/"/g, '&quot;')}"></div>`,
+```
+
+- Store the raw fence text in `data-*` for `render()` to read back
+- Escape `"` → `&quot;` — the value lands inside an HTML attribute
+- Add `<span class="nb-spin">⟳</span>` for visually large blocks; omit for invisible ones (e.g. `test` Form 2 blocks that vanish on pass)
+
+---
+
+## Header conventions
+
+Every block with a visible header follows the same layout:
+
+```
+[▼] [block-name]  [count]  [filter/query]          [actions: + ↻]
+```
+
+- **Left — meta span**: block-name label + optional count + optional filter code
+- **Right — actions span**: action buttons, always ending with ↻ refresh
+
+The block-name label is **clickable** — it opens the external app, or Settings if the app isn't configured. This gives the block a single obvious "launch" affordance without a dedicated button.
+
+```javascript
+const hdr  = document.createElement('div');
+hdr.className = 'nb-my-header';
+
+// Left: name (clickable) + count + filter
+hdr.innerHTML =
+    `<span class="nb-my-meta">` +
+        `<span class="nb-my-name" title="Open in myapp">myblock</span>` +
+        `<span class="nb-my-count">${items.length}</span>` +
+        (q ? ` <code>${_esc(q)}</code>` : '') +
+    `</span>`;
+
+hdr.querySelector('.nb-my-name').addEventListener('click', () => {
+    // open external app, or fall through to Settings
+    NbTerminal.openSettings('sec-codeblocks');
+});
+
+// Right: action buttons
+const acts = document.createElement('span');
+acts.className = 'nb-my-actions';
+
+const refBtn = document.createElement('button');
+refBtn.className = 'nb-tw-btn';
+refBtn.title = 'Refresh'; refBtn.textContent = '↻';
+refBtn.addEventListener('click', () => _loadMyBlock(el));
+acts.appendChild(refBtn);
+
+hdr.appendChild(acts);
+el.appendChild(hdr);
+_initCollapseToggle(el);
+```
+
+**Rules:**
+- Count is omitted when not meaningful (e.g. a single-result block)
+- Filter/query only shown when the block has a non-empty query
+- ↻ refresh is **always** the last action button
+- Use `nb-tw-btn` for all action buttons — it's the shared codeblock button style
+- `_initCollapseToggle(el)` is called once, after the header is appended
+
+---
+
+## Collapse toggle
+
+Blocks with a visible header should call `_initCollapseToggle(el)` after building the DOM. It wires the ▼/▶ button and persists collapse state in `localStorage`. Requires a `[class*="-header"]` child inside the block.
+
+```javascript
+async function _loadMyBlock(el) {
+    el.innerHTML = '<span class="nb-spin">⟳</span>';
+    // ... build DOM ...
+    _initCollapseToggle(el);
+}
+```
+
+---
+
+## Error handling
+
+Always catch fetch errors and replace the spinner with a visible message — never leave it spinning silently:
+
+```javascript
+try {
+    const d = await fetch(`/api/my-endpoint?q=...`).then(r => r.json());
+    if (d.error) { el.innerHTML = `<span class="nb-my-error">⚠ ${_esc(d.error)}</span>`; return; }
+    _buildMyBlock(el, d);
+} catch (e) {
+    el.innerHTML = `<span class="nb-my-error">⚠ ${_esc(e.message)}</span>`;
+}
+```
+
+`_esc()` is defined at the top of `nbweb-codeblocks.js` — copy it into your plugin:
+
+```javascript
+const _esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+```
+
+---
+
+## Refresh button
+
+Every block that fetches live data should have a refresh button:
+
+```javascript
+const refBtn = document.createElement('button');
+refBtn.className = 'nb-tw-btn';
+refBtn.title = 'Refresh';
+refBtn.textContent = '↻';
+refBtn.addEventListener('click', () => _loadMyBlock(el));
+```
+
+`nb-tw-btn` is the shared small-button style used across all codeblocks.
+
+---
+
+## NbWeb API available to plugins
+
+| Call | Purpose |
+|---|---|
+| `NbWeb.statusPill?.add(n)` | Register n pending items in the toolbar counter |
+| `NbWeb.statusPill?.tick()` | Mark one item complete |
+| `NbWeb.checkWhich(bin)` | Check if a binary is on PATH; returns `{found, path}` |
+| `NbWeb.renderRequirementsCard(el, mdPath)` | Replace el with a "not installed" card |
+| `NbMain.openNote(selector)` | Navigate to a note |
+| `NbMain.activeSelector()` | Selector of the currently open note |
+| `NbNav.notebook` | Current notebook name |
+| `NbTerminal.run(cmd)` | Open terminal pane and run a command |
+| `NbTerminal.openSettings(sectionId)` | Open Settings scrolled to a section |
+
+---
+
+## Checklist
+
+- [ ] `NbWeb.statusPill?.add(blocks.length)` called before work begins
+- [ ] `NbWeb.statusPill?.tick()` called once per block — success **and** error paths
+- [ ] Early return if `!blocks.length`
+- [ ] Errors replace the spinner with a visible message
+- [ ] Refresh button wired to re-run the load function
+- [ ] `_initCollapseToggle` called if the block has a header
+- [ ] `html()` escapes `"` → `&quot;` in data attributes
+- [ ] `querySelectorAll` result spread to `[...]` before async work begins
