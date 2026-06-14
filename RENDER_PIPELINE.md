@@ -6,9 +6,9 @@ toc: true
 
 # Render Pipeline Redesign
 
-**Status:** Tiers 1 + 2a complete; _StatusPill shipped  
+**Status:** Tiers 1, 2, 3a, 3c complete — pipeline redesign done  
 **Priority:** High — rendering is the primary UX bottleneck for books and complex notes  
-**Tracking:** Tier 2b next; Tier 3 on deck
+**Tracking:** 3b (render cache) shelved; 3c shipped 2026-06-14
 
 ---
 
@@ -326,11 +326,17 @@ to accumulate scripts and fire one batched call rather than individual calls.
 
 #### 3b. Book render cache
 
-Already designed — see [[BOOKS]] and memory `project_nb_web_book_toc.md`.
+**Status: shelved** — pipeline is fast enough; previous auto-cache attempt reverted as too brittle.
 
-Once sequential rendering (1a) is in place, the settled state is well-defined
-and the cache can snapshot it accurately. Cache key: `selector:mtime`. Second
-visit is near-instant.
+**If revisited:** opt-in via frontmatter `cache: true` rather than automatic.
+This limits caching to notes the author explicitly marks as stable (books,
+reference docs, CoA pages). Notes with live data (daily notes, bookkeeper.md,
+any note with `tw`/`hledger` codeblocks) are never cached — the author simply
+omits `cache: true`.
+
+Cache key: `selector:mtime`. Snapshot the settled DOM after `nb-inlines-settled`
++ `nb-tests-settled` both fire. Second visit restores the snapshot and skips
+the full render pipeline.
 
 Depends on: 1a (sequential) + 1b (count-based completion, defines "settled").
 
