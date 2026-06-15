@@ -2,7 +2,10 @@
 title: RENDER_PIPELINE
 caption: nb-web rendering architecture — current state, bottlenecks, redesign plan
 toc: true
+processed: true
 ---
+
+> Moved to [[dev/RENDER_PIPELINE]] — this file is a redirect stub.
 
 # Render Pipeline Redesign
 

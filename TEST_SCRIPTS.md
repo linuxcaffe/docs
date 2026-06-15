@@ -2,7 +2,10 @@
 title: TEST_SCRIPTS
 caption: Writing test scripts for the nb-web test codeblock
 toc: true
+processed: true
 ---
+
+> Moved to [[dev/TESTING]] — this file is a redirect stub.
 
 # Test Scripts
 
