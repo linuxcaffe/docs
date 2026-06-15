@@ -1,12 +1,35 @@
 ---
 title: DEVELOPERS
-caption: nb-web internals, rendering pipeline, extension points
+caption: nb-web developer documentation index
 toc: true
+processed: true
 ---
 
 # DEVELOPERS
 
-[[#Markdown|Markdown]] · [[#Wikilinks|Wikilinks]] · [[#term: Links|term: Links]] · [[#Hashtags|Hashtags]] · [[#Frontmatter|Frontmatter]] · [[#Code Blocks|Code Blocks]] · [[#Images|Images]] · [[#UUIDs|UUIDs]] · [[#Tools|Tools]]
+Developer documentation for nb-web, organised by feature area. Each section below links to a dedicated file in `dev/`.
+
+---
+
+## Index
+
+| File | Scope |
+|------|-------|
+| [[dev/ARCHITECTURE]] | Rendering stages, frontmatter keys, images, UUIDs, hashtags — non-feature-specific internals |
+| [[dev/RENDER_PIPELINE]] | Rendering architecture — pipeline stages, bottlenecks, redesign plan |
+| [[dev/CODEBLOCKS]] | Writing, registering, and testing live codeblock widgets |
+| [[dev/PLUGINS]] | Plugin system — writing plugins, dispatch, `listItemIcon`, toolbar hooks |
+| [[dev/WIKILINKS]] | Wikilink resolution algorithm, `_wikilinkCache`, `term:` link handling |
+| [[dev/TEMPLATES]] | `_resolve_template_vars`, placeholder API, annotation templates |
+| [[dev/SYNC]] | Pull-then-push flow, `git-wire` internals, status API |
+| [[dev/TESTING]] | Writing and running nb-web test scripts via the `test` codeblock |
+| [[dev/CONTRIBUTING]] | Reporting issues, submitting changes, running from source |
+
+---
+
+## Pending migration
+
+The sections below are the original DEVELOPERS.md content. Each will be moved to its `dev/` file and removed here as the ODC pass proceeds.
 
 ---
 
