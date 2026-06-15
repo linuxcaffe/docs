@@ -2,6 +2,7 @@
 title: CODEBLOCKS
 caption: Live interactive widgets rendered from fenced code blocks in notes
 toc: true
+processed: true
 ---
 
 # Codeblocks
@@ -90,7 +91,7 @@ Embeds a live nb panel. Supported commands:
 | `notebooks` | All notebooks with note count and last-modified age; click any to switch |
 | `backlinks [N]` | Notes that wiki-link `[[to this note]]`; N caps results (default 20) |
 
-The active notebook is highlighted in the `notebooks` view. `backlinks` uses ripgrep when available for speed.
+The active notebook is highlighted in the `notebooks` view.
 
 ---
 
@@ -133,25 +134,25 @@ Any hledger subcommand: `bal`, `reg`, `is`, `bs`, `cf`. Positive and negative am
 
 Opens an inline posting form. Two smart pre-fills happen automatically:
 
-- **Account from query** — if the fence body contains an account name (e.g. `reg Assets:Bank`), the first account field in the form is pre-populated with it. hledger command words, flags, and query filters (`date:`, `amt:`, etc.) are skipped; the first remaining alphanumeric-or-colon token is used.
+- **Account from query** — if the fence body contains an account name (e.g. `reg Assets:Bank`), the first account field in the form is pre-populated with it.
 - **Date from filename** — if the currently open note is a daily note named `YYYYMMDD.md`, the date field is pre-filled from the filename instead of today's date.
 
 **Bookkeeper panel**
 
-The hledger panel (☰ → hledger or via a `hledger` codeblock) has a persistent **+ Add Transaction** section at the top that also applies both smart pre-fills above.
+The hledger panel (☰ → hledger) has a persistent **+ Add Transaction** section at the top that also applies both smart pre-fills above.
 
 **Files tab**
 
 The hledger panel's **Files** tab handles bulk import and export between daily notes and journal files:
 
-- **Export** — scans `YYYYMMDD.md` daily notes in the active notebook for ` ```hledger ``` ` fenced blocks and writes their contents to a `.journal` file. Optionally filtered by date range.
-- **Import** — parses an existing `.journal` file and appends each dated transaction block to the matching `YYYYMMDD.md` daily note (creating the note if it doesn't exist), then commits.
+- **Export** — scans `YYYYMMDD.md` daily notes for ` ```hledger ``` ` fenced blocks and writes their contents to a `.journal` file. Optionally filtered by date range.
+- **Import** — parses an existing `.journal` file and appends each dated transaction block to the matching `YYYYMMDD.md` daily note (creating it if it doesn't exist), then commits.
 
 **Static `ledger` blocks**
 
-Use ` ```ledger ` (not ` ```hledger `) for example journal entries in tutorial or documentation notes. These are rendered as static syntax-highlighted code via Prism — never executed against your real journal.
+Use ` ```ledger ` (not ` ```hledger `) for example journal entries in tutorial or documentation notes. These render as static syntax-highlighted code via Prism — never executed against your real journal.
 
-Requires `hledger` on `$PATH`. See [hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock) — this block is also released as a standalone package.
+Requires `hledger` on `$PATH`. See also: [hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock) — this block is also released as a standalone package.
 
 ---
 
@@ -167,8 +168,6 @@ Interactive Chart.js visualisations driven by hledger data. Requires the **NbWeb
 
 **Syntax:** `` ```chart\n<report> [period] [depth:N]\n``` ``
 
-**Report types:**
-
 | Report | Chart | Description |
 |--------|-------|-------------|
 | `cashflow` | bar + line | Monthly income vs expenses, cumulative net change |
@@ -180,20 +179,16 @@ Interactive Chart.js visualisations driven by hledger data. Requires the **NbWeb
 
 **Period** is any hledger period expression: `thismonth`, `thisyear`, `lastyear`, `last3months`, `2025`, `2025-01..2025-06`, etc.
 
-**`depth:N`** controls account depth for category breakdown (default `2`):
+**`depth:N`** controls account depth for category breakdown (default `2`).
 
-````markdown
-```chart
-expenses thisyear depth:3
-```
-````
+**Header controls:**
 
-**Header controls** — every chart block has:
-
-- **▾ / ▸** — click title or toggle to collapse/expand
-- **mo / yr / prev** — quick period switcher (reloads chart, no re-fetch on toggle)
-- **◕ / ▦** — doughnut ↔ bar toggle (only on `*-pie` and `expenses`; redraws from cached data)
-- **↺** — force reload from hledger
+| Control | Action |
+|---------|--------|
+| **▾ / ▸** | Collapse/expand |
+| **mo / yr / prev** | Quick period switcher (reloads chart) |
+| **◕ / ▦** | Doughnut ↔ bar toggle on `*-pie` and `expenses`; redraws from cached data |
+| **↺** | Force reload from hledger |
 
 ---
 
@@ -211,7 +206,7 @@ Shows the clocked-in account, elapsed time, and a period report. The argument is
 
 ### cine — Film Production
 
-Requires the **[NbWeb-cine](https://github.com/linuxcaffe/nbweb-cine)** plugin installed and a `.nb-cine.json` anchor file in the notebook. See the NbWeb-cine README for the full query reference.
+Requires the **[NbWeb-cine](https://github.com/linuxcaffe/nbweb-cine)** plugin and a `.nb-cine.json` anchor file in the notebook.
 
 ````markdown
 ```cine
@@ -219,13 +214,7 @@ shots.strip | day: 1
 ```
 ````
 
-#### Query syntax
-
-```
-field[.format] [: code, code, …] [| filter: value, …]
-```
-
-#### Key queries
+**Syntax:** `field[.format] [: code, code, …] [| filter: value, …]`
 
 | Query | Result |
 |-------|--------|
@@ -236,15 +225,11 @@ field[.format] [: code, code, …] [| filter: value, …]
 | `shots.sheet \| day: 1` | Call sheet cards — verbose, print-friendly |
 | `scenes` | Scene index: all scenes, colour-coded by I/E · D/N |
 | `storylines` | 2D story structure board — draggable cards across named lanes |
-| `storylines.large` | Same board with full card detail (scenes, metadata) |
+| `storylines.large` | Board with full card detail (scenes, metadata) |
 | `actor.phone: JD, AM` | Field lookup — phone numbers for listed actors |
 | `location.address: LG` | Field lookup — address for location LG |
 
-Filters stack: `shots.line | day: 1, actor: JD`
-
----
-
-The **+** button on a `storylines` block adds a story card inline — type a title, press Enter. The **▦/▤** toggle switches between small and large card views; preference is saved per notebook.
+Filters stack: `shots.sheet | day: 1, actor: JD`. See the [NbWeb-cine README](https://github.com/linuxcaffe/nbweb-cine) for the full query reference, frontmatter schemas, and storylines board documentation.
 
 ---
 
@@ -256,9 +241,7 @@ accts:guide/
 ```
 ````
 
-Renders a stateful folder navigator in the preview pane. Clicking folders drills in; clicking notes opens them. The breadcrumb header is fully clickable — navigate back up to any level or to the notebooks root.
-
-**Query formats:**
+Renders a stateful folder navigator in the preview pane. Clicking folders drills in; clicking notes opens them. The breadcrumb header is fully clickable.
 
 | Format | Example | Navigates to |
 |--------|---------|-------------|
@@ -266,15 +249,11 @@ Renders a stateful folder navigator in the preview pane. Clicking folders drills
 | Filesystem path | `~/.nb/accts/guide` | Same, via path |
 | Hidden dir path | `~/.nb/.test` | Raw filesystem listing |
 
-The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (test scripts), `~/.nb/.templates`, etc. Files open in the preview pane; the selector is derived from the absolute path.
+The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (test scripts), `~/.nb/.templates`, etc.
 
-**Controls:**
+**Controls:** **▼/▶** collapse (persists in `localStorage` by starting path) · **↻** refresh · breadcrumb segments are clickable.
 
-- **▼ / ▶** (top-left) — collapse / expand; state persists in `localStorage` keyed by the starting path
-- **↻** — refresh current location without resetting navigation
-- Breadcrumb: `nb › notebook › folder` — each segment is clickable; current location is bold
-
-**Default collapsed:** the hidden-dir (`~/.nb/.*`) variant defaults collapsed on first render.
+**Default collapsed** on first render for hidden-dir paths.
 
 ---
 
@@ -286,21 +265,11 @@ shot: | All shots
 ```
 ````
 
-Renders a collapsible list of notes matching **frontmatter field conditions**. Results are clickable — opening the note in the preview pane. Hover any row to see all frontmatter fields in a tooltip.
+Renders a collapsible list of notes matching frontmatter field conditions. Results are clickable — opening the note in the preview pane. Hover any row to see all frontmatter fields in a tooltip.
 
 **Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks.
 
-````markdown
-```front
-Takeout shot: | Shots in Takeout notebook
-```
-
-```front
-accts home status:active | Active items across two notebooks
-```
-````
-
-**Filter conditions** (AND logic — all must match):
+**Filter conditions** (AND logic):
 
 | Syntax | Meaning |
 |--------|---------|
@@ -308,17 +277,13 @@ accts home status:active | Active items across two notebooks
 | `field:` | Field exists (any value) |
 | `field:""` | Field absent or empty |
 
-**`\| Label`** — optional label shown in the header bar (space before `|` required; space after optional).
-
-**Header bar:** `▶ count (notebook) Label ↻` — the entire bar is the collapse toggle; `↻` is right-justified and refreshes independently.
-
-**Defaults collapsed** on first render. Open state is preserved across refreshes.
+**`\| Label`** — optional label shown in the header bar.
 
 **Examples:**
 
 ````markdown
 ```front
-shot: | All shots (all notebooks)
+shot: | All shots
 ```
 
 ```front
@@ -326,11 +291,7 @@ Takeout type:shot loc:LG | Lee Gardens shots
 ```
 
 ```front
-model:true | Example / model notes
-```
-
-```front
-accts status: | Notes with any status field
+model:true | Example notes
 ```
 ````
 
@@ -338,7 +299,7 @@ accts status: | Notes with any status field
 
 ### test — Embedded Assertions
 
-Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/` and are plain bash. See [[TEST_SCRIPTS]] for the full reference.
+Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/`. See [[dev/TESTING]] for how to write scripts; see [[CODEBLOCKS#test — Bundled Scripts|TESTING]] for the bundled script reference.
 
 **Form 1 — on-demand (with label):**
 
@@ -348,7 +309,7 @@ hl-recent-txn | Recent transactions
 ```
 ````
 
-Renders a `▶ Recent transactions` button. Click to run the script; output replaces the button area. Resets after a passing run (no output + exit 0).
+Renders a `▶ Recent transactions` button. Click to run; output replaces the button area.
 
 **Form 2 — automatic (no label):**
 
@@ -358,13 +319,9 @@ hl-ok
 ```
 ````
 
-Runs at render time. **If exit 0 and no output: the block vanishes completely** — invisible in the note. If there is output or a non-zero exit, the output renders as full markdown (wikilinks, `{{hledger:}}` inline queries, `term:` links all work).
+Runs at render time. **Exit 0 + no output → block vanishes completely.** Output or non-zero exit → renders as full markdown. A note peppered with Form 2 blocks is invisible when everything is healthy.
 
-A note can be peppered with Form 2 blocks; you'd never know they were there unless something needs attention.
-
-**Form 3 — group (multiple scripts):**
-
-Multiple scripts, one per line. All run in parallel. The label rules from Form 1/2 apply to the group as a whole:
+**Form 3 — group (multiple scripts, one per line):**
 
 ````markdown
 ```test
@@ -374,7 +331,9 @@ nb-dirty
 ```
 ````
 
-Form 2 group — auto-runs all three. All pass → block vanishes. Any fail → `N of M checks failed` header with a **collapsible toggle row per failure**. Click a row to expand its full script output inline; click again to collapse.
+All run in parallel. All pass → block vanishes. Any fail → `N of M checks failed` header with a **collapsible toggle row per failure**.
+
+Add a label to the first line (Form 1 group) to render a button instead of auto-running:
 
 ````markdown
 ```test
@@ -384,9 +343,7 @@ nb-dirty
 ```
 ````
 
-Form 1 group — renders a `▶ Health checks` button. On click, runs all scripts and shows failures as toggle rows. Per-script labels are used as the row label; script name is the fallback.
-
-A bare `| Label` line (no script before the pipe) sets the group label without labelling any individual script:
+A bare `| Label` line sets the group label without labelling any individual script:
 
 ````markdown
 ```test
@@ -396,36 +353,11 @@ tw-due
 ```
 ````
 
-**Grouped test scripts (`subtest:` links):**
-
-A script can output `[label](subtest:scriptname)` links in its markdown. These render as toggle rows that fetch and expand the named script's full output on click — no pre-run needed. `hl-optional` uses this pattern: it runs a radar sweep of all optional hledger checks and surfaces each failure as a drill-down link.
-
-````markdown
-```test
-hl-optional
-```
-````
-
-**Script context vars** injected as environment variables:
-
-| Variable | Value |
-|---|---|
-| `NB_DIR` | `~/.nb` |
-| `NB_NOTE_SELECTOR` | Selector of the currently open note |
-| `NB_NOTEBOOK` | Notebook portion of the selector |
-| `NB_NOTE_PATH` | Absolute path to the note file |
-
 **Script naming convention:**
 
-| Prefix | App | Examples |
-|--------|-----|---------|
-| `hl-` | hledger | `hl-ok`, `hl-strict`, `hl-optional`, `hl-budget-*` |
-| `nb-` | nb | `nb-dirty` |
-| `tw-` | Taskwarrior | `tw-due` |
-| `note-` | system/global | `note-disk-warn`, `note-context` |
-
----
-
-## Broader Context
-
-The NbWeb-codeblocks plugin is nb-web's implementation of the [mkd-codeblocks](https://github.com/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app. The `hledger` block is already released as a standalone package; the others are planned for extraction as the project matures.
+| Prefix | App |
+|--------|-----|
+| `hl-` | hledger |
+| `nb-` | nb |
+| `tw-` | Taskwarrior |
+| `note-` | system/global |
