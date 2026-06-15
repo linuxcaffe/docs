@@ -1,10 +1,8 @@
 ---
 title: WIKILINKS
-caption: making connections across paragraphs, files and notebooks 
-footnote:
-tags: []
+caption: making connections across paragraphs, files and notebooks
 toc: true
-SEO:
+processed: true
 ---
 
 # Wikilinks
