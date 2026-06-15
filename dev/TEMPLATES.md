@@ -1,11 +1,86 @@
 ---
 title: TEMPLATES
-caption: "Template system internals — _resolve_template_vars, placeholder API, annotation templates"
+caption: Template system internals — _resolve_template_vars, placeholder API, annotation templates
 toc: true
 ---
 
-# TEMPLATES
+# TEMPLATES (dev)
 
-> Developer documentation for nb-web. See [[DEVELOPERS]] for the full index.
+Developer reference for the template system. For user-facing template docs see [[TEMPLATES]].
 
-*Pending content migration — see ODC plan ([[claude:odc_nb-web_plan.md]])*
+---
+
+## Three template types
+
+| Type | Storage | Purpose |
+|------|---------|---------|
+| Regular | `.templates/*.md` in notebook or global `~/.nb/.templates/` | Note scaffolds — shown in Add picker |
+| Annotation | `.template-annotation.md` anywhere in notebook tree (per-folder) | Pre-fills the annotation editor when "Add annotation" is clicked |
+| Export HTML | (internal) | Controls HTML export layout |
+
+Regular templates use notebook-local scope first, then fall back to global. Both scopes appear in the Add picker and Templates menu.
+
+---
+
+## Placeholder resolution — `_resolve_template_vars()`
+
+`_resolve_template_vars(content, title, tags, body)` in `app.py` — called at note creation time, not at template edit time. Placeholders are resolved once and written into the note file.
+
+| Placeholder | Resolution |
+|-------------|-----------|
+| `{{title}}` | Note title from the Add form |
+| `{{tags}}` | Space-separated `#tag` list from the Add form |
+| `{{content}}` | Body text from the Add form |
+| `{{date}}` | `YYYY-MM-DD` via `datetime.now()` |
+| `{{day}}` | `Saturday, May 9, 2026` via `strftime` |
+| `{{time}}` | `HH:MM` via `strftime` |
+| `{{weather}}` | wttr.in one-liner — fetched lazily, only if `{{weather}}` appears in template text |
+| `$(command)` | Shell command substitution — resolved via `eval` in bash subprocess |
+
+Resolution uses string replacement on the raw template text before the file is written. The preview shown in the Template picker shows **raw placeholders** — resolution only happens on "Create note".
+
+---
+
+## `_fetch_weather()`
+
+Module-level cache in `app.py`:
+
+```python
+_weather_cache = {'value': None, 'ts': 0}
+```
+
+`_fetch_weather()` checks `_weather_cache['ts']` — if less than 3600 seconds old, returns the cached value. Otherwise hits:
+
+```
+https://wttr.in/?format=%c+%C,+%t+(feels+%f),+%h+humidity,+%w&m
+```
+
+5-second timeout. Returns `(weather unavailable)` on any error. The fetch is only triggered if `{{weather}}` appears in the template text — templates without it never hit the network.
+
+---
+
+## Annotation templates — `.template-annotation.md`
+
+A `.template-annotation.md` file anywhere in a notebook tree is applied when "Add annotation" is clicked for a note in that folder. Resolution walks **up** from the note's directory to the notebook root, using the nearest match.
+
+**API:** `GET /api/note/annotation-template?selector=` — finds and resolves the annotation template for a note's directory. Returns the resolved content (placeholders substituted) or `null` if no template found.
+
+**Creation:** ☰ → "Save as template" → type Annotation → notebook/folder picker. Writes to `<folder>/.template-annotation.md`.
+
+**Scope:** unlike regular templates (global or notebook-level), annotation templates are folder-scoped. A template in `items/` only applies to notes in `items/`, not to notes at the notebook root.
+
+---
+
+## Generator functions and seeded templates — sync requirement
+
+**Critical:** when a plugin defines a template with a `content` function (generator), AND that template is seeded to disk as a `.templates/` file, **both must be updated together** when the schema changes. The seeded file is used for auto-selection; the generator is used for fresh creation via the plugin page. If they diverge, new notes get one schema and auto-selected notes get another.
+
+Pattern: keep the canonical schema in one place (e.g. a `_SHOT_TEMPLATE` const), then both the `content` generator and the `+ Seed` write path reference it.
+
+See [[PLUGINS#Templates]] for the seeding mechanic.
+
+---
+
+## Frontmatter section in DEVELOPERS.md
+
+The special frontmatter keys recognised by nb-web (`pinned:`, `toc:`, `lock:`, `processed:`, `toolbar:`, `xref:`, `draft:`, `caption:`, `alias:`) are documented in the pending-migration `## Frontmatter` section of [[DEVELOPERS]]. That content will move to [[ARCHITECTURE]] during the ODC pass.

@@ -2,6 +2,7 @@
 title: TEMPLATES
 caption: Creating, using, and managing note templates in nb-web
 toc: true
+processed: true
 ---
 
 # Templates
