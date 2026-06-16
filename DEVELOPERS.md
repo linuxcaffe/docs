@@ -26,4 +26,5 @@ Developer documentation for nb-web, organised by feature area. Each section belo
 | [[dev/TESTING]] | Writing and running nb-web test scripts via the `test` codeblock |
 | [[dev/CONTRIBUTING]] | Reporting issues, submitting changes, running from source |
 | [[dev/XREF]] | Stemming algorithm, prefix matching, `/api/xref` reference, `forceAll()` book behavior |
+| [[dev/SECURITY]] | Auth scheme — session login, user cards, dotfolder notebooks, level-based access |
 
