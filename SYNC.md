@@ -2,6 +2,7 @@
 title: SYNC
 caption: Git sync model, the Git menu, wiring remotes, and troubleshooting
 toc: true
+processed: true
 ---
 
 # Sync
@@ -108,4 +109,16 @@ After a sync, nb-web reloads the notebook detail so you can see the updated unpu
 
 These are operational lessons, not suggestions:
 
-**1. Set `NB_AUTO_SYNC
+#TODO — section was never completed; needs: NB_AUTO_SYNC rule, default-remote-first rule, one-branch-per-notebook rule
+
+---
+
+## Danger Zone
+
+#TODO — needs: force-push warning, deleting remote branch consequences, merge conflict resolution
+
+---
+
+## If Things Go Wrong
+
+#TODO — needs: merge conflicts, missing remote, auth failures, recovery steps
