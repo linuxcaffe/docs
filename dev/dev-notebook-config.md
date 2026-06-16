@@ -19,7 +19,7 @@ The notebook config file is a small dotfile in each notebook's root:
 
 It's a standard nb-web Markdown file — YAML frontmatter, optional body. nb doesn't index it (dotfile). It's already tracked in the `~/.nb/` config repo so it travels with the notebook setup. The `_notebook_config(notebook)` function reads and parses it on every relevant request — no restart needed, changes take effect immediately.
 
-**Already implemented:** `access:` (notebook-wide access floor) and `user:` on individual notes (inherits owner's level). The infrastructure is there. Everything below is what comes next.
+**Already implemented:** `access:` (notebook-wide access floor) and `user:` on individual notes (inherits owner's level). The infrastructure is there. Everything below is what comes next. #planned
 
 ---
 
@@ -46,7 +46,7 @@ description: "Feature film shot list and production notes"
 
 **`color:`** — accent hex applied to the notebook header, breadcrumb active state, and list selected-item highlight. Each notebook gets a distinct visual lane. Navigate between `docs` (blue) and `work` (amber) and *know* where you are without reading the breadcrumb.
 
-**`theme:`** — a named style preset applied when this notebook is active. Could reference a CSS class on `<body>` or a mini override stylesheet. Ideas:
+**`theme:`** — a named style preset applied when this notebook is active. Could reference a CSS class on `<body>` or a mini override stylesheet. #decision CSS class on body is lightest — single stylesheet with `.theme-warm`, `.theme-code` etc.; no dynamic load needed. Ideas:
 - `warm` — parchment tones, serif preview font (great for fiction, journals)
 - `code` — high-contrast, wide monospace preview, dense list
 - `shop` — image-forward, grid default, price badges

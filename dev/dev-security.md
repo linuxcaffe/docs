@@ -26,7 +26,7 @@ Browser → /login (POST credentials)
 
 Flask handles login at `/login` (self-contained HTML, no external assets), sets a signed session cookie via `.flask_secret`, and gates every request through `_check_auth()` — unauthenticated `/api/*` returns `401 JSON`, page requests redirect to `/login`. The `/api/me` endpoint exposes the current user's public fields for frontend use. Dotfolder virtual notebooks (`.users`, `.tools`, etc.) are served via direct filesystem I/O for `admin`/`tech` users. The `~/.nb/` root git repo (config repo) tracks dotfolders and global templates; `settings.html` provides a commit/sync UI for it. `nb-auth.js` is the shared frontend module — see [Frontend auth](#frontend-auth-nb-authjs).
 
-> Full detail for this section is planned — login flow, `_check_auth()`, `/api/me`, dotfolder CRUD, config repo API, `nb-auth.js`.
+> #stub #todo Full detail for this section is planned — login flow, `_check_auth()`, `/api/me`, dotfolder CRUD, config repo API, `nb-auth.js`.
 
 ---
 
@@ -116,7 +116,7 @@ def _effective_access(note_meta, nb_meta):
     return str(nb_meta.get('access') or 'user')
 ```
 
-`access:` is a **floor** — `access: guest` means guest-and-above can see it; `access: admin` means admin/tech only. It is typically used as a downgrade (opening notes to lower levels) but can also restrict upward.
+`access:` is a **floor** — `access: guest` means guest-and-above can see it; `access: admin` means admin/tech only. It is typically used as a downgrade (opening notes to lower levels) but can also restrict upward. #invariant
 
 **`user:` shorthand** — instead of knowing or typing a level string, declare ownership: `user: djp` makes the note as private as djp's user card level. If djp is `tech`, the note requires tech. Useful for personal notes in shared notebooks. `access:` always wins if both are present; unknown `user:` values fall through gracefully to the notebook/system default.
 
@@ -365,9 +365,9 @@ No auto-commit on dotfolder writes — commit from Settings → Config repo when
 ## Planned
 
 - `/setup` first-run route
-- Backend notebook ACL enforcement for `notebooks:` user card field (currently frontend-only)
-- User management UI in Settings menu (admin/tech only)
-- CSRF token middleware
-- Per-notebook write locks (separate from the existing `.nb-lock` read-only lock)
-- `access:` enforcement on write endpoints (PUT/POST/DELETE)
-- Expand Section I (Server) with full Flask session, login flow, dotfolder CRUD detail
+- #planned Backend notebook ACL enforcement for `notebooks:` user card field (currently frontend-only)
+- #planned User management UI in Settings menu (admin/tech only)
+- #planned CSRF token middleware
+- #planned Per-notebook write locks (separate from the existing `.nb-lock` read-only lock)
+- #planned `access:` enforcement on write endpoints (PUT/POST/DELETE) — #gotcha write endpoints currently unguarded beyond level check
+- #todo Expand Section I (Server) with full Flask session, login flow, dotfolder CRUD detail
