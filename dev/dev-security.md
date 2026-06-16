@@ -362,6 +362,65 @@ No auto-commit on dotfolder writes — commit from Settings → Config repo when
 
 ---
 
+## Inline access control
+
+`{{inline:}}` silently enforces access — inaccessible content returns an empty body rather than a 403. The note renders normally for lower-level users; the included content simply isn't there.
+
+Two mechanisms, same silent-empty result:
+
+### Markdown notes — `access:` frontmatter
+
+Any note with `access:` (or `user:`) frontmatter self-censors when included via `{{inline:}}`. The frontend passes `?inline=1` on all inline fetches; the backend returns `{'body': ''}` instead of 403 when access fails.
+
+```yaml
+---
+title: Staff roster
+access: office
+---
+```
+
+```markdown
+{{inline: docs:staff-roster.md}}
+```
+
+Guest and user-level readers: empty render. Office and above: full content.
+
+### `.lib/` files — filename level suffix
+
+Non-markdown files (HTML, etc.) can't carry frontmatter. They declare their required level in the filename stem: `-guest`, `-user`, `-office`, `-admin`, `-tech`.
+
+```
+.lib/dashboard-user.html     → user+
+.lib/dashboard-office.html   → office+
+.lib/dashboard-admin.html    → admin+
+```
+
+Backend extracts the suffix from the stem, checks `_level_gte()`, returns empty body if insufficient. No JS, no `data-min-level`, purely server-side.
+
+The suffix convention also works for markdown files — useful when the filename should be self-documenting without opening it.
+
+### Rule (`.rules/access.md`)
+
+| File type | Preferred method | Also works |
+|-----------|----------------|------------|
+| `.html`, `.sh`, non-markdown | filename suffix | — |
+| `.md` | `access:` frontmatter | filename suffix |
+| no declaration | readable by all authenticated users | |
+
+### `.lib/` — reusable self-censoring components
+
+`~/.nb/.lib/` holds HTML components designed for inline inclusion. Files are readable by all authenticated users (unlike other dotfolders which require admin); the level suffix controls what renders. Additive tier pattern:
+
+```markdown
+{{inline: .lib:user-mgmt-user.html}}
+{{inline: .lib:user-mgmt-office.html}}
+{{inline: .lib:user-mgmt-admin.html}}
+```
+
+One note, all users, each sees exactly their tier's content accumulated. No conditionals in the note, no JS level-checking — the server handles it all.
+
+---
+
 ## Planned
 
 - `/setup` first-run route

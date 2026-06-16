@@ -462,4 +462,37 @@ See [[docs:BOOKS]] for the full pattern.
 
 ---
 
+#### Self-censoring includes
+
+`{{inline:}}` silently respects access levels — inaccessible content renders as nothing, leaving the note looking normal to lower-level users.
+
+**Markdown notes** — any note with `access:` frontmatter self-censors when inlined:
+
+```yaml
+---
+title: Q4 Payroll Summary
+access: admin
+---
+```
+
+```markdown
+{{inline: accts:q4-payroll.md}}
+```
+
+Users below `admin` see an empty render. The note is not visible, not 403'd — just absent.
+
+**`.lib/` components** — HTML and other non-markdown files declare their level in the filename suffix:
+
+```markdown
+{{inline: .lib:dashboard-user.html}}
+{{inline: .lib:dashboard-office.html}}
+{{inline: .lib:dashboard-admin.html}}
+```
+
+Each file renders for users at that level and above; others see nothing. Stack multiple inlines for additive tiers — guest through admin each see their appropriate layer accumulate.
+
+See [[docs:dev/dev-security.md#ii-access-control]] and `.rules/access.md` for the full convention.
+
+---
+
 Developer internals and script authoring: [[docs:dev/dev-codeblocks.md]]
