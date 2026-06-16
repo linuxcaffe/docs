@@ -5,7 +5,7 @@ toc: true
 processed: true
 ---
 
-> Moved to [[dev/RENDER_PIPELINE]] — this file is a redirect stub.
+> Moved to [[docs:dev/RENDER_PIPELINE]] — this file is a redirect stub.
 
 # Render Pipeline Redesign
 

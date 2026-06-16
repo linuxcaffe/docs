@@ -6,7 +6,7 @@ toc: true
 
 # WIKILINKS (dev)
 
-Developer reference for wikilink and term: link internals. For user-facing syntax see [[WIKILINKS]].
+Developer reference for wikilink and term: link internals. For user-facing syntax see [[docs:WIKILINKS]].
 
 ---
 
@@ -68,7 +68,7 @@ Inline `{{...}}` patterns are detected in `_resolveInlineQueries` during `_enric
 - `data-provider` — the provider name (`hledger`, `tw`, `nb`, `date`, `inline`)
 - `data-query` — the query string
 
-Non-inline providers (`hledger`, `tw`, `nb`, `date`) fire in parallel — they're cheap single-value lookups. `inline` includes are sequential (see [[RENDER_PIPELINE#1a]]).
+Non-inline providers (`hledger`, `tw`, `nb`, `date`) fire in parallel — they're cheap single-value lookups. `inline` includes are sequential (see [[docs:RENDER_PIPELINE#1a]]).
 
 `_iq_strip` — strips hledger report formatting (separators, commodity padding, column headers) down to a plain value suitable for inline text. Multiple result rows are joined with ` · `. This is why multi-row queries collapse into unreadable strings — use codeblocks for reports with more than one or two rows.
 

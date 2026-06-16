@@ -83,4 +83,4 @@ When the `contacts` notebook is active, the sort dropdown gains a **Last name** 
 
 Filter contacts by tag using the tags field (`#` to focus it) — e.g. `#friend` or `#local`.
 
-See [[Import / Export]] → Contact Import for importing contacts from VCF files.
+See [[docs:import-export]] → Contact Import for importing contacts from VCF files.

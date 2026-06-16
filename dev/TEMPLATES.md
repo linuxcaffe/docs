@@ -6,7 +6,7 @@ toc: true
 
 # TEMPLATES (dev)
 
-Developer reference for the template system. For user-facing template docs see [[TEMPLATES]].
+Developer reference for the template system. For user-facing template docs see [[docs:TEMPLATES]].
 
 ---
 
@@ -77,10 +77,10 @@ A `.template-annotation.md` file anywhere in a notebook tree is applied when "Ad
 
 Pattern: keep the canonical schema in one place (e.g. a `_SHOT_TEMPLATE` const), then both the `content` generator and the `+ Seed` write path reference it.
 
-See [[PLUGINS#Templates]] for the seeding mechanic.
+See [[docs:PLUGINS#Templates]] for the seeding mechanic.
 
 ---
 
 ## Frontmatter section in DEVELOPERS.md
 
-The special frontmatter keys recognised by nb-web (`pinned:`, `toc:`, `lock:`, `processed:`, `toolbar:`, `xref:`, `draft:`, `caption:`, `alias:`) are documented in the pending-migration `## Frontmatter` section of [[DEVELOPERS]]. That content will move to [[ARCHITECTURE]] during the ODC pass.
+The special frontmatter keys recognised by nb-web (`pinned:`, `toc:`, `lock:`, `processed:`, `toolbar:`, `xref:`, `draft:`, `caption:`, `alias:`) are documented in the pending-migration `## Frontmatter` section of [[docs:DEVELOPERS]]. That content will move to [[docs:dev/ARCHITECTURE]] during the ODC pass.

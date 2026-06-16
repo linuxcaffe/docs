@@ -91,7 +91,7 @@ Open **Menu → Templates**, select any template, then use the notebook selector
 
 Place a single contact template at `~/.nb/contacts/.templates/contact.md`. Every time you open **Add** while the contacts notebook is active, nb-web silently pre-applies it — just type the contact's name and press Save.
 
-See [[NOTEBOOKS]] → Defaults for how template defaults interact with per-notebook sort and list-type settings.
+See [[docs:NOTEBOOKS]] → Defaults for how template defaults interact with per-notebook sort and list-type settings.
 
 ---
 

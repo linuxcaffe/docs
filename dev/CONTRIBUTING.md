@@ -6,6 +6,6 @@ toc: true
 
 # CONTRIBUTING
 
-> Developer documentation for nb-web. See [[DEVELOPERS]] for the full index.
+> Developer documentation for nb-web. See [[docs:DEVELOPERS]] for the full index.
 
 *Pending content migration — see ODC plan ([[claude:odc_nb-web_plan.md]])*

@@ -214,7 +214,7 @@ backlinks 50
 ```
 ````
 
-See [[CODEBLOCKS]] for the full `nb` block reference.
+See [[docs:CODEBLOCKS]] for the full `nb` block reference.
 
 ---
 

@@ -6,7 +6,7 @@ toc: true
 
 # PLUGINS (dev)
 
-Developer reference for the NbWeb plugin system. For user-facing plugin docs see [[PLUGINS]].
+Developer reference for the NbWeb plugin system. For user-facing plugin docs see [[docs:PLUGINS]].
 
 ---
 

@@ -70,7 +70,7 @@ Two mutually exclusive action buttons appear depending on git state:
 
 ### Plugin sections
 
-Active plugins can contribute additional sections here. For example, **NbWeb-archive** adds an **Archive** section with a **↓ Archive notebook** button. See [[PLUGINS]] for details.
+Active plugins can contribute additional sections here. For example, **NbWeb-archive** adds an **Archive** section with a **↓ Archive notebook** button. See [[docs:PLUGINS]] for details.
 
 ### Use this notebook
 
@@ -92,7 +92,7 @@ Plugins can contribute additional defaults rows to this panel (e.g., NbWeb-conta
 
 Click **Save defaults** to persist. Changes take effect immediately on the next notebook switch.
 
-> **Tip:** setting a notebook's template default to a single local template is the recommended way to give a notebook a fixed structure — see [[TEMPLATES]] for the folder-local template pattern.
+> **Tip:** setting a notebook's template default to a single local template is the recommended way to give a notebook a fixed structure — see [[docs:TEMPLATES]] for the folder-local template pattern.
 
 ---
 
@@ -132,7 +132,7 @@ At the bottom of each notebook's detail panel. Two separate actions:
 
 **Delete remote branch** — removes the notebook's branch from the remote repository. Does not touch the local copy. Type the notebook name to confirm. Use this when you want to stop syncing a notebook without deleting local notes.
 
-> Both actions are irreversible. Archive the notebook first (see [[Import / Export]]) if you might want it back.
+> Both actions are irreversible. Archive the notebook first (see [[docs:import-export]]) if you might want it back.
 
 ---
 

@@ -6,7 +6,7 @@ toc: true
 
 # ARCHITECTURE
 
-> Developer documentation for nb-web. See [[DEVELOPERS]] for the full index.
+> Developer documentation for nb-web. See [[docs:DEVELOPERS]] for the full index.
 
 ## Overview
 
@@ -19,7 +19,7 @@ nb-web is a single Flask process (`app.py`) serving a single-page app (`index.ht
 Every note body passes through the same two-stage rendering pipeline, regardless of notebook or note type.
 
 **Stage 1 — pre-processing** (`_renderMarkdown`, before marked):
-- `[[wikilinks]]` and `#hashtags` are converted to `<span>` placeholders so the markdown parser never sees them as plain text.
+- `[[docs:wikilinks]]` and `#hashtags` are converted to `<span>` placeholders so the markdown parser never sees them as plain text.
 - Fenced code blocks and inline code are split out first, so links and tags inside backticks are left untouched.
 
 **Stage 2 — enrichment** (`_enrichRendered`, after the HTML is in the DOM):
@@ -28,7 +28,7 @@ Every note body passes through the same two-stage rendering pipeline, regardless
 - UUID-like strings are detected and linked.
 - Plugin-registered codeblock renderers are invoked.
 
-See [[RENDER_PIPELINE]] for the full pipeline redesign plan and tier details.
+See [[docs:RENDER_PIPELINE]] for the full pipeline redesign plan and tier details.
 
 ---
 
@@ -49,7 +49,7 @@ Special keys recognised by nb-web beyond standard `title:`, `tags:`, and `type:`
 | `pinned: yes` | `yes` | Note is auto-pinned whenever it is opened, as if you had clicked the pin toolbar button. Unpinning via the toolbar also clears this key from the file. |
 | `toc: true` | `true` | Generates a collapsible Table of Contents at the top of the rendered note. The TOC header bar shows the note's file path, size, and last-modified date. Headings become anchor links; clicking scrolls the page without changing the URL hash. Defaults to collapsed. |
 | `lock: yes` | `yes` | Marks the note read-only in the editor. The `+` Add button on live codeblocks also checks this flag — it shows a 🔒 indicator for 2.5 s if clicked while locked. |
-| `xref:` | `notebook:` or list | Cross-reference: injects `[N]` indicators on heading words that match note titles in the target notebook/folder. See [[dev/XREF]]. |
+| `xref:` | `notebook:` or list | Cross-reference: injects `[N]` indicators on heading words that match note titles in the target notebook/folder. See [[docs:dev/XREF]]. |
 | `xref-ignore:` | list of strings | Words to exclude from xref heading scans on this note. |
 | `alias:` | string | Short mutable display label for the note — overrides `title:` in wikilink display. Useful when a short identifier (scene number, draft version) changes over time while the filename stays fixed. |
 | `draft: true` | `true` | Marks a note as a draft — not published by Quartz. |
@@ -67,7 +67,7 @@ Two categories of fenced code blocks:
 
 **Rule of thumb for tutorial/example content:** use ` ```ledger ` (not ` ```hledger `) so example journal entries display as static code rather than being executed against the user's real journal.
 
-Static blocks pass through marked unchanged and are highlighted by Prism on the client. Live blocks are converted to `<div class="nb-*-block">` placeholders in Stage 1, then hydrated by their renderer in Stage 2. See [[dev/CODEBLOCKS]] and [[dev/CODEBLOCK_AUTHORING]].
+Static blocks pass through marked unchanged and are highlighted by Prism on the client. Live blocks are converted to `<div class="nb-*-block">` placeholders in Stage 1, then hydrated by their renderer in Stage 2. See [[docs:dev/CODEBLOCKS]] and [[docs:dev/CODEBLOCK_AUTHORING]].
 
 ---
 

@@ -6,19 +6,19 @@ toc: true
 
 # CODEBLOCKS (dev)
 
-Developer reference for the codeblock renderer system. For user-facing codeblock docs see [[CODEBLOCKS]]. For writing test scripts see [[TESTING]].
+Developer reference for the codeblock renderer system. For user-facing codeblock docs see [[docs:CODEBLOCKS]]. For writing test scripts see [[docs:dev/TESTING]].
 
 ---
 
 ## Architecture
 
-Codeblock renderers are registered via the `codeblockRenderers` extension point in any NbWeb plugin. See [[PLUGINS#codeblockRenderers]] for the full API.
+Codeblock renderers are registered via the `codeblockRenderers` extension point in any NbWeb plugin. See [[docs:PLUGINS#codeblockRenderers]] for the full API.
 
 The skeleton/hydrate pattern applies to all blocks:
 - `html(text)` — synchronous placeholder stamped at markdown parse time
 - `render(container)` — async hydration after the DOM is ready
 
-All block renderers wire into `NbWeb.statusPill` for render progress tracking. See [[RENDER_PIPELINE#_StatusPill]] for the pill API.
+All block renderers wire into `NbWeb.statusPill` for render progress tracking. See [[docs:RENDER_PIPELINE#_StatusPill]] for the pill API.
 
 ---
 
@@ -48,7 +48,7 @@ Context variables injected into every test script as environment variables:
 
 `subtest:` links — a script can output `[label](subtest:scriptname)` in its markdown. These render as toggle rows that fetch and expand the named script's full output on click — no pre-run needed. `hl-optional` uses this pattern: runs a radar sweep of all optional hledger checks and surfaces each failure as a drill-down link.
 
-For writing and testing scripts see [[TESTING]].
+For writing and testing scripts see [[docs:dev/TESTING]].
 
 ---
 

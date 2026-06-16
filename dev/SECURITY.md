@@ -7,7 +7,7 @@ processed: true
 
 # SECURITY
 
-> Developer documentation for nb-web. See [[DEVELOPERS]] for the full index.
+> Developer documentation for nb-web. See [[docs:DEVELOPERS]] for the full index.
 
 nb-web's security scheme is intentionally minimal: Flask sessions, Markdown user cards, and level-based guards on both Flask routes and JS UI. No external auth libraries, no database, no tokens.
 

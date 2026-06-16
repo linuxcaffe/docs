@@ -54,7 +54,7 @@ Your notes are always a browser tab away — searchable, readable, and editable 
 
 The left pane lists notes with title and excerpt. The right pane renders the selected note as Markdown. Switch notebooks, filter by type, sort, and search — all without leaving the page. Keyboard shortcuts (`/` to search, `#` to filter by tag, arrow keys to navigate) keep your hands off the mouse.
 
-→ [[KEYBOARD]] · [[SEARCH_TAGS]]
+→ [[docs:KEYBOARD]] · [[docs:SEARCH_TAGS]]
 
 ---
 
@@ -64,7 +64,7 @@ The left pane lists notes with title and excerpt. The right pane renders the sel
 
 Click **Edit** or press `e` to edit any note inline. A lightweight formatting toolbar handles bold, italic, headings, links, and lists. `Ctrl+Enter` saves; `Escape` cancels. Encrypted notes are supported with per-note password protection.
 
-→ [[KEYBOARD]]
+→ [[docs:KEYBOARD]]
 
 ---
 
@@ -74,7 +74,7 @@ Click **Edit** or press `e` to edit any note inline. A lightweight formatting to
 
 Templates are plain Markdown files with `{{placeholder}}` substitution — title, date, time, tags, weather, or any shell expression. Store them globally or per-notebook. A single local template becomes the notebook's default, pre-applied every time you add a note.
 
-→ [[TEMPLATES]]
+→ [[docs:TEMPLATES]]
 
 ---
 
@@ -84,7 +84,7 @@ Templates are plain Markdown files with `{{placeholder}}` substitution — title
 
 Write `[[Note Title]]` anywhere in a note body to link to another note. Links resolve on click — nb-web finds the note by title, case-insensitively, within the current notebook. Anchor to a heading with `[[Note Title#Section]]`. A `backlinks` codeblock shows every note that links to the current one.
 
-→ [[WIKILINKS]]
+→ [[docs:WIKILINKS]]
 
 ---
 
@@ -102,7 +102,7 @@ Fenced code blocks with recognised language tags render as live, interactive wid
 | ` ```nb ` | nb notebooks panel or backlinks |
 | ` ```t ` | Timeclock status and period report |
 
-→ [[CODEBLOCKS]]
+→ [[docs:CODEBLOCKS]]
 
 ---
 
@@ -112,7 +112,7 @@ Fenced code blocks with recognised language tags render as live, interactive wid
 
 Each nb notebook is its own git repo under `~/.nb/`. The Notebooks panel shows note count, sync status, git branch, remote URL, and last commit for every notebook. Wire a remote, sync, set per-notebook defaults (sort order, list type, default template), and manage the Danger Zone — all from one place. Create a new notebook from the Add bar.
 
-→ [[NOTEBOOKS]]
+→ [[docs:NOTEBOOKS]]
 
 ---
 
@@ -122,7 +122,7 @@ Each nb notebook is its own git repo under `~/.nb/`. The Notebooks panel shows n
 
 nb-web uses a **one-repo, branch-per-notebook** model: all notebooks live as branches of a single remote repository (typically `nb-notes` on Codeberg or GitHub). Wire once, sync per notebook. The sync dialog shows exactly what is pending before you push.
 
-→ [[SYNC]]
+→ [[docs:SYNC]]
 
 ---
 
@@ -132,7 +132,7 @@ nb-web uses a **one-repo, branch-per-notebook** model: all notebooks live as bra
 
 Full-text search and tag filtering work simultaneously and update the list live. Press `/` to jump to search, `#` to jump to the tags field. Tag queries support AND logic (`recipes dinner`) and exclusion (`recipes -draft`). Switch scope to **all** to search every notebook at once.
 
-→ [[SEARCH_TAGS]]
+→ [[docs:SEARCH_TAGS]]
 
 ---
 
@@ -142,7 +142,7 @@ Full-text search and tag filtering work simultaneously and update the list live.
 
 Add a notebook named `contacts` and nb-web renders its notes as structured contact cards — email, phone, address, and URL fields all clickable. Import contacts from a `.vcf` file via the 📇 browser. Sort by last name. Filter by tag.
 
-→ [[CONTACTS]]
+→ [[docs:CONTACTS]]
 
 ---
 
@@ -152,7 +152,7 @@ Add a notebook named `contacts` and nb-web renders its notes as structured conta
 
 Export any notebook as a self-contained `.nbz` file (a standard ZIP with a metadata manifest). Optionally include full git history. Import a `.nbz` on any machine — nb-web extracts, reconciles, and makes notes available immediately. A planned `docs.nbz` will ship with nb-web so new users can import the reference documentation as a local notebook.
 
-→ [[Import / Export]]
+→ [[docs:import-export]]
 
 ---
 
@@ -171,7 +171,7 @@ Four plugins ship with nb-web:
 | **NbWeb-archive** | Notebook archive, export, and import |
 | **NbWeb-quartz** | Quartz static site publishing workflow |
 
-→ [[PLUGINS]]
+→ [[docs:PLUGINS]]
 
 ---
 
@@ -202,7 +202,7 @@ Open `http://localhost:5001` — your existing nb notebooks appear immediately.
 
 nb-web is a full PWA. In Epiphany, open `http://localhost:5001`, then **⋮ → Install as Web Application**. It launches in its own window with no browser chrome, indistinguishable from a native app.
 
-A launcher script (`nb-web-launch`) is included that starts the Flask server, opens Epiphany, and cleans up on exit. See [[Install]] for setup details.
+A launcher script (`nb-web-launch`) is included that starts the Flask server, opens Epiphany, and cleans up on exit. See [[docs:Install]] for setup details.
 
 ### Settings
 
@@ -217,7 +217,7 @@ Copy `nb-settings.json.example` to `nb-settings.json` and edit:
 }
 ```
 
-→ [[Install]]
+→ [[docs:Install]]
 
 ---
 
@@ -233,19 +233,19 @@ The full documentation lives in the `docs` notebook — importable as `docs.nbz`
 
 | Doc | Contents |
 |-----|---------|
-| [[Install]] | Dependencies, launch script, Epiphany setup |
-| [[QUICKSTART]] | Five-minute orientation |
-| [[NOTEBOOKS]] | Notebook management, wiring, defaults |
-| [[SYNC]] | Git model, sync dialog, troubleshooting |
-| [[TEMPLATES]] | Placeholder syntax, per-notebook defaults |
-| [[WIKILINKS]] | Syntax, anchor links, backlinks |
-| [[CODEBLOCKS]] | All live block types and configuration |
-| [[BOOKS]] | `type: book` — stitched documents with diagnostic TOC |
-| [[SEARCH_TAGS]] | Search, tag filter, cross-notebook search |
-| [[CONTACTS]] | Contact notes, VCF import |
-| [[Import / Export]] | .nbz archive format, import workflow |
-| [[PLUGINS]] | Plugin architecture and development |
-| [[KEYBOARD]] | All keyboard shortcuts |
+| [[docs:Install]] | Dependencies, launch script, Epiphany setup |
+| [[docs:QUICKSTART]] | Five-minute orientation |
+| [[docs:NOTEBOOKS]] | Notebook management, wiring, defaults |
+| [[docs:SYNC]] | Git model, sync dialog, troubleshooting |
+| [[docs:TEMPLATES]] | Placeholder syntax, per-notebook defaults |
+| [[docs:WIKILINKS]] | Syntax, anchor links, backlinks |
+| [[docs:CODEBLOCKS]] | All live block types and configuration |
+| [[docs:BOOKS]] | `type: book` — stitched documents with diagnostic TOC |
+| [[docs:SEARCH_TAGS]] | Search, tag filter, cross-notebook search |
+| [[docs:CONTACTS]] | Contact notes, VCF import |
+| [[docs:import-export]] | .nbz archive format, import workflow |
+| [[docs:PLUGINS]] | Plugin architecture and development |
+| [[docs:KEYBOARD]] | All keyboard shortcuts |
 
 ---
 

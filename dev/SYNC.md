@@ -6,7 +6,7 @@ toc: true
 
 # SYNC (dev)
 
-Developer reference for the sync system internals. For user-facing sync docs see [[SYNC]].
+Developer reference for the sync system internals. For user-facing sync docs see [[docs:SYNC]].
 
 ---
 

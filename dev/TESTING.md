@@ -6,7 +6,7 @@ toc: true
 
 # Test Scripts
 
-The `test` codeblock runs bash scripts from `~/.nb/.test/` — embedding live system checks directly in notes. See [[CODEBLOCKS#test — Embedded Assertions|CODEBLOCKS]] for the codeblock syntax.
+The `test` codeblock runs bash scripts from `~/.nb/.test/` — embedding live system checks directly in notes. See [[docs:CODEBLOCKS#test — Embedded Assertions|CODEBLOCKS]] for the codeblock syntax.
 
 ---
 
@@ -20,7 +20,7 @@ Scripts are called with no arguments. They receive context about the current not
 | 0 | has content | Output rendered as markdown |
 | non-zero | anything | Output rendered as markdown with red left border |
 
-Output is rendered as full markdown — headings, tables, lists, blockquotes, `{{hledger: query}}` inline expressions, `[[wikilinks]]`, `term:` links, and `note:` links all work.
+Output is rendered as full markdown — headings, tables, lists, blockquotes, `{{hledger: query}}` inline expressions, `[[docs:wikilinks]]`, `term:` links, and `note:` links all work.
 
 ---
 
@@ -358,4 +358,4 @@ When Form 2 test blocks are embedded in chapter notes inside a `type: book`, som
 
 A healthy book shows a clean TOC. A book with configuration problems shows `⚠` entries inline with chapter headings. No separate dashboard, no extra code — it's an emergent property of the test + inline + TOC pipeline.
 
-See [[BOOKS]] for the full pattern, design guidance, and The Bookkeeper's Guide as a worked example.
+See [[docs:BOOKS]] for the full pattern, design guidance, and The Bookkeeper's Guide as a worked example.

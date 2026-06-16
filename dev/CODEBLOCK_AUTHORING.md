@@ -6,7 +6,7 @@ toc: true
 
 # Codeblock Authoring
 
-Guide for writing `codeblockRenderers` entries in nb-web plugins. See [[CODEBLOCKS]] for the user-facing reference and [[DEVELOPERS]] for the broader plugin API.
+Guide for writing `codeblockRenderers` entries in nb-web plugins. See [[docs:CODEBLOCKS]] for the user-facing reference and [[docs:DEVELOPERS]] for the broader plugin API.
 
 ---
 
@@ -201,7 +201,7 @@ If your plugin registers a `previewRenderer`, **never call `marked.parse(body)` 
 
 `marked.parse()` runs the bare markdown parser. `NbMain.renderMarkdown()` runs the nb-web-augmented version that:
 - Converts fenced code blocks to live widget divs (`<div class="nb-chart-block">` etc.) so `NbWeb.renderCodeblocks` can find and render them
-- Pre-processes `[[wikilinks]]` into clickable spans
+- Pre-processes `[[docs:wikilinks]]` into clickable spans
 - Rewrites relative image paths to `/api/file?selector=…`
 
 Calling `marked.parse()` directly means any `chart`, `hledger`, `tw`, or other live blocks in the note body silently render as static code, and the StatusPill never fires for them.

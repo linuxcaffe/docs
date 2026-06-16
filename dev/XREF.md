@@ -6,7 +6,7 @@ toc: true
 
 # XREF internals
 
-Developer reference for the `xref:` cross-reference feature. User docs: [[xref]].
+Developer reference for the `xref:` cross-reference feature. User docs: [[docs:xref]].
 
 ---
 
