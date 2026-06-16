@@ -29,3 +29,5 @@ RENDER_PIPELINE.md
 hledger
 CODEBLOCK_AUTHORING.md
 xref.md
+dev
+plugins
