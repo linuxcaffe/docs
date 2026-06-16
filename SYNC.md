@@ -122,3 +122,7 @@ These are operational lessons, not suggestions:
 ## If Things Go Wrong
 
 #TODO — needs: merge conflicts, missing remote, auth failures, recovery steps
+
+---
+
+Developer internals: [[docs:dev/dev-sync]]

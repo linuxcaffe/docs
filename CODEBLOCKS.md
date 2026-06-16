@@ -299,7 +299,7 @@ model:true | Example notes
 
 ### test — Embedded Assertions
 
-Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/`. See [[docs:dev/TESTING]] for how to write scripts; see [[docs:CODEBLOCKS#test — Bundled Scripts|TESTING]] for the bundled script reference.
+Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/`. See [[docs:dev/dev-testing]] for how to write scripts; see [[docs:CODEBLOCKS#test — Bundled Scripts|TESTING]] for the bundled script reference.
 
 **Form 1 — on-demand (with label):**
 
@@ -361,3 +361,7 @@ tw-due
 | `nb-` | nb |
 | `tw-` | Taskwarrior |
 | `note-` | system/global |
+
+---
+
+Developer internals: [[docs:dev/dev-codeblocks]]

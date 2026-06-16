@@ -58,4 +58,4 @@ These plugins have their own repositories and installation steps:
 
 **Menu → Plugins** lists all registered plugins with status, active notebooks, and enable/disable toggle. Each entry shows the plugin's description and, where provided, a full help page rendered from a Markdown file.
 
-For developer documentation on writing plugins, see [[docs:dev/PLUGINS]].
+For developer documentation on writing plugins, see [[docs:dev/dev-plugins]].

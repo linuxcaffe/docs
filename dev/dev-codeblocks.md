@@ -6,7 +6,7 @@ toc: true
 
 # CODEBLOCKS (dev)
 
-Developer reference for the codeblock renderer system. For user-facing codeblock docs see [[docs:CODEBLOCKS]]. For writing test scripts see [[docs:dev/TESTING]].
+Developer reference for the codeblock renderer system. For user-facing codeblock docs see [[docs:CODEBLOCKS]]. For writing test scripts see [[docs:dev/dev-testing]].
 
 ---
 
@@ -48,7 +48,7 @@ Context variables injected into every test script as environment variables:
 
 `subtest:` links — a script can output `[label](subtest:scriptname)` in its markdown. These render as toggle rows that fetch and expand the named script's full output on click — no pre-run needed. `hl-optional` uses this pattern: runs a radar sweep of all optional hledger checks and surfaces each failure as a drill-down link.
 
-For writing and testing scripts see [[docs:dev/TESTING]].
+For writing and testing scripts see [[docs:dev/dev-testing]].
 
 ---
 

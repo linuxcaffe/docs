@@ -5,7 +5,7 @@ toc: true
 processed: true
 ---
 
-> Moved to [[docs:dev/TESTING]] — this file is a redirect stub.
+> Moved to [[docs:dev/dev-testing]] — this file is a redirect stub.
 
 # Test Scripts
 

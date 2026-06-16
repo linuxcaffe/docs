@@ -7,7 +7,7 @@ processed: true
 
 # Codeblock Authoring
 
-> **Moved to [[docs:dev/CODEBLOCK_AUTHORING]]** — developer reference for writing codeblock renderers.
+> **Moved to [[docs:dev/dev-codeblock-authoring]]** — developer reference for writing codeblock renderers.
 
 ---
 
@@ -230,3 +230,7 @@ The only safe use of `marked.parse()` directly is for content you own entirely (
 - [ ] `html()` escapes `"` → `&quot;` in data attributes
 - [ ] `querySelectorAll` result spread to `[...]` before async work begins
 - [ ] `previewRenderer` uses `NbMain.renderMarkdown()`, not `marked.parse()`
+
+---
+
+Developer internals: [[docs:dev/dev-codeblock-authoring]]

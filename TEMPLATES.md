@@ -196,3 +196,7 @@ so required fields (`~req`, enums) guide both creation and validation.
 
 To add a required field to a shot: edit `~/.nb/Takeout/.templates/shot.md`, set its
 value to `~req` or `A|B`, then run `nb-check` to surface gaps in existing notes.
+
+---
+
+Developer internals: [[docs:dev/dev-templates]]

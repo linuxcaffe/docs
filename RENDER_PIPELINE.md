@@ -5,7 +5,7 @@ toc: true
 processed: true
 ---
 
-> Moved to [[docs:dev/RENDER_PIPELINE]] — this file is a redirect stub.
+> Moved to [[docs:dev/dev-render-pipeline]] — this file is a redirect stub.
 
 # Render Pipeline Redesign
 
@@ -409,3 +409,7 @@ Do not use for: errors, validation failures, destructive actions (those stay red
 - `~/dev/nb-web/styles.css` — `.nb-rendering-notice` and alert color palette
 - `~/dev/nb-web/app.py` — Flask endpoints including future `/api/test-blocks`
 - `~/.nb/.test/` — test scripts; `note-slow.sh` to be retired in Tier 1
+
+---
+
+Developer internals: [[docs:dev/dev-render-pipeline]]

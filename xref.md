@@ -110,4 +110,4 @@ For best performance on very long books, add `xref:` to individual chapter notes
 
 ---
 
-See also: [[docs:wikilinks]] for manual cross-references, [[bookkeeper]] for the canonical example of xref in action. Developer internals in [[docs:dev/XREF]].
+See also: [[docs:wikilinks]] for manual cross-references, [[bookkeeper]] for the canonical example of xref in action. Developer internals in [[docs:dev/dev-xref]].

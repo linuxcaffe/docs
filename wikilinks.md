@@ -233,3 +233,7 @@ See [[docs:CODEBLOCKS]] for the full `nb` block reference.
 For notes that may be published to Quartz, prefer `[[Note Title]]` using the full descriptive title — Quartz resolves by title and filename natively, so descriptive titles work on both sides.
 
 See [[NbWeb-quartz]] for publishing workflow.
+
+---
+
+Developer internals: [[docs:dev/dev-wikilinks]]
