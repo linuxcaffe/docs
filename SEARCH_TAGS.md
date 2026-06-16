@@ -2,6 +2,7 @@
 title: SEARCH_TAGS
 caption: Full-text search, tag filtering, and cross-notebook search
 toc: true
+processed: true
 ---
 
 # Search and Tags

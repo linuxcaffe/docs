@@ -5,6 +5,7 @@ footnote: footnote! lots here, more to come
 tags: [nb, test]
 toc: true
 SEO:
+processed: true
 ---
 - Project: https://github.com/linuxcaffe/nb-web
 - Issues:  https://github.com/linuxcaffe/nb-web/issues

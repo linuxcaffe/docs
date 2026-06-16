@@ -6,6 +6,7 @@ copyright: "© 2026 linuxcaffe"
 instagram: ""
 ebay: ""
 etsy: ""
+processed: true
 ---
 
 Site-wide configuration for the nb-web docs site.

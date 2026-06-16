@@ -2,12 +2,11 @@
 title: CODEBLOCK_AUTHORING
 caption: Best practices for writing codeblock renderers in nb-web plugins
 toc: true
-processed: true
 ---
 
 # Codeblock Authoring
 
-> **Moved to [[dev/CODEBLOCK_AUTHORING]]** — developer reference for writing codeblock renderers.
+Guide for writing `codeblockRenderers` entries in nb-web plugins. See [[CODEBLOCKS]] for the user-facing reference and [[DEVELOPERS]] for the broader plugin API.
 
 ---
 

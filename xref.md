@@ -1,6 +1,7 @@
 ---
 title: "xref — Cross-Reference Enrichment"
 type: doc
+processed: true
 ---
 
 # xref — Cross-Reference Enrichment
@@ -70,45 +71,6 @@ Words in this list are excluded from heading scans on the current note. They're 
 
 ---
 
-## How matching works
-
-### The stem index
-
-When you open an xref-enabled note, nb-web calls `/api/xref` with:
-- `target=hledger:` (or folder-scoped)
-- `stems=reconcili,anomali,period,balance,...` — the stemmed words from your headings
-
-On the server, every target note is indexed once (cached until its directory mtime changes). The index maps **word stems → note entries**. A note's title and its annotation sidecar text are both indexed.
-
-### Stemming rules
-
-Both Python (server) and JavaScript (client) apply the same suffix-stripping rules, in order:
-
-| Suffix removed | Replacement |
-|---|---|
-| `ations`, `ation` | (none) |
-| `ings`, `ing` | (none) |
-| `ions`, `ion` | (none) |
-| `ments`, `ment` | (none) |
-| `ness` | (none) |
-| `ities`, `ity` | (none) |
-| `ies` | `y` |
-| `ves` | `f` |
-| `ed`, `ly`, `er` | (none) |
-| `es`, `s` | (none) |
-
-Each word must be at least 4 characters before stemming; the resulting stem must be at least 3 characters.
-
-### Prefix matching
-
-After stemming, a heading word stem matches an index stem if:
-- **Exact match** — always matches, regardless of length
-- **Prefix match** — either stem starts with the other, and the shared prefix is ≥ 5 characters
-
-This handles plurals, conjugations, and compound forms without a full morphological analyser.
-
----
-
 ## Annotation vocabulary
 
 The killer feature: if a note's *annotation sidecar* contains free text, those words are indexed too.
@@ -127,31 +89,13 @@ Annotations are the private back-of-house layer (never published, not in `.index
 
 ## Visual indicator
 
-Matching words get a superscript injected inline:
-
-```html
-Reconciliation<sup class="nb-xref-ref" data-xref-sel="hledger:5">[1]</sup>
-```
-
-- Displayed as small, muted monospace superscript (`[1]`, `[2]`, …)
-- Opacity 0.5 at rest, 1.0 on hover
-- Click opens the matched note in the preview pane (same as any note click)
-- Numbering is per-note, sequential across all xref targets, in heading order
+Matching words get a small superscript injected inline — `[1]`, `[2]`, … — muted at rest, full opacity on hover. Click opens the matched note in the preview pane. Numbering is per-note, sequential across all xref targets, in heading order.
 
 ---
 
 ## Books and inline notes
 
-Notes with `type: book` that use `{{inline:}}` to pull in chapter files work fully — xref scans headings across every chapter.
-
-The loading sequence for a book:
-
-1. **Eager inlines** (chapters near the viewport) load sequentially; `nb-inlines-settled` fires when they're done.
-2. xref wakes up, checks whether deferred chapters remain, and if so calls `forceAll()` — triggering every outstanding inline fetch immediately rather than waiting for the user to scroll.
-3. `nb-inlines-complete` fires when the last chapter resolves.
-4. xref scans all headings across all chapters.
-
-The side effect: opening a book with `xref:` front-loads all chapter fetches rather than loading them lazily on scroll. On a local server this is imperceptible; the status pill counts them all down at once up front.
+Notes with `type: book` that use `{{inline:}}` to pull in chapter files work fully — xref scans headings across every chapter. Opening a book with `xref:` front-loads all chapter fetches rather than loading them lazily on scroll; on a local server this is imperceptible.
 
 For best performance on very long books, add `xref:` to individual chapter notes instead of the book root — chapters have no inlines to force and xref runs immediately.
 
@@ -166,32 +110,4 @@ For best performance on very long books, add `xref:` to individual chapter notes
 
 ---
 
-## API reference
-
-```
-GET /api/xref?target=<target>&stems=<stem1>,<stem2>,...
-```
-
-| Parameter | Description |
-|---|---|
-| `target` | `notebook:` or `notebook:folder/` |
-| `stems` | Comma-separated list of already-stemmed words to look up |
-
-Returns a JSON object keyed by stem, each value an array of `{selector, title}` entries:
-
-```json
-{
-  "reconcili": [
-    {"selector": "hledger:reconciliation.md", "title": "hledger reconciliation"}
-  ],
-  "anomali": [
-    {"selector": "hledger:check.md", "title": "hledger check"}
-  ]
-}
-```
-
-The cache is per-target-string and invalidated by directory mtime. No auth required (nb-web is a local tool).
-
----
-
-See also: [[wikilinks]] for manual cross-references, [[bookkeeper]] for the canonical example of xref in action.
+See also: [[wikilinks]] for manual cross-references, [[bookkeeper]] for the canonical example of xref in action. Developer internals in [[dev/XREF]].

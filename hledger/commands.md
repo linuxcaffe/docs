@@ -1,5 +1,6 @@
 ---
 title: hledger Commands
+processed: true
 ---
 
 # hledger Commands

@@ -2,6 +2,7 @@
 title: BOOKS
 caption: "type: book — stitched documents with diagnostic TOC"
 toc: true
+processed: true
 ---
 
 # Books

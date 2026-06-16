@@ -1,5 +1,6 @@
 ---
 title: hledger Reference
+processed: true
 ---
 
 # hledger Reference
