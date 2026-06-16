@@ -7,13 +7,9 @@ processed: true
 
 # SECURITY
 
-> Developer documentation for nb-web. See [[docs:DEVELOPERS]] for the full index.
+> Developer documentation for nb-web. See [[docs:DEVELOPERS.md]] for the full index.
 
 nb-web's security scheme is intentionally minimal: Flask sessions, Markdown user cards, and level-based guards on both Flask routes and JS UI. No external auth libraries, no database, no tokens.
-
----
-
-## Overview
 
 ```
 Browser → /login (POST credentials)
@@ -24,11 +20,19 @@ Browser → /login (POST credentials)
         → per-request: notebook config + note frontmatter determine visibility
 ```
 
-Every request (including `/api/*` and static files) passes through `_check_auth()`. Unauthenticated API calls get `401 JSON`; unauthenticated page requests redirect to `/login`.
+---
+
+## I. Server
+
+Flask handles login at `/login` (self-contained HTML, no external assets), sets a signed session cookie via `.flask_secret`, and gates every request through `_check_auth()` — unauthenticated `/api/*` returns `401 JSON`, page requests redirect to `/login`. The `/api/me` endpoint exposes the current user's public fields for frontend use. Dotfolder virtual notebooks (`.users`, `.tools`, etc.) are served via direct filesystem I/O for `admin`/`tech` users. The `~/.nb/` root git repo (config repo) tracks dotfolders and global templates; `settings.html` provides a commit/sync UI for it. `nb-auth.js` is the shared frontend module — see [Frontend auth](#frontend-auth-nb-authjs).
+
+> Full detail for this section is planned — login flow, `_check_auth()`, `/api/me`, dotfolder CRUD, config repo API, `nb-auth.js`.
 
 ---
 
-## Access levels
+## II. Access Control
+
+### Access levels
 
 ```
 guest < user < office < admin < tech
@@ -46,7 +50,7 @@ Checked by `_level_gte(have, need)` in `app.py` — compares index positions in 
 
 ---
 
-## User cards
+### User cards
 
 Users are `.md` files in `~/.nb/.users/`. This is a **dotfolder** — not indexed by nb, not published by Quartz, not shown to regular users.
 
@@ -88,7 +92,7 @@ Paste the output into the `password_hash:` field. The username is the filename s
 
 ---
 
-## Access control resolution
+### Access control resolution
 
 Visibility of a note is determined by resolving an **effective access level** and comparing it to the current user's level. Most specific wins:
 
@@ -116,6 +120,8 @@ def _effective_access(note_meta, nb_meta):
 
 **`user:` shorthand** — instead of knowing or typing a level string, declare ownership: `user: djp` makes the note as private as djp's user card level. If djp is `tech`, the note requires tech. Useful for personal notes in shared notebooks. `access:` always wins if both are present; unknown `user:` values fall through gracefully to the notebook/system default.
 
+Also a search field: `nb g "user: djp"` finds every note you've claimed.
+
 **Where filtering is applied:**
 
 | Location | Behaviour |
@@ -127,7 +133,7 @@ def _effective_access(note_meta, nb_meta):
 
 ---
 
-## Notebook config file
+### Notebook config file
 
 Each notebook can have a hidden config file at its root:
 
@@ -137,7 +143,7 @@ Each notebook can have a hidden config file at its root:
 ~/.nb/accts/.accts.md
 ```
 
-The naming convention is `.<notebook-name>.md`. The file is a dotfile so nb does not index or publish it.
+The naming convention is `.<notebook-name>.md`. The file is a dotfile so nb does not index or publish it. Edit it in nb-web via Menu → Notebooks → ⚙ Configure notebook.
 
 **Example** — open a notebook to guest access:
 
@@ -159,9 +165,11 @@ Without a config file (or without an `access:` field), the notebook defaults to 
 
 Implemented in `_notebook_config(notebook)` which reads and parses frontmatter from the config file, returning `{}` if it doesn't exist.
 
+> The notebook config file is set to become the home for much more than access control — themes, icons, list defaults, plugin config, UI flags. See [[docs:dev/dev-notebook-config.md]].
+
 ---
 
-## Per-note `access:` frontmatter
+### Per-note `access:` frontmatter
 
 Any note can declare its own access level, overriding the notebook default:
 
@@ -183,7 +191,7 @@ The note-level field always wins over the notebook config. This lets you open in
 
 ---
 
-## Guest access pattern
+### Guest access pattern
 
 A typical guest setup:
 
@@ -192,95 +200,6 @@ A typical guest setup:
 3. Add `access: guest` to individual notes that guests should see
 
 Guests logging in see only what's explicitly granted. Notebooks without a config file, and notes without `access:` frontmatter, are invisible to them.
-
----
-
-## Flask session
-
-`app.secret_key` is loaded from `.flask_secret` (alongside `app.py`), auto-generated with `secrets.token_hex(32)` on first run, `chmod 600`. Sessions are server-signed cookies — no session store needed.
-
-`_check_auth()` is registered via `@app.before_request`. Exempt paths: `/login`, `/logout`, `/setup`.
-
-```python
-@app.before_request
-def _check_auth():
-    if request.path in ('/login', '/logout', '/setup'):
-        return
-    if not session.get('user'):
-        if request.path.startswith('/api/') or request.path.startswith('/ws'):
-            return jsonify(error='Authentication required'), 401
-        return redirect('/login')
-```
-
----
-
-## `/api/me`
-
-Returns the current session user's public fields. Called by JS on load to gate UI elements.
-
-```json
-{
-  "username": "djp",
-  "name": "djp",
-  "level": "tech",
-  "notebooks": ["home", "docs", "accts"]
-}
-```
-
-JS uses this to show/hide edit buttons, write forms, the Settings menu, and dotfolder notebooks in the scope selector.
-
----
-
-## Dotfolder notebooks
-
-`DOTFOLDERS = ['.users', '.tools', '.changes', '.images', '.rules']`
-
-These are real directories at `~/.nb/` root, not nb notebooks (no `.git`, no `.index`). For `admin`/`tech` users they appear as virtual notebooks in the scope selector and are fully browsable and editable via nb-web.
-
-**How they're exposed:**
-
-| Endpoint | Behaviour |
-|----------|-----------|
-| `GET /api/notebooks` | Appends dotfolder names for admin+ users |
-| `GET /api/nb/notebooks` | Appends dotfolder entries with `virtual: true, dot: true` |
-| `GET /api/notes?notebook=.users` | `_list_dotfolder_notes()` — direct filesystem scan |
-| `GET /api/note?selector=.users:djp.md` | Reads file directly, no nb CLI |
-| `PUT /api/note` | Resolves `.users:djp.md` → absolute path, direct write |
-| `POST /api/notes` | Creates file directly in dotfolder |
-| `DELETE /api/note` | `unlink()` directly |
-
-**Selector format:** `.users:filename.md` — dotfolder name + `:` + bare filename (no subfolders, no dotfiles).
-
-**Path safety:** `_dot_selector_to_path()` validates: notebook must be in `DOTFOLDERS`, filename must not contain `/` or start with `.`.
-
-No git commits are made on dotfolder writes — these folders have no `.git`.
-
----
-
-## Login form
-
-`/login` serves a self-contained HTML string (`_LOGIN_HTML` in `app.py`) with all styles inline — no external assets required, so it works before the session is established.
-
-- GET → renders form (redirects to `/setup` if `.users/` has no `.md` files)
-- POST → validates credentials, sets `session['user']`, redirects to `/`
-- Failed login → 401 with error message inline in form
-
----
-
-## First-run setup
-
-`/setup` (not yet implemented) — intended for fresh installs with no users. Redirected to automatically from `/login` when `~/.nb/.users/` is empty. Will allow creating the first `tech`-level user without needing CLI access.
-
----
-
-## Security notes
-
-- **Passwords** are hashed with werkzeug's `generate_password_hash()` (scrypt by default in recent versions). Never stored in plaintext.
-- **`.flask_secret`** is `chmod 600` and lives alongside `app.py` — not in `~/.nb/` and not committed to nb's git repos.
-- **`.users/`** permissions: currently `755`. Consider tightening to `700` (Flask process user only) on multi-user installs.
-- **Notebook ACL** (`notebooks:` field in user card) is enforced on the frontend via `/api/me` — backend route-level enforcement is planned. Dotfolder access and `access:` frontmatter filtering are enforced server-side.
-- **WebSocket (`/ws`)** paths return 401 JSON when unauthenticated; the PTY terminal respects this.
-- **No CSRF protection** yet — all mutating endpoints accept JSON bodies; browser same-origin policy provides partial coverage. CSRF tokens are on the roadmap for multi-user production deployments.
 
 ---
 
@@ -350,7 +269,7 @@ If the fetch failed (network error, but not 401), `NbUser` is `{}` — level fal
 
 ---
 
-## `data-min-level` pattern
+### `data-min-level` pattern
 
 Any HTML element can declare its minimum required access level:
 
@@ -366,31 +285,7 @@ Any HTML element can declare its minimum required access level:
 
 `NbAuth.applyVisibility()` queries all `[data-min-level]` elements and sets `el.hidden = !NbAuth.is(el.dataset.minLevel)`. Elements are hidden by default in HTML (`hidden` attribute); `applyVisibility()` unhides the ones the current user can see.
 
-**Pattern for gating sections:**
-
-```html
-<!-- in <head> -->
-<script src="/nb-auth.js"></script>
-
-<!-- in <body> — hidden until auth resolves -->
-<section id="sec-admin" hidden data-min-level="admin">
-  ...admin-only content...
-</section>
-
-<!-- at end of <body> or in a module script -->
-<script>
-document.addEventListener('nb-auth-ready', () => {
-    NbAuth.applyVisibility();
-    // any further level checks here
-});
-</script>
-```
-
-If the user's level doesn't meet the section's `data-min-level`, the section stays hidden. No flash of visible content.
-
----
-
-## Adding auth awareness to a new HTML page
+### Adding auth awareness to a new HTML page
 
 Two steps:
 
@@ -399,8 +294,6 @@ Two steps:
 ```html
 <script src="/nb-auth.js"></script>
 ```
-
-This fires automatically — no `defer` or `async` needed (it's already async internally). It will redirect to `/login` if the session is not valid.
 
 **2. Gate your UI on `nb-auth-ready`:**
 
@@ -420,15 +313,11 @@ Mark sections with `data-min-level` and add the initial `hidden` attribute:
 <section hidden data-min-level="admin">...</section>
 ```
 
-That's it. The page self-gates without any additional fetch calls.
-
 ---
 
-## Config repo — git strategy for dotfolders
+## Config repo
 
-All nb notebooks (`home`, `docs`, etc.) are separate git repos inside `~/.nb/`. The **dotfolders** (`.users`, `.tools`, `.changes`, `.images`, `.rules`) and **global templates** (`~/.nb/.templates/`) are not part of any notebook repo and would otherwise be unversioned.
-
-The solution: **the `~/.nb/` root itself is a git repo** that tracks only the non-notebook content.
+All nb notebooks (`home`, `docs`, etc.) are separate git repos inside `~/.nb/`. The **dotfolders** and **global templates** are tracked by the `~/.nb/` root repo instead.
 
 ### What's tracked
 
@@ -437,133 +326,39 @@ The solution: **the `~/.nb/` root itself is a git repo** that tracks only the no
 ├── .git/                     ← the config repo
 ├── .gitignore                ← excludes notebook dirs
 ├── .users/
-│   ├── djp.md
-│   └── guest.md
 ├── .tools/
 ├── .changes/
 ├── .images/
 ├── .rules/
 └── .templates/
-    └── daily-template.md
 ```
 
 ### `.gitignore` strategy
 
 ```gitignore
-# Notebook directories — each is its own git repo
-/[a-zA-Z]*/
-
-# nb transient state
+/[a-zA-Z]*/        ← all notebook dirs (each is its own repo)
 /.cache/
 /.current
 /copy
-
-# nb internals not worth versioning
 /.plugins/
 /.test/
 /.web/
 /.export.template.html
 ```
 
-The `/[a-zA-Z]*/` pattern excludes all notebook subdirectories (which start with a letter) while leaving dotfolders (`.users`, `.tools`, etc.) tracked. New notebooks added in future are excluded automatically.
+Push to a **private** remote — user cards contain password hashes. Configure via Settings → Config repo.
 
-### Pushing to a private remote
+### API endpoints (admin+ only)
 
-The config repo should push to a **private** remote (user cards contain password hashes). Set the remote URL in the admin Settings page and use the Commit/Sync controls there.
+| Endpoint | Method | What it does |
+|----------|--------|-------------|
+| `/api/nb-config/status` | GET | Uncommitted files, remote, last commit, unpushed count |
+| `/api/nb-config/commit` | POST | Stage dotfolders + templates, commit with message |
+| `/api/nb-config/sync` | POST | `git pull --no-edit` then `git push origin HEAD:master` |
+| `/api/nb-config/remote` | GET/POST | Read or set the origin URL |
+| `/api/nb-config/log` | GET | Last 20 commits (`git log --oneline -20`) |
 
----
-
-## Config repo API
-
-Four endpoints, all require `admin` or `tech` level. Implemented in `app.py` using `_nb_config_git()` (a thin wrapper around `subprocess.run(['git', ...], cwd=NB_DIR)`).
-
-### `GET /api/nb-config/status`
-
-Returns the current state of the config repo:
-
-```json
-{
-  "files":       [{"status": "M", "path": ".users/djp.md"}],
-  "remote":      "git@github.com:djp/nb-config-private.git",
-  "last_commit": "abc1234 Update djp user card",
-  "unpushed":    2
-}
-```
-
-`files` comes from `git status --porcelain`. `unpushed` is the count of commits ahead of `origin/master`.
-
-### `POST /api/nb-config/commit`
-
-Stages dotfolders and `.templates/`, then commits:
-
-```json
-{ "message": "Add guest user card" }
-```
-
-Internally runs:
-
-```bash
-git add .users .tools .changes .images .rules .templates .gitignore
-git commit -m "<message>"
-```
-
-Returns `{ "ok": true, "output": "..." }` or `{ "error": "..." }`.
-
-### `POST /api/nb-config/sync`
-
-Pull-then-push to the private remote:
-
-```bash
-git pull --no-edit origin master
-git push origin HEAD:master
-```
-
-Returns combined output. If `no_remote` is true in the status, this returns a helpful message instead.
-
-### `GET/POST /api/nb-config/remote`
-
-**GET** — returns `{ "remote": "<url or empty string>" }`.
-
-**POST** — sets or updates the `origin` remote:
-
-```json
-{ "remote": "git@github.com:djp/nb-config-private.git" }
-```
-
-If a remote already exists, it's updated with `git remote set-url origin <url>`. If not, it's added with `git remote add origin <url>`.
-
-### `GET /api/nb-config/log`
-
-Returns the last 20 commits as plain text (`git log --oneline -20`):
-
-```json
-{ "log": "abc1234 Add guest user card\ndef5678 Initial commit\n..." }
-```
-
----
-
-## Admin Settings page — Config repo section
-
-`settings.html` has a `sec-config-repo` section, visible only to `admin`/`tech` users, that provides a GUI for the four endpoints above.
-
-**Layout:**
-
-```
-Remote URL: [git@github.com:djp/nb-config-private.git] [Save]
-
-Commit message: [___________________________]
-[Commit]  [Sync]
-
-Status: 2 uncommitted files, 1 unpushed commit
-  M  .users/djp.md
-  A  .users/guest.md
-
-[Show log ▾]
-<pre>abc1234 Add guest user card
-...</pre>
-```
-
-The section wires up on `nb-auth-ready`. If `NbAuth.is('admin')` is false (e.g. the page is loaded by an `office` user), the section stays `hidden` via `data-min-level="admin"` and none of the endpoint calls are made.
+No auto-commit on dotfolder writes — commit from Settings → Config repo when ready.
 
 ---
 
@@ -575,3 +370,4 @@ The section wires up on `nb-auth-ready`. If `NbAuth.is('admin')` is false (e.g. 
 - CSRF token middleware
 - Per-notebook write locks (separate from the existing `.nb-lock` read-only lock)
 - `access:` enforcement on write endpoints (PUT/POST/DELETE)
+- Expand Section I (Server) with full Flask session, login flow, dotfolder CRUD detail
