@@ -93,7 +93,8 @@ Paste the output into the `password_hash:` field. The username is the filename s
 Visibility of a note is determined by resolving an **effective access level** and comparing it to the current user's level. Most specific wins:
 
 ```
-note frontmatter access:  → overrides everything
+note frontmatter access:  → overrides everything (explicit)
+note frontmatter user:    → inherits that user's level from their card
 notebook config access:   → default for all notes in the notebook
 system default:           → 'user'  (guests see nothing unless explicitly granted)
 ```
@@ -102,10 +103,18 @@ Implemented in `_effective_access(note_meta, nb_meta)`:
 
 ```python
 def _effective_access(note_meta, nb_meta):
-    return str(note_meta.get('access') or nb_meta.get('access') or 'user')
+    if note_meta.get('access'):
+        return str(note_meta['access'])
+    if note_meta.get('user'):
+        card = _load_user(str(note_meta['user']))
+        if card:
+            return card.get('level', 'user')
+    return str(nb_meta.get('access') or 'user')
 ```
 
 `access:` is a **floor** — `access: guest` means guest-and-above can see it; `access: admin` means admin/tech only. It is typically used as a downgrade (opening notes to lower levels) but can also restrict upward.
+
+**`user:` shorthand** — instead of knowing or typing a level string, declare ownership: `user: djp` makes the note as private as djp's user card level. If djp is `tech`, the note requires tech. Useful for personal notes in shared notebooks. `access:` always wins if both are present; unknown `user:` values fall through gracefully to the notebook/system default.
 
 **Where filtering is applied:**
 
