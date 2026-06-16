@@ -15,7 +15,7 @@ Developer documentation for nb-web, organised by feature area. Each section belo
 
 | File | Scope |
 |------|-------|
-| [[dev/ARCHITECTURE]] | Rendering stages, frontmatter keys, images, UUIDs, hashtags — non-feature-specific internals |
+| [[docs:dev/ARCHITECTURE]] | Rendering stages, frontmatter keys, images, UUIDs, hashtags — non-feature-specific internals |
 | [[dev/RENDER_PIPELINE]] | Rendering architecture — pipeline stages, bottlenecks, redesign plan |
 | [[dev/CODEBLOCKS]] | Writing, registering, and testing live codeblock widgets |
 | [[dev/CODEBLOCK_AUTHORING]] | Full authoring guide — anatomy, statusPill, headers, error handling, checklist |
