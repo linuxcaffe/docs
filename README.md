@@ -301,7 +301,7 @@ The full documentation lives in the `docs` notebook — importable as `docs.nbz`
 
 ### Security
 
-nb-web uses session-based login. Users are `.md` files in `~/.nb/.users/` with YAML frontmatter (`name`, `level`, `password_hash`, `notebooks`). Four access levels: `user`, `office`, `admin`, `tech`. Admin and tech users see five dotfolder notebooks (`.users`, `.tools`, `.changes`, `.images`, `.rules`) in the notebook selector. See [[docs:dev/dev-security.md]] for full details.
+nb-web uses session-based login. Users are `.md` files in `~/.nb/.users/` with YAML frontmatter (`name`, `level`, `password_hash`, `notebooks`). Five access levels: `guest`, `user`, `office`, `admin`, `tech`. Admin and tech users see five dotfolder notebooks (`.users`, `.tools`, `.changes`, `.images`, `.rules`) in the notebook selector. See [[docs:dev/dev-security.md]] for full details.
 
 ---
 
