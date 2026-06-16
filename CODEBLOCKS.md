@@ -299,7 +299,13 @@ model:true | Example notes
 
 ### test — Embedded Assertions
 
-Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/`. See [[docs:dev/dev-testing.md]] for how to write scripts; see [[docs:CODEBLOCKS#test — Bundled Scripts|TESTING]] for the bundled script reference.
+Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/` and run via the nb-web Flask server — no terminal needed. Browse the bundled scripts with a `nav` block:
+
+````markdown
+```nav
+~/.nb/.test
+```
+````
 
 **Form 1 — on-demand (with label):**
 
@@ -331,9 +337,7 @@ nb-dirty
 ```
 ````
 
-All run in parallel. All pass → block vanishes. Any fail → `N of M checks failed` header with a **collapsible toggle row per failure**.
-
-Add a label to the first line (Form 1 group) to render a button instead of auto-running:
+All run in parallel. All pass → block vanishes. Any fail → `N of M checks failed` header with a collapsible toggle row per failure. Add a label to auto-run as a button instead:
 
 ````markdown
 ```test
@@ -343,7 +347,7 @@ nb-dirty
 ```
 ````
 
-A bare `| Label` line sets the group label without labelling any individual script:
+A bare `| Label` line sets the group label without labelling individual scripts:
 
 ````markdown
 ```test
@@ -352,6 +356,36 @@ hl-ok
 tw-due
 ```
 ````
+
+---
+
+#### Bundled scripts
+
+| Script | Form | Purpose |
+|--------|------|---------|
+| `hl-test` | 2 | hledger binary self-test; silent when all 245 pass |
+| `hl-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
+| `hl-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
+| `hl-optional` | 2 | Radar sweep — all 5 optional checks; silent when all pass |
+| `hl-ordereddates` | 2 | Transactions out of date order within a file |
+| `hl-recentassertions` | 2 | Balance assertions older than 7 days |
+| `hl-tags` | 2 | Undeclared tag names |
+| `hl-payees` | 2 | Undeclared payees |
+| `hl-uniqueleafnames` | 2 | Two accounts share a leaf name |
+| `hl-budget-has-periodic` | 2 | Guides setup if no `~ monthly` rules found |
+| `hl-budget-balanced` | 2 | Detects unbalanced budget transactions |
+| `hl-budget-include-check` | 2 | Verifies periodic journal is included in main journal |
+| `hl-budget-has-actuals` | 2 | Checks that actual transactions exist |
+| `hl-budget-has-income` | 2 | Checks that income postings exist in the budget |
+| `hl-budget-runs` | 2 | Verifies `hledger bal --budget` runs without error |
+| `nb-dirty` | 2 | Silent when committed; lists dirty files in current notebook |
+| `note-disk-warn` | 2 | Silent under 80% disk; warns above that |
+| `note-slow` | 2 | Notice when file >50 KB or ≥5 inline includes |
+| `tw-due` | 2 | Silent with no due tasks; lists overdue/today tasks |
+| `note-approved` | 2 | Amber banner when `approved:` frontmatter is blank |
+| `hl-recent-txn` | 1 | Last 14 days of transactions — on demand |
+| `note-context` | 1 | Markdown table of all context variables — on demand |
+| `hl-balances` | 1 | Depth-1 balance table — on demand |
 
 **Script naming convention:**
 
@@ -364,4 +398,68 @@ tw-due
 
 ---
 
-Developer internals: [[docs:dev/dev-codeblocks.md]]
+#### Placement patterns
+
+**Health dashboard** — Form 2 blocks at the top of a hub note. Invisible when healthy; surface on failure:
+
+````markdown
+```test
+hl-ok
+```
+```test
+nb-dirty
+```
+```test
+tw-due
+```
+
+# My Hub Note
+````
+
+**On-demand reference** — Form 1 in a journal or guide:
+
+````markdown
+```test
+hl-recent-txn | Recent transactions
+```
+```test
+hl-balances | Account balances
+```
+````
+
+**Invisible guardrail** — embed a check in a setup note. New users see the error; experienced users with everything configured see nothing.
+
+---
+
+#### Status panels
+
+A dedicated `status.md` note containing only Form 2 blocks, included anywhere via `{{inline:}}`:
+
+```markdown
+{{inline: accts:status.md}}
+
+# My Note
+```
+
+`status.md` has **zero visual footprint when everything is healthy** — the inline renders nothing. The moment any check fails, its output surfaces right at the top of whatever note you're reading. Because `{{inline:}}` runs the full render pipeline on the included content, test blocks in `status.md` receive the **host note's context** — `nb-dirty` reports on the right notebook automatically.
+
+Different notebooks have different concerns:
+
+```markdown
+{{inline: accts:status.md}}     ← journal health, uncommitted changes
+{{inline: home:status.md}}      ← disk space, overdue tasks
+```
+
+---
+
+#### Books — the diagnostic TOC
+
+When Form 2 blocks are embedded in chapter notes inside a `type: book`, failing checks produce `### ⚠ Heading` output that gets picked up by the book's TOC rebuild. The table of contents becomes simultaneously a chapter navigator and a live health dashboard — `⚠` entries appear inline with chapter headings, positioned exactly where the problem lives.
+
+A healthy book shows a clean TOC. A book with problems shows `⚠` entries. No separate dashboard, no extra code — an emergent property of the test + inline + TOC pipeline.
+
+See [[docs:BOOKS]] for the full pattern.
+
+---
+
+Developer internals and script authoring: [[docs:dev/dev-codeblocks.md]]

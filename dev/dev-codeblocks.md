@@ -37,18 +37,111 @@ When writing a new codeblock renderer that depends on an external tool or plugin
 
 ## test block internals
 
-Context variables injected into every test script as environment variables:
+User-facing syntax and bundled scripts: [[docs:CODEBLOCKS#test — Embedded Assertions]].
 
-| Variable | Value |
-|---|---|
-| `NB_DIR` | `~/.nb` |
-| `NB_NOTE_SELECTOR` | Selector of the currently open note |
-| `NB_NOTEBOOK` | Notebook portion of the selector |
-| `NB_NOTE_PATH` | Absolute path to the note file |
+### Exit code / output contract
 
-`subtest:` links — a script can output `[label](subtest:scriptname)` in its markdown. These render as toggle rows that fetch and expand the named script's full output on click — no pre-run needed. `hl-optional` uses this pattern: runs a radar sweep of all optional hledger checks and surfaces each failure as a drill-down link.
+| Exit | stdout | Result |
+|------|--------|--------|
+| 0 | empty | Block vanishes (Form 2) or silent reset (Form 1) |
+| 0 | has content | Output rendered as markdown |
+| non-zero | anything | Output rendered as markdown with red left border |
 
-For writing and testing scripts see [[docs:dev/dev-testing.md]].
+Output goes through the full render pipeline — headings, tables, wikilinks, `{{hledger:}}` inline expressions, `term:` and `note:` links all work inside test output.
+
+### Context variables
+
+Injected as environment variables by the Flask endpoint before running the script:
+
+| Variable | Example | Notes |
+|----------|---------|-------|
+| `NB_DIR` | `/home/djp/.nb` | nb root |
+| `NB_NOTE_SELECTOR` | `accts:guide/review.md` | Currently open note |
+| `NB_NOTEBOOK` | `accts` | Notebook portion of selector |
+| `NB_NOTE_PATH` | `/home/djp/.nb/accts/guide/review.md` | Absolute path |
+
+Scripts that shell out to hledger should resolve the journal explicitly — Flask's subprocess environment may not match a login shell: #gotcha
+
+```bash
+journal="${HLEDGER_FILE:-$HOME/.hledger.journal}"
+[ ! -f "$journal" ] && exit 0
+```
+
+### `subtest:` links
+
+A script can output `[label](subtest:scriptname)` in its markdown. Renders as a toggle row; click fetches and expands the named script's output inline — no pre-run. `hl-optional` uses this: radar sweep of all 5 optional checks, each failure becomes a drill-down link to the dedicated script.
+
+### Writing scripts
+
+**Passing silently** — exit 0 with no output. Block disappears entirely.
+
+```bash
+#!/usr/bin/env bash
+pct=$(df "$HOME" | awk 'NR==2 { gsub(/%/,""); print $5 }')
+[ "${pct:-0}" -lt 80 ] && exit 0
+echo "### ⚠ Disk ${pct}% full"
+df -h "$HOME" | awk 'NR==1||NR==2'
+```
+
+**Amber banner** — informational notice (not a failure). Exit 0 with a `<div class="nb-alert-banner">`. Renders in the app's amber palette, no red border. `note-approved` is the reference implementation.
+
+```bash
+echo '<div class="nb-alert-banner">⚠ This note is pending approval.</div>'
+```
+
+**Scoped to current note** — use `NB_NOTEBOOK` to target the right git repo:
+
+```bash
+[ -z "$NB_NOTEBOOK" ] && exit 0
+status=$(git -C "$NB_DIR/$NB_NOTEBOOK" status --short 2>/dev/null)
+[ -z "$status" ] && exit 0
+echo "### Uncommitted changes in \`$NB_NOTEBOOK\`"
+```
+
+### Good output anatomy #pattern
+
+`hl-budget-has-periodic.sh` is the gold standard — read it before writing a new script.
+
+```
+### ⚠ Short description        ← always H3 + warning sign
+                                ← one sentence: what's wrong and why it matters
+**Fix** —                       ← concrete fix with a code block
+```ledger
+~ monthly ...
+```
+
+```test                         ← embedded verify block (shows pass/vanish in place)
+hl-budget-include-check
+```
+
+[Open actual-filename.journal](note:/absolute/path)   ← always last line
+```
+
+**Rules:**
+- Heading: always `### ⚠` (H3, warning sign, short phrase) — appears in book TOCs
+- First body line: one sentence of context, no "Note:" or "Warning:" preamble
+- Fix blocks: `**Fix**` or `**Fix 1**`/`**Fix 2**` with a concrete code block
+- Verify block: embed the cheapest confirming test right after the fix
+- Open link: last line, use the actual filename not a generic label
+- No output on exit 0 — causes block to render instead of disappear #gotcha
+
+### Reference scripts
+
+Browse and edit in place:
+
+````markdown
+```nav
+~/.nb/.test
+```
+````
+
+Key reads before writing new scripts:
+
+- `hl-budget-has-periodic.sh` — gold standard: heading, context, fix, embedded verify, open link
+- `hl-ok.sh` — simplest Form 2: silent pass, one check, raw error fallback
+- `hl-optional.sh` — radar sweep with `subtest:` drill-down links
+- `note-approved.sh` — reference for amber `.nb-alert-banner`; reads frontmatter with awk
+- `nb-dirty.sh` — `NB_NOTEBOOK` context var usage
 
 ---
 
