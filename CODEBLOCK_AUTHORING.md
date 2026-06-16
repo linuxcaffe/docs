@@ -7,7 +7,7 @@ processed: true
 
 # Codeblock Authoring
 
-> **Moved to [[docs:dev/dev-codeblock-authoring]]** — developer reference for writing codeblock renderers.
+> **Moved to [[docs:dev/dev-codeblock-authoring.md]]** — developer reference for writing codeblock renderers.
 
 ---
 
@@ -233,4 +233,4 @@ The only safe use of `marked.parse()` directly is for content you own entirely (
 
 ---
 
-Developer internals: [[docs:dev/dev-codeblock-authoring]]
+Developer internals: [[docs:dev/dev-codeblock-authoring.md]]

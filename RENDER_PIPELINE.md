@@ -5,7 +5,7 @@ toc: true
 processed: true
 ---
 
-> Moved to [[docs:dev/dev-render-pipeline]] — this file is a redirect stub.
+> Moved to [[docs:dev/dev-render-pipeline.md]] — this file is a redirect stub.
 
 # Render Pipeline Redesign
 
@@ -412,4 +412,4 @@ Do not use for: errors, validation failures, destructive actions (those stay red
 
 ---
 
-Developer internals: [[docs:dev/dev-render-pipeline]]
+Developer internals: [[docs:dev/dev-render-pipeline.md]]

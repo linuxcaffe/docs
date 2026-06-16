@@ -83,4 +83,4 @@ See [[docs:PLUGINS#Templates]] for the seeding mechanic.
 
 ## Frontmatter section in DEVELOPERS.md
 
-The special frontmatter keys recognised by nb-web (`pinned:`, `toc:`, `lock:`, `processed:`, `toolbar:`, `xref:`, `draft:`, `caption:`, `alias:`) are documented in the pending-migration `## Frontmatter` section of [[docs:DEVELOPERS]]. That content will move to [[docs:dev/dev-architecture]] during the ODC pass.
+The special frontmatter keys recognised by nb-web (`pinned:`, `toc:`, `lock:`, `processed:`, `toolbar:`, `xref:`, `draft:`, `caption:`, `alias:`) are documented in the pending-migration `## Frontmatter` section of [[docs:DEVELOPERS]]. That content will move to [[docs:dev/dev-architecture.md]] during the ODC pass.

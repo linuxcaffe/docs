@@ -236,4 +236,4 @@ See [[NbWeb-quartz]] for publishing workflow.
 
 ---
 
-Developer internals: [[docs:dev/dev-wikilinks]]
+Developer internals: [[docs:dev/dev-wikilinks.md]]

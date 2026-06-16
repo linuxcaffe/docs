@@ -199,4 +199,4 @@ value to `~req` or `A|B`, then run `nb-check` to surface gaps in existing notes.
 
 ---
 
-Developer internals: [[docs:dev/dev-templates]]
+Developer internals: [[docs:dev/dev-templates.md]]

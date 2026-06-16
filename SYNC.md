@@ -125,4 +125,4 @@ These are operational lessons, not suggestions:
 
 ---
 
-Developer internals: [[docs:dev/dev-sync]]
+Developer internals: [[docs:dev/dev-sync.md]]

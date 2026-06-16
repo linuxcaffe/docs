@@ -49,7 +49,7 @@ Special keys recognised by nb-web beyond standard `title:`, `tags:`, and `type:`
 | `pinned: yes` | `yes` | Note is auto-pinned whenever it is opened, as if you had clicked the pin toolbar button. Unpinning via the toolbar also clears this key from the file. |
 | `toc: true` | `true` | Generates a collapsible Table of Contents at the top of the rendered note. The TOC header bar shows the note's file path, size, and last-modified date. Headings become anchor links; clicking scrolls the page without changing the URL hash. Defaults to collapsed. |
 | `lock: yes` | `yes` | Marks the note read-only in the editor. The `+` Add button on live codeblocks also checks this flag — it shows a 🔒 indicator for 2.5 s if clicked while locked. |
-| `xref:` | `notebook:` or list | Cross-reference: injects `[N]` indicators on heading words that match note titles in the target notebook/folder. See [[docs:dev/dev-xref]]. |
+| `xref:` | `notebook:` or list | Cross-reference: injects `[N]` indicators on heading words that match note titles in the target notebook/folder. See [[docs:dev/dev-xref.md]]. |
 | `xref-ignore:` | list of strings | Words to exclude from xref heading scans on this note. |
 | `alias:` | string | Short mutable display label for the note — overrides `title:` in wikilink display. Useful when a short identifier (scene number, draft version) changes over time while the filename stays fixed. |
 | `draft: true` | `true` | Marks a note as a draft — not published by Quartz. |
@@ -67,7 +67,7 @@ Two categories of fenced code blocks:
 
 **Rule of thumb for tutorial/example content:** use ` ```ledger ` (not ` ```hledger `) so example journal entries display as static code rather than being executed against the user's real journal.
 
-Static blocks pass through marked unchanged and are highlighted by Prism on the client. Live blocks are converted to `<div class="nb-*-block">` placeholders in Stage 1, then hydrated by their renderer in Stage 2. See [[docs:dev/dev-codeblocks]] and [[docs:dev/dev-codeblock-authoring]].
+Static blocks pass through marked unchanged and are highlighted by Prism on the client. Live blocks are converted to `<div class="nb-*-block">` placeholders in Stage 1, then hydrated by their renderer in Stage 2. See [[docs:dev/dev-codeblocks.md]] and [[docs:dev/dev-codeblock-authoring.md]].
 
 ---
 
