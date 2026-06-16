@@ -27,4 +27,5 @@ Developer documentation for nb-web, organised by feature area. Each section belo
 | [[docs:dev/dev-contributing.md]] | Reporting issues, submitting changes, running from source |
 | [[docs:dev/dev-xref.md]] | Stemming algorithm, prefix matching, `/api/xref` reference, `forceAll()` book behavior |
 | [[docs:dev/dev-security.md]] | Auth scheme — session login, user cards, dotfolder notebooks, level-based access |
+| [[docs:dev/dev-notebook-config.md]] | `.<notebook>.md` config file — themes, icon, colour, plugin config, UI flags, vision doc |
 
