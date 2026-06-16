@@ -1,5 +1,5 @@
 ---
-title: RENDER_PIPELINE
+title: render-pipeline
 caption: "Rendering architecture — pipeline stages, bottlenecks, redesign plan"
 toc: true
 ---

@@ -1,5 +1,5 @@
 ---
-title: SECURITY
+title: security
 caption: "Auth scheme: session login, user cards, dotfolder notebooks, level-based access"
 toc: true
 processed: true

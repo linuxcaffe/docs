@@ -1,5 +1,5 @@
 ---
-title: PLUGINS
+title: plugins
 caption: Plugin system internals — writing plugins, extension points, NbWeb host API
 toc: true
 ---

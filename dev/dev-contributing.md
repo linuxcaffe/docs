@@ -1,5 +1,5 @@
 ---
-title: CONTRIBUTING
+title: contributing
 caption: "How to report issues, submit changes, and run from source"
 toc: true
 ---

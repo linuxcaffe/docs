@@ -1,5 +1,5 @@
 ---
-title: CODEBLOCKS
+title: codeblocks
 caption: Codeblock renderer internals — architecture, external blocks, mkd-codeblocks
 toc: true
 ---

@@ -1,5 +1,5 @@
 ---
-title: XREF
+title: xref
 caption: xref internals — stemming algorithm, API reference, forceAll() book behavior
 toc: true
 ---

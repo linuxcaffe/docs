@@ -1,5 +1,5 @@
 ---
-title: CODEBLOCK_AUTHORING
+title: codeblock-authoring
 caption: Best practices for writing codeblock renderers in nb-web plugins
 toc: true
 ---

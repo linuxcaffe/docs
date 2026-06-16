@@ -1,5 +1,5 @@
 ---
-title: SYNC
+title: sync
 caption: Sync internals — pull-then-push flow, git-wire, status API, polling
 toc: true
 ---

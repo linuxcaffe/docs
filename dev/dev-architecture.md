@@ -1,5 +1,5 @@
 ---
-title: ARCHITECTURE
+title: architecture
 caption: "Non-feature-specific internals: rendering stages, frontmatter keys, images, UUIDs, hashtags"
 toc: true
 ---

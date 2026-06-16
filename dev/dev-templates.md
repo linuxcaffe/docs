@@ -1,5 +1,5 @@
 ---
-title: TEMPLATES
+title: templates
 caption: Template system internals — _resolve_template_vars, placeholder API, annotation templates
 toc: true
 ---
