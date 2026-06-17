@@ -171,19 +171,36 @@ Key lessons from the `front` codeblock (frontmatter filter/query block):
 
 User-facing behaviour: [[docs:CODEBLOCKS#Access Gates]]. Dev-security reference: [[docs:dev/dev-security.md#codeblock-gates]].
 
+### Two gate models #pattern
+
+**Codeblock-level gate** — the block type itself has a minimum read level in `codeblock_access`. Below that level, the block never fires: `_cbCan()` → `_cbDenyRead()` → `el.remove()` before any network request.
+
+**Destination gate** — `nav` and `nb` have `null` read in `codeblock_access` (no tool-level gate). They fire unconditionally, but their backend endpoints enforce access by destination:
+- `/api/fs/list` — dotfolders check `_DOT_OPEN` or admin+; regular notebook dirs check `_notebook_config(nb).access`
+- `/api/notes` — already filtered by notebook config + per-note `access:` in `_list_notes()`
+
+A 403 from a destination endpoint is caught in the load function and becomes `_cbDenyRead(el)` — silent removal, never an error banner. #invariant: users never see a 403 in the UI.
+
 ### Settings
 
-`codeblock_access` in `nb-settings.json` — a passthrough dict in `_SETTINGS_SCHEMA` (`coerce: lambda v: v if isinstance(v, dict) else {}`). Returned by `GET /api/nb-settings` and therefore available to the frontend. Shape:
+`codeblock_access` in `nb-settings.json` — a passthrough dict in `_SETTINGS_SCHEMA`. Returned by `GET /api/nb-settings`. Current defaults:
 
 ```json
 "codeblock_access": {
   "hledger": {"read": "office", "write": "admin"},
+  "chart":   {"read": "office", "write": null},
   "tw":      {"read": "user",   "write": "user"},
-  "git":     {"read": "user",   "write": null}
+  "git":     {"read": "user",   "write": null},
+  "t":       {"read": "user",   "write": null},
+  "test":    {"read": "user",   "write": null},
+  "tui":     {"read": "user",   "write": null},
+  "front":   {"read": "admin",  "write": null},
+  "nav":     {"read": null,     "write": null},
+  "nb":      {"read": null,     "write": null}
 }
 ```
 
-`null` write means no write controls exist for that block type — not a level check, just absent.
+`null` read = destination-gated (no codeblock-level check). `null` write = no write controls exist.
 
 ### Frontend utilities (`nbweb-codeblocks.js`)
 
@@ -228,13 +245,28 @@ The form detection happens *before* the gate check in `_loadTestBlock` — parse
 
 ### Backend enforcement
 
-`_cb_write_allowed(block_type)` in `app.py` — reads `_settings.get('codeblock_access', {}).get(block_type, {}).get('write')` and compares against the session user's level via `_level_gte()`. Called at the top of:
+**Write endpoints** — `_cb_write_allowed(block_type)` in `app.py` reads `_settings.codeblock_access[type].write` and compares via `_level_gte()`:
 
 - `api_hledger_add()` → 403 if insufficient
 - `api_task_add()` → 403 if insufficient
 - `api_task_action()` → 403 if insufficient
 
-Frontend gate is UX; backend is the actual lock. #invariant
+**Destination listing** — `/api/fs/list` enforces access by the path's first component:
+- Dotfolder not in `_DOT_OPEN` → admin+
+- Regular notebook dir → `_notebook_config(name).get('access', 'user')`
+
+Frontend codeblock gate is UX; backend is the actual lock. #invariant
+
+### 403 → silent removal #pattern
+
+Any 403 from a destination endpoint in a load function must call `_cbDenyRead(el)` and return, not render an error. The user never learns the resource exists.
+
+```javascript
+const r = await fetch(`/api/fs/list?path=${encodeURIComponent(rawPath)}`);
+if (r.status === 403) { _cbDenyRead(el); return; }
+```
+
+Applied in `_loadNavBlock` (rawPath and notebook paths) and `_loadFrontBlock`. Any new load function that calls a listing or content endpoint should follow this pattern.
 
 ---
 

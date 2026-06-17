@@ -52,9 +52,11 @@ Every block header carries the same universal controls:
 
 ## Access Gates
 
-Every block type has a **read** level and a **write** level. Both default to `user` or above; `hledger` and `chart` default to `office`. Defaults are set in `nb-settings.json` under `codeblock_access` and can be changed by an admin.
+Block types fall into two categories: those with a **codeblock-level gate** (the tool itself requires a minimum level), and those gated **by destination** (the tool is neutral; the target notebook or dotfolder determines access).
 
-**Read gate** — if you're below the required level, the block silently doesn't exist. No placeholder, no error, no lock icon. A `test` block that has an explicit label is the one exception: the button still appears so you know it's there, and clicking it tells you what level you need.
+**Codeblock-level gate** — if you're below the required level, the block silently doesn't exist. No placeholder, no error, no lock icon. A `test` block with an explicit label is the one exception: the button still appears, and clicking it tells you what level you need.
+
+**Destination gate** — `nav` and `nb` have no level of their own. They show what the target allows. A nav block pointing at a dotfolder the user can't access vanishes silently — the same disappearing magic as everything else.
 
 **Write gate** — the `+` (add) and `✎` (edit) buttons are simply absent from the header. The block still shows your data; you just can't write to it.
 
@@ -74,10 +76,17 @@ These lines are stripped before the query runs — they never reach hledger. Any
 
 ### Default levels
 
-| Block | Read | Write |
-|-------|------|-------|
-| `hledger`, `chart` | `office` | `admin` (`chart` has no write) |
-| `tw`, `git`, `nb`, `t`, `nav`, `front`, `test`, `tui` | `user` | `user` (read-only types have no write) |
+| Block | Read gate | Write gate | Notes |
+|-------|-----------|------------|-------|
+| `hledger`, `chart` | `office` | `admin` | `chart` has no write |
+| `tw` | `user` | `user` | |
+| `git`, `t`, `test`, `tui` | `user` | none | read-only |
+| `front` | `admin` | none | system-wide metadata search |
+| `nav`, `nb` | — | none | gated by destination, not tool |
+
+**`nav`** respects the target's own access level: a dotfolder requires admin+; a regular notebook follows its `.<notebook>.md` config `access:` field. A 403 from the destination → silent removal, never an error banner.
+
+**`front`** is admin-gated by default because it queries frontmatter across all notebooks — a broad view of the whole system that lower-level users shouldn't have by default.
 
 See [[docs:dev/dev-security.md]] for the full access level scheme.
 
