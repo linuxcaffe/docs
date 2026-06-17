@@ -7,7 +7,7 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#front — Frontmatter Filter|front]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#front — Frontmatter Filter|front]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -45,8 +45,41 @@ Every block header carries the same universal controls:
 |---------|--------|
 | **▼/▶** | Collapse / expand the block body. State is persisted in `localStorage` keyed on block type + query, so collapsed blocks stay collapsed across reloads and note switches. |
 | **↻** | Refresh — re-fetch data on demand |
-| **+** | Open inline add form (where supported: `tw`, `hledger`). If the note has `lock: yes` in its frontmatter, the button shows 🔒 for 2.5 s instead of opening the form. |
+| **+** | Open inline add form (where supported: `tw`, `hledger`). Hidden when the current user is below the configured write level for that block type; also hidden when the note has `lock: yes` frontmatter. |
 | **⎋** | Launch external app (where supported: `t`) |
+
+---
+
+## Access Gates
+
+Every block type has a **read** level and a **write** level. Both default to `user` or above; `hledger` and `chart` default to `office`. Defaults are set in `nb-settings.json` under `codeblock_access` and can be changed by an admin.
+
+**Read gate** — if you're below the required level, the block silently doesn't exist. No placeholder, no error, no lock icon. A `test` block that has an explicit label is the one exception: the button still appears so you know it's there, and clicking it tells you what level you need.
+
+**Write gate** — the `+` (add) and `✎` (edit) buttons are simply absent from the header. The block still shows your data; you just can't write to it.
+
+### Per-block override
+
+Add `read:` and `write:` lines anywhere in the fence body to override the defaults for that specific block:
+
+````markdown
+```hledger
+read: office
+write: tech
+bal expenses --monthly
+```
+````
+
+These lines are stripped before the query runs — they never reach hledger. Any level string works: `guest`, `user`, `office`, `admin`, `tech`. `write:` can be omitted to leave the write default unchanged.
+
+### Default levels
+
+| Block | Read | Write |
+|-------|------|-------|
+| `hledger`, `chart` | `office` | `admin` (`chart` has no write) |
+| `tw`, `git`, `nb`, `t`, `nav`, `front`, `test`, `tui` | `user` | `user` (read-only types have no write) |
+
+See [[docs:dev/dev-security.md]] for the full access level scheme.
 
 ---
 

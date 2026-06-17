@@ -167,6 +167,77 @@ Key lessons from the `front` codeblock (frontmatter filter/query block):
 
 ---
 
+## Access gates — implementation
+
+User-facing behaviour: [[docs:CODEBLOCKS#Access Gates]]. Dev-security reference: [[docs:dev/dev-security.md#codeblock-gates]].
+
+### Settings
+
+`codeblock_access` in `nb-settings.json` — a passthrough dict in `_SETTINGS_SCHEMA` (`coerce: lambda v: v if isinstance(v, dict) else {}`). Returned by `GET /api/nb-settings` and therefore available to the frontend. Shape:
+
+```json
+"codeblock_access": {
+  "hledger": {"read": "office", "write": "admin"},
+  "tw":      {"read": "user",   "write": "user"},
+  "git":     {"read": "user",   "write": null}
+}
+```
+
+`null` write means no write controls exist for that block type — not a level check, just absent.
+
+### Frontend utilities (`nbweb-codeblocks.js`)
+
+All live in the top of the IIFE, before any block-specific code:
+
+| Function | Purpose |
+|----------|---------|
+| `_cbAccess` | Module-level dict, populated by a single `fetch('/api/nb-settings')` on plugin load |
+| `_cbParseGates(text)` | Strips `read:` / `write:` lines from fence body; returns `{readLevel, writeLevel, query}` |
+| `_cbGateAttrs(r, w)` | Produces `data-cb-read="…" data-cb-write="…"` attribute string for the block div |
+| `_cbLevel(el, type, mode)` | Per-block attr wins over `_cbAccess[type][mode]` |
+| `_cbCan(el, type, mode)` | `window.NbAuth?.is(level) ?? true` — fails open if auth not loaded |
+| `_cbDenyRead(el)` | `el.remove()` — no trace |
+
+### html() / render() wiring
+
+Every `html:` function in `codeblockRenderers` calls `_cbParseGates(text)` and stores the results as `data-cb-read` / `data-cb-write` on the block div. The cleaned `query` (with gate lines removed) is stored in `data-query` / `data-cmd` / `data-period` as normal.
+
+Every `_load*Block()` function begins with a read gate check:
+
+```javascript
+if (!_cbCan(el, 'blocktype', 'read')) { _cbDenyRead(el); return; }
+```
+
+Write buttons (`+`, `✎`) are conditionally created:
+
+```javascript
+if (_cbCan(el, 'hledger', 'write')) {
+    const addBtn = ...
+    acts.appendChild(addBtn);
+}
+```
+
+### test block special case #pattern
+
+Other block types auto-render so a denied read → silent removal is always correct. `test` blocks have two forms:
+
+- **Form 2** (no label, auto-run): `el.remove()` — same as all other types
+- **Form 1** (labeled button): block was explicitly surfaced by the note author; label still renders, clicking shows `🔒 Requires X access` via `_buildTestDenied(el, label, level)`
+
+The form detection happens *before* the gate check in `_loadTestBlock` — parse label first, then decide.
+
+### Backend enforcement
+
+`_cb_write_allowed(block_type)` in `app.py` — reads `_settings.get('codeblock_access', {}).get(block_type, {}).get('write')` and compares against the session user's level via `_level_gte()`. Called at the top of:
+
+- `api_hledger_add()` → 403 if insufficient
+- `api_task_add()` → 403 if insufficient
+- `api_task_action()` → 403 if insufficient
+
+Frontend gate is UX; backend is the actual lock. #invariant
+
+---
+
 ## mkd-codeblocks
 
 `NbWeb-codeblocks` is nb-web's implementation of the [mkd-codeblocks](https://github.com/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app.
