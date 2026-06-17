@@ -421,6 +421,59 @@ One note, all users, each sees exactly their tier's content accumulated. No cond
 
 ---
 
+## Codeblock gates
+
+Live codeblocks support per-type `read` and `write` level gates. Defaults live in `nb-settings.json` under `codeblock_access`; per-block overrides go in the fence body.
+
+### Global defaults (`nb-settings.json`)
+
+```json
+"codeblock_access": {
+  "hledger": {"read": "office", "write": "admin"},
+  "chart":   {"read": "office", "write": null},
+  "tw":      {"read": "user",   "write": "user"},
+  "git":     {"read": "user",   "write": null},
+  "test":    {"read": "user",   "write": null},
+  "nb":      {"read": "user",   "write": null},
+  "t":       {"read": "user",   "write": null},
+  "nav":     {"read": "user",   "write": null},
+  "front":   {"read": "user",   "write": null},
+  "tui":     {"read": "user",   "write": null}
+}
+```
+
+`write: null` means no write controls exist (read-only block type). Level strings follow the standard `guest < user < office < admin < tech` hierarchy.
+
+### Per-block override
+
+Add `read:` or `write:` lines anywhere in the fence body — they're stripped before the query reaches the renderer:
+
+````markdown
+```hledger
+read: office
+write: tech
+bal expenses --monthly
+```
+````
+
+### What's enforced
+
+**Frontend** (via `NbAuth.is()` in `nbweb-codeblocks.js`):
+- **Read gate** — block is replaced with `🔒 hledger — requires office` placeholder. No data fetched.
+- **Write gate** — `+` (add transaction/task) and `✎` (edit journal) buttons hidden entirely.
+
+**Backend** (via `_cb_write_allowed(block_type)` in `app.py`):
+- `/api/hledger-add` — enforces `hledger.write`; returns 403 if insufficient
+- `/api/task-add` and `/api/task-action` — enforce `tw.write`; return 403 if insufficient
+
+Backend enforcement is the safety net — the frontend gate is UX, not security. #invariant
+
+### `nb-auth.js` in `index.html`
+
+`nb-auth.js` is now loaded in the main app's `<head>`, making `window.NbAuth` available to `nbweb-codeblocks.js`. The `_cbCan(el, blockType, mode)` call uses `window.NbAuth?.is(level) ?? true` — fails open (allows) if auth module not ready.
+
+---
+
 ## Planned
 
 - `/setup` first-run route
@@ -428,5 +481,6 @@ One note, all users, each sees exactly their tier's content accumulated. No cond
 - #planned User management UI in Settings menu (admin/tech only)
 - #planned CSRF token middleware
 - #planned Per-notebook write locks (separate from the existing `.nb-lock` read-only lock)
-- #planned `access:` enforcement on write endpoints (PUT/POST/DELETE) — #gotcha write endpoints currently unguarded beyond level check
+- #planned Settings UI for `codeblock_access` defaults (currently JSON-only)
+- #planned `access:` enforcement on note write endpoints (PUT/POST/DELETE note content) — #gotcha currently unguarded beyond level
 - #todo Expand Section I (Server) with full Flask session, login flow, dotfolder CRUD detail
