@@ -38,6 +38,27 @@ Fenced code blocks and inline code are split out first — links inside backtick
 
 ---
 
+## Display label resolution (`data-autolabel`)
+
+When a wikilink has no pipe label (`[[filename-stem]]` not `[[target|label]]`),
+the span gets `data-autolabel="1"`. After rendering, `_resolveWikilinks` fetches
+the note via `/api/note` and sets the display text as:
+
+```javascript
+title = d.meta?.alias || d.title || d.filename || sel
+```
+
+**Priority: `alias:` frontmatter first.** This means `[[WH-captive-cu-4f]]`
+displays as `4f` (from `alias: 4f`) with no pipe label needed. The `title:`
+frontmatter appears as a tooltip via the `title` attribute on the rendered link.
+
+**Convention (NbWeb-cine):** embed the stable filename stem in the script;
+let `alias:` supply the compact inline label automatically. Never embed bare
+aliases (`[[4f]]`) as wikilinks — they resolve by title or filename stem only,
+not by `alias:` field value.
+
+---
+
 ## term: link implementation
 
 `term:` links execute arbitrary shell commands in the built-in terminal pane. The click handler:
