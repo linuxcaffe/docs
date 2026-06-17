@@ -375,7 +375,7 @@ Push to a **private** remote — user cards contain password hashes. Configure v
 |----------|--------|-------------|
 | `/api/nb-config/status` | GET | Uncommitted files, remote, last commit, unpushed count |
 | `/api/nb-config/commit` | POST | Stage dotfolders + templates, commit with message |
-| `/api/nb-config/sync` | POST | `git pull --no-edit` then `git push origin HEAD:master` |
+| `/api/nb-config/sync` | POST | `git pull --no-edit` then `git push origin HEAD:master` | #todo hardcoded `master` — config repo is on branch `nb-config`; sync endpoint needs updating |
 | `/api/nb-config/remote` | GET/POST | Read or set the origin URL |
 | `/api/nb-config/log` | GET | Last 20 commits (`git log --oneline -20`) |
 
