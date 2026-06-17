@@ -32,6 +32,27 @@ Flask handles login at `/login` (self-contained HTML, no external assets), sets 
 
 ## II. Access Control
 
+### The scheme
+
+Five levels. Plain Markdown files. No database, no LDAP, no OAuth. Yet the result is a genuinely granular multi-layer access control system expressed entirely in the tools already in use.
+
+The key design principle is **silence**: inaccessible content simply isn't there. No "403 Forbidden", no lock icons (except in the one case where a note author deliberately surfaced a labeled button). A guest browsing the app sees a coherent, complete-looking interface — they're just seeing their tier of it. This works at every layer:
+
+| Layer | Mechanism | Silence |
+|-------|-----------|---------|
+| Note | `access:` or `user:` frontmatter | Filtered from list, 403 → empty on inline |
+| Notebook | `.<notebook>.md` config `access:` | Notebook absent from selector entirely |
+| Dotfolders | `DOTFOLDERS` + admin gate | `.users`, `.rules` etc. invisible to regular users |
+| Inline includes | `{{inline:}}` + `?inline=1` | Missing content renders as nothing |
+| `.lib/` components | filename suffix (`-admin`) | Server returns empty body |
+| Codeblocks | `codeblock_access` + `read:`/`write:` lines | Block removed from DOM; write buttons hidden |
+
+Each layer is independent and composable. A note can open itself to `guest` inside an `office`-level notebook. A `.lib/` component stacks three tiers in one include. A codeblock can gate read at `office` and write at `admin`. All of these resolve through the same five-point scale — `guest < user < office < admin < tech` — checked by the same two-line `_level_gte()` function.
+
+The user identity lives in `~/.nb/.users/<username>.md` — a plain Markdown file with a YAML frontmatter block, tracked in the `~/.nb/` config repo alongside the same dotfolders it controls access to. The whole security model can be inspected, edited, and version-controlled with the same tools used to write notes.
+
+---
+
 ### Access levels
 
 ```
