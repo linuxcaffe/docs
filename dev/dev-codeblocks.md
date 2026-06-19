@@ -125,6 +125,25 @@ hl-budget-include-check
 - Open link: last line, use the actual filename not a generic label
 - No output on exit 0 — causes block to render instead of disappear #gotcha
 
+### `term:` links in output #planned
+
+Test output goes through the full render pipeline — `term:` links work there exactly as they do in regular notes. A script can embed a one-click fix command alongside the `note:` open link:
+
+```
+[Apply in editor](term:$EDITOR%20${HLEDGER_FILE})
+[Open budget.journal](note:/home/djp/.nb/...)    ← still last line
+```
+
+The `term:` URL must be percent-encoded. Generate it in bash:
+
+```bash
+cmd="hledger -f $journal check budget"
+encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$cmd")
+echo "[Verify now](term:${encoded})"
+```
+
+Good candidates: open-in-editor, run-checker-after-fix, single-command remediation. Not for multi-step or destructive commands — those belong in prose. #pattern
+
 ### Reference scripts
 
 Browse and edit in place:
@@ -267,6 +286,54 @@ if (r.status === 403) { _cbDenyRead(el); return; }
 ```
 
 Applied in `_loadNavBlock` (rawPath and notebook paths) and `_loadFrontBlock`. Any new load function that calls a listing or content endpoint should follow this pattern.
+
+---
+
+## config block internals
+
+User-facing syntax: [[docs:CODEBLOCKS#config — Config Inheritance Tree]].
+
+**Endpoint:** `GET /api/config-tree?notebook=X&folder=Y&key=Z`
+
+Returns an ordered array of nodes from global root → target. Each node:
+```json
+{ "level": "global|notebook|folder|subfolder",
+  "path": "/abs/path/.shots.md",
+  "selector": "/abs/path/.shots.md",
+  "exists": true,
+  "contributes": { "key": "value", ... } }
+```
+
+`contributes` holds **only what that file itself sets** — not inherited values. The `key` param filters to a single field; the API returns `{key: value}` or `{}` per node. Inheritance is implied by position — the UI never shows inherited values explicitly.
+
+**Selector:** absolute path. `/api/note` handles absolute-path selectors via `elif selector.startswith('/')` — dotfiles open normally in the preview pane.
+
+**`_configParseQuery(raw, currentSelector)`** — parses the codeblock body:
+- `field: .` → key=field, notebook+folder resolved from `NbMain.activeSelector()`
+- `field: Notebook:folder/` → key=field, explicit target
+- bare → key='', target='.', resolves from active selector
+
+**`NbMain.activeSelector()`** — accessed as bare `NbMain` (not `window.NbMain`) since `const NbMain` in `main.js` is not a `window` property. #gotcha
+
+---
+
+## test glob internals
+
+User-facing syntax: [[docs:CODEBLOCKS#test — Embedded Assertions]] § Form 4.
+
+**Endpoint:** `GET /api/test/glob?prefix=nb-schem-`
+
+Returns sorted list of `*.sh` filenames in `~/.nb/.test/` matching `{prefix}*.sh`. Prefix must end with `-` (enforced server-side). Returns `[]` if `TEST_DIR` doesn't exist.
+
+**JS resolution:** `_resolveTestGlob(prefix)` — async fetch, returns `[]` on any error. Called lazily at render time (not during `_collectAutoRunScripts`), so glob blocks don't block the batch pre-collection phase.
+
+**Naming convention:** `{app}-{family}-{check}.sh` where:
+- `{app}` = domain prefix (`nb-`, `hl-`, `tw-`, `note-`)
+- `{family}` = sub-group (`config`, `schem`, `ref`, `struct`)
+- `{check}` = specific check name
+- Dangling dash `nb-schem-` globs the family; `nb-` globs the whole domain
+
+**`_collectAutoRunScripts`** skips glob lines (ends with `-`) — they can't be pre-batched without a network round trip. Glob blocks resolve their script list lazily in `_loadTestBlock` instead.
 
 ---
 
