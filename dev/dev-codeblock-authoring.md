@@ -78,11 +78,12 @@ html: text => `<div class="nb-my-block" data-query="${text.trim().replace(/"/g, 
 Every block with a visible header follows the same layout:
 
 ```
-[▼] [block-name]  [count]  [filter/query]          [actions: + ↻]
+[icon]  [block-name]  [count]  [filter/query]     [actions: ? ↻]
 ```
 
+- **Left — icon**: app/block-type image or glyph. Visible when collapsed, identifies the block at a glance without expanding it. Each block type owns its own icon.
 - **Left — meta span**: block-name label + optional count + optional filter code
-- **Right — actions span**: action buttons, always ending with ↻ refresh
+- **Right — actions span**: action buttons, always ending with ↻ refresh. `?` help popover is standard for blocks with non-obvious query syntax.
 
 The block-name label is **clickable** — it opens the external app, or Settings if the app isn't configured. This gives the block a single obvious "launch" affordance without a dedicated button.
 
@@ -129,15 +130,21 @@ _initCollapseToggle(el);
 
 ## Collapse toggle
 
-Blocks with a visible header should call `_initCollapseToggle(el)` after building the DOM. It wires the ▼/▶ button and persists collapse state in `localStorage`. Requires a `[class*="-header"]` child inside the block.
+The **whole header bar** is the collapse toggle — not a button inside it. Clicking anywhere on the header (except action buttons, which `stopPropagation`) collapses or expands the block. This is essential for mobile where small tap targets fail.
+
+Call `_initCollapseToggle(el)` after the header is appended. It wires the header click, persists state in `localStorage`, and applies the stored state on load. Requires a `[class*="-header"]` child inside the block — the CSS selector `[class*="-header"]` automatically gives all headers `cursor: pointer; user-select: none`.
+
+Action buttons inside the header **must** call `e.stopPropagation()` to avoid triggering the toggle.
 
 ```javascript
-async function _loadMyBlock(el) {
-    el.innerHTML = '<span class="nb-spin">⟳</span>';
-    // ... build DOM ...
-    _initCollapseToggle(el);
-}
+const refBtn = document.createElement('button');
+refBtn.addEventListener('click', e => { e.stopPropagation(); _loadMyBlock(el); });
+
+// After all DOM is built:
+_initCollapseToggle(el);
 ```
+
+No `▼/▶` indicator button — the block's **icon** (left side of header) identifies the type when collapsed. Design an icon for your block type.
 
 ---
 
@@ -224,8 +231,10 @@ The only safe use of `marked.parse()` directly is for content you own entirely (
 - [ ] `NbWeb.statusPill?.tick()` called once per block — success **and** error paths
 - [ ] Early return if `!blocks.length`
 - [ ] Errors replace the spinner with a visible message
-- [ ] Refresh button wired to re-run the load function
-- [ ] `_initCollapseToggle` called if the block has a header
+- [ ] Refresh button wired to re-run the load function; calls `e.stopPropagation()`
+- [ ] All header action buttons call `e.stopPropagation()`
+- [ ] `_initCollapseToggle` called after header is appended (if block has a header)
+- [ ] Block has an icon in the header left — visible when collapsed to identify type
 - [ ] `html()` escapes `"` → `&quot;` in data attributes
 - [ ] `querySelectorAll` result spread to `[...]` before async work begins
 - [ ] `previewRenderer` uses `NbMain.renderMarkdown()`, not `marked.parse()`
