@@ -1,6 +1,6 @@
 ---
 title: notebook config
-caption: ".<notebook>.md — per-notebook config vision: themes, UI, plugins, access, workflow"
+caption: "config hierarchy: .nb.md → .{notebook}.md → .{folder}.md — implemented + planned"
 toc: true
 processed: true
 ---
@@ -9,7 +9,153 @@ processed: true
 
 > Developer documentation for nb-web. See [[docs:DEVELOPERS.md]] for the full index.
 
-The notebook config file is a small dotfile in each notebook's root:
+## What's implemented (2026-06-19) #implemented
+
+A three-level config hierarchy is live. Files live inside the things they configure,
+travel with the notebooks, are git-backed, and are editable in-app via Changes or Edit.
+
+### Resolution chain
+
+```
+note frontmatter
+  → .{folder}.md         folder config (inside the folder it configures)
+    → .{notebook}.md     notebook manifest (inside the notebook root)
+      → .nb.md           global config (~/.nb/.nb.md)
+        → nb-settings.json   deployment/machine config (non-portable, stays local)
+```
+
+First match per key wins at each level. `_merge_configs(base, override)` does a
+deep merge — child dicts win over parent dicts key-by-key.
+
+### Backend functions (`app.py`)
+
+| Function | What it does |
+|----------|-------------|
+| `_global_config()` | Reads `~/.nb/.nb.md` frontmatter |
+| `_notebook_config(notebook)` | Reads `.{notebook}.md`, merges over global |
+| `_folder_config(notebook, note_path)` | Walks from note up to notebook root, merges all folder configs over notebook config |
+| `_merge_configs(base, override)` | Deep merge; override wins; recurse into nested dicts |
+| `_load_constraints(note_path)` | Returns merged constraint dict for a note path |
+| `_normalize_constraint(val)` | Converts rich dict or legacy string to JS widget string |
+
+### File convention
+
+Config files are **dotfiles named after what they configure**, living **inside** the
+thing they configure:
+
+```
+~/.nb/.nb.md                                  ← global
+~/.nb/Takeout/.Takeout.md                     ← notebook manifest
+~/.nb/Takeout/shots/.shots.md                 ← folder config
+~/.nb/Takeout/storylines/film-school/.film-school.md  ← subfolder config
+```
+
+Every config file MUST carry `config: <name>` in frontmatter — the identifier of what
+it configures. This is the hook for admin tooling (see Admin path below).
+
+### What goes where
+
+| Field | Level | Notes |
+|-------|-------|-------|
+| `config:` | all levels | Required; names what this file configures |
+| `codeblock_access:` | `.nb.md` | Global security policy; merged into `/api/nb-settings` response |
+| `access:` | notebook, folder | Access floor; inherits up the chain |
+| `default_type:` | folder | Type for new notes in this folder |
+| `sort:` | folder, notebook | Default sort for list panel |
+| `plugins:` | notebook | Active plugins for this notebook |
+| `cine:` / `hledger:` | notebook | Plugin config blocks (absorb `.nb-cine.json` etc.) |
+| `types:` | notebook | Renderer + access per type |
+| `constraints:` | folder | Field validation schema (see below) |
+
+`nb-settings.json` keeps: server port, git remote URL, plugin file paths, PTY
+settings — anything machine-specific that should NOT travel with notebooks.
+
+### Folder configs and constraints
+
+Each folder's `.{folder}.md` carries a `constraints:` block that defines the
+frontmatter schema for its `default_type` notes. Constraint types:
+
+```yaml
+constraints:
+  alias:
+    required: true
+    pattern: '^\d+[a-z]+$'     # regex on string value
+    note: human explanation     # not enforced, for docs
+  day_night:
+    required: true
+    type: enum
+    values: [D, N]
+  desc:
+    required: false
+    type: multiline             # → 'area' widget
+  scene:
+    required: true
+    type: integer
+```
+
+Supported `type:` values: `string`, `integer`, `enum` (+ `values:`), `multiline`,
+`boolean`. `pattern:` for regex on strings.
+
+**Constraints apply to `default_type` notes only** — other types in the same folder
+are skipped by the validator.
+
+**Dot-notation inheritance** — a constraint value of `scene.loc` means "this field
+is inherited from the note referenced by the `scene` field, field `loc`". The
+Changes panel renders inherited fields as read-only displays, not editable inputs.
+`nb-constraints.sh` (not yet written) must resolve these cross-note references
+before validating.
+
+```yaml
+constraints:
+  loc:       scene.loc        # read-only in Changes; sourced from referenced scene
+  day_night: scene.day_night
+```
+
+**Legacy `.constraints.md`** — still read for backward compat. `_load_constraints()`
+merges it as the lower-priority layer; folder config `constraints:` wins.
+`_normalize_constraint()` converts both formats to the JS widget string the Changes
+button expects (`select a,b,c`, `bool`, `area`, `date`, `text`).
+
+### Notebook manifests absorbing plugin JSON
+
+`.{notebook}.md` now supersedes the old separate JSON plugin config files. Fallback
+chain (JSON wins until migrated):
+
+```python
+# hledger — in _hledger_config_for_notebook()
+if '.nb-hledger.json' exists: use it
+else: read hledger: block from _notebook_config()
+
+# cine — in api_cine_data()
+if '.nb-cine.json' exists: use it
+else: read cine: block from _notebook_config()
+```
+
+New notebooks should put plugin config in the manifest. Existing notebooks keep
+working until JSON files are removed.
+
+### Admin path — `front` finds all config files
+
+`/api/front-query` now scans dotfiles (including NB_DIR root for `.nb.md`).
+Combined with the `config:` field convention, an admin dashboard note can list
+every config file across all notebooks:
+
+````
+```front
+read: admin
+config: | Config files
+```
+````
+
+Each result is clickable → opens in preview → **Changes** (guided, constraint-driven)
+or **Edit** (raw YAML, access-gated). This is the intended settings UI — no dedicated
+panel needed.
+
+To scope to one notebook: `Takeout: config: | Takeout configs`
+
+---
+
+## Vision — what this file could become
 
 ```
 ~/.nb/home/.home.md
