@@ -81,7 +81,7 @@ Every block with a visible header follows the same layout:
 [icon]  [block-name]  [count]  [filter/query]     [actions: ? ↻]
 ```
 
-- **Left — icon**: app/block-type image or glyph. Visible when collapsed, identifies the block at a glance without expanding it. Each block type owns its own icon.
+- **Left — icon**: app/block-type image or glyph. Always visible — in both collapsed and expanded states. Identifies the block type at a glance. Each block type owns its own icon.
 - **Left — meta span**: block-name label + optional count + optional filter code
 - **Right — actions span**: action buttons, always ending with ↻ refresh. `?` help popover is standard for blocks with non-obvious query syntax.
 
@@ -144,7 +144,7 @@ refBtn.addEventListener('click', e => { e.stopPropagation(); _loadMyBlock(el); }
 _initCollapseToggle(el);
 ```
 
-No `▼/▶` indicator button — the block's **icon** (left side of header) identifies the type when collapsed. Design an icon for your block type.
+No `▼/▶` indicator button — the block's **icon** (left side of header) is always visible and identifies the type in both collapsed and expanded states. Design an icon for your block type.
 
 ---
 
