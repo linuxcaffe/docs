@@ -293,11 +293,11 @@ Applied in `_loadNavBlock` (rawPath and notebook paths) and `_loadFrontBlock`. A
 
 User-facing syntax: [[docs:CODEBLOCKS#config — Config Inheritance Tree]].
 
-**Endpoint:** `GET /api/config-tree?notebook=X&folder=Y&key=Z`
+**Endpoint:** `GET /api/config-tree?notebook=X&folder=Y&key=Z&selector=S`
 
-Returns an ordered array of nodes from global root → target. Each node:
+Returns an ordered array of nodes from global root → target → note. Each node:
 ```json
-{ "level": "global|notebook|folder|subfolder",
+{ "level": "global|notebook|folder|subfolder|note",
   "path": "/abs/path/.shots.md",
   "selector": "/abs/path/.shots.md",
   "exists": true,
@@ -306,7 +306,9 @@ Returns an ordered array of nodes from global root → target. Each node:
 
 `contributes` holds **only what that file itself sets** — not inherited values. The `key` param filters to a single field; the API returns `{key: value}` or `{}` per node. Inheritance is implied by position — the UI never shows inherited values explicitly.
 
-**Selector:** absolute path. `/api/note` handles absolute-path selectors via `elif selector.startswith('/')` — dotfiles open normally in the preview pane.
+The `note` level (appended last, highest priority) is the currently open note's own frontmatter. Pass `?selector=accts:16` to include it. Note-level node uses the selector as its display name, not the raw path.
+
+**Selector:** absolute path for config files. `/api/note` handles absolute-path selectors via `elif selector.startswith('/')` — dotfiles open normally in the preview pane.
 
 **`_configParseQuery(raw, currentSelector)`** — parses the codeblock body:
 - `field: .` → key=field, notebook+folder resolved from `NbMain.activeSelector()`
@@ -314,6 +316,12 @@ Returns an ordered array of nodes from global root → target. Each node:
 - bare → key='', target='.', resolves from active selector
 
 **`NbMain.activeSelector()`** — accessed as bare `NbMain` (not `window.NbMain`) since `const NbMain` in `main.js` is not a `window` property. #gotcha
+
+**Rendering — table layout** (`_configRender`): four columns — marker, icon (depth-indented), path/selector, value. Value column always rendered; `—` in muted gray when a level doesn't set the queried key. True column alignment via `<table border-collapse: collapse>`, not flex.
+
+**Effective marker** (`▶` amber): the last node in the array (highest priority) that contributes the queried key. When no key specified, the deepest existing node. `◉` blue when `currentSelector` matches a node exactly (viewing a config file that has its own `config` block).
+
+**`access: guest` in `.nb.md`** — global floor set to `guest`. Every notebook and folder gates up from there; the `config` block makes the chain visible and shows where the effective value comes from. #invariant
 
 ---
 
