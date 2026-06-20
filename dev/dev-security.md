@@ -398,7 +398,7 @@ All nb notebooks (`home`, `docs`, etc.) are separate git repos inside `~/.nb/`. 
 /.current
 /copy
 /.plugins/
-/.test/
+/.checks/
 /.web/
 /.export.template.html
 ```

@@ -1,15 +1,15 @@
 ---
-title: TEST_SCRIPTS
-caption: Writing test scripts for the nb-web test codeblock
+title: CHECKS
+caption: Writing check scripts for the nb-web check codeblock
 toc: true
 processed: true
 ---
 
-> Moved to [[docs:dev/dev-testing.md]] — this file is a redirect stub.
+> Moved to [[docs:dev/dev-checks.md]] — this file is a redirect stub.
 
-# Test Scripts
+# Check Scripts
 
-The `test` codeblock runs bash scripts from `~/.nb/.test/` — embedding live system checks directly in notes. See [[docs:CODEBLOCKS#test — Embedded Assertions|CODEBLOCKS]] for the codeblock syntax.
+The `check` codeblock runs bash scripts from `~/.nb/.checks/` — embedding live system checks directly in notes. See [[docs:CODEBLOCKS#check — Embedded Assertions|CODEBLOCKS]] for the codeblock syntax.
 
 ---
 
@@ -29,7 +29,7 @@ Output is rendered as full markdown — headings, tables, lists, blockquotes, `{
 
 ## Script Location
 
-All scripts live in `~/.nb/.test/`. Browse them with:
+All scripts live in `~/.nb/.checks/`. Browse them with:
 
 ````markdown
 ```nav
@@ -40,7 +40,7 @@ All scripts live in `~/.nb/.test/`. Browse them with:
 Scripts are resolved by name — `.sh` extension is optional:
 
 ```check
-hl-ok        # finds ~/.nb/.test/hl-ok.sh
+hl-ok        # finds ~/.nb/.checks/hl-ok.sh
 hl-ok.sh     # same
 ```
 
@@ -106,7 +106,7 @@ For informational notices that aren't errors — approval status, configuration 
 echo '<div class="nb-alert-banner">⚠ This note is pending approval.</div>'
 ```
 
-Exit 0 with this output: the block renders the amber notice. Exit 0 with no output: the block vanishes silently (pass). The `.nb-alert-banner` class is defined in `styles.css` and available to any test script.
+Exit 0 with this output: the block renders the amber notice. Exit 0 with no output: the block vanishes silently (pass). The `.nb-alert-banner` class is defined in `styles.css` and available to any check script.
 
 `note-approved` is the reference implementation — read it before writing a new amber-banner script.
 
@@ -334,24 +334,24 @@ Browse and edit all scripts in place:
 
 Key scripts — read these for reference before writing new ones:
 
-- [hl-test.sh](note:/home/djp/.nb/.test/hl-test.sh) — "is the tool intact?" check; complements hl-ok which checks data, not binary
-- [hl-ok.sh](note:/home/djp/.nb/.test/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
-- [hl-strict.sh](note:/home/djp/.nb/.test/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
-- [hl-optional.sh](note:/home/djp/.nb/.test/hl-optional.sh) — radar sweep of all 5 optional checks; surfaces failures, defers to individual scripts for fixes
-- [hl-ordereddates.sh](note:/home/djp/.nb/.test/hl-ordereddates.sh) — out-of-order date check; explains secondary-date workaround
-- [hl-recentassertions.sh](note:/home/djp/.nb/.test/hl-recentassertions.sh) — stale assertion check; shows `hledger close --assert` workflow
-- [hl-tags.sh](note:/home/djp/.nb/.test/hl-tags.sh) — undeclared tags; warns about accidental tags in comments
-- [hl-payees.sh](note:/home/djp/.nb/.test/hl-payees.sh) — undeclared payees; links to `payees` command for discovery
-- [hl-uniqueleafnames.sh](note:/home/djp/.nb/.test/hl-uniqueleafnames.sh) — duplicate leaf names; shows grep to find all affected postings
-- [hl-budget-has-periodic.sh](note:/home/djp/.nb/.test/hl-budget-has-periodic.sh) — gold standard: heading, context, fix block, embedded verify, open link
-- [hl-budget-balanced.sh](note:/home/djp/.nb/.test/hl-budget-balanced.sh) — computes fix amount, shows mtime so user knows if edit landed
-- [hl-budget-include-check.sh](note:/home/djp/.nb/.test/hl-budget-include-check.sh) — used as an embedded verify block inside hl-budget-has-periodic
-- [nb-dirty.sh](note:/home/djp/.nb/.test/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
-- [note-disk-warn.sh](note:/home/djp/.nb/.test/note-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
-- [note-approved.sh](note:/home/djp/.nb/.test/note-approved.sh) — reference implementation for amber `.nb-alert-banner` output; reads frontmatter with awk
-- [note-slow.sh](note:/home/djp/.nb/.test/note-slow.sh) — informational notice (exit 0, no red border) for large files or books with many chapters
-- [hl-recent-txn.sh](note:/home/djp/.nb/.test/hl-recent-txn.sh) — Form 1 (label, on-demand); markdown table output
-- [hl-balances.sh](note:/home/djp/.nb/.test/hl-balances.sh) — Form 1 with table and blockquote timestamp
+- [hl-test.sh](note:/home/djp/.nb/.checks/hl-test.sh) — "is the tool intact?" check; complements hl-ok which checks data, not binary
+- [hl-ok.sh](note:/home/djp/.nb/.checks/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
+- [hl-strict.sh](note:/home/djp/.nb/.checks/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
+- [hl-optional.sh](note:/home/djp/.nb/.checks/hl-optional.sh) — radar sweep of all 5 optional checks; surfaces failures, defers to individual scripts for fixes
+- [hl-ordereddates.sh](note:/home/djp/.nb/.checks/hl-ordereddates.sh) — out-of-order date check; explains secondary-date workaround
+- [hl-recentassertions.sh](note:/home/djp/.nb/.checks/hl-recentassertions.sh) — stale assertion check; shows `hledger close --assert` workflow
+- [hl-tags.sh](note:/home/djp/.nb/.checks/hl-tags.sh) — undeclared tags; warns about accidental tags in comments
+- [hl-payees.sh](note:/home/djp/.nb/.checks/hl-payees.sh) — undeclared payees; links to `payees` command for discovery
+- [hl-uniqueleafnames.sh](note:/home/djp/.nb/.checks/hl-uniqueleafnames.sh) — duplicate leaf names; shows grep to find all affected postings
+- [hl-budget-has-periodic.sh](note:/home/djp/.nb/.checks/hl-budget-has-periodic.sh) — gold standard: heading, context, fix block, embedded verify, open link
+- [hl-budget-balanced.sh](note:/home/djp/.nb/.checks/hl-budget-balanced.sh) — computes fix amount, shows mtime so user knows if edit landed
+- [hl-budget-include-check.sh](note:/home/djp/.nb/.checks/hl-budget-include-check.sh) — used as an embedded verify block inside hl-budget-has-periodic
+- [nb-dirty.sh](note:/home/djp/.nb/.checks/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
+- [note-disk-warn.sh](note:/home/djp/.nb/.checks/note-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
+- [note-approved.sh](note:/home/djp/.nb/.checks/note-approved.sh) — reference implementation for amber `.nb-alert-banner` output; reads frontmatter with awk
+- [note-slow.sh](note:/home/djp/.nb/.checks/note-slow.sh) — informational notice (exit 0, no red border) for large files or books with many chapters
+- [hl-recent-txn.sh](note:/home/djp/.nb/.checks/hl-recent-txn.sh) — Form 1 (label, on-demand); markdown table output
+- [hl-balances.sh](note:/home/djp/.nb/.checks/hl-balances.sh) — Form 1 with table and blockquote timestamp
 
 ---
 

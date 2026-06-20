@@ -1,6 +1,6 @@
 ---
 title: test suite
-caption: "nb-web automated test strategy: hybrid pytest + .test/ scripts, synthetic fixtures, isolated repo"
+caption: "nb-web automated test strategy: hybrid pytest + .checks/ scripts, synthetic fixtures, isolated repo"
 toc: true
 processed: true
 ---
@@ -14,13 +14,13 @@ processed: true
 
 ## Philosophy
 
-The test suite extends the existing `.test/` script philosophy into a formal
+The test suite extends the existing `.checks/` script philosophy into a formal
 automated layer, rather than replacing or duplicating it. Three layers, each with
 a distinct job:
 
 ```
-Layer 3 — .test/ blocks in dashboard notes    production monitoring (live data)
-Layer 2 — pytest invoking .test/ scripts      script contract verification (synthetic data)
+Layer 3 — .checks/ blocks in dashboard notes    production monitoring (live data)
+Layer 2 — pytest invoking .checks/ scripts      script contract verification (synthetic data)
 Layer 1 — pytest + Flask test client          backend logic (no server, no real data)
 ```
 
@@ -96,7 +96,7 @@ or security-critical.** Everything else waits.
 |----------|------|-----------|
 | P0 | Config chain (`_folder_config`, `_notebook_config`, `_merge_configs`) | Most complex new logic; subtle walk-up rules; central to everything |
 | P0 | Access control (`_can_access`, `_effective_access`, username access) | Security-critical; tech bypass invariant must hold |
-| P0 | Shell scripts as black boxes (`.test/*.sh` via subprocess) | Hybrid layer; validates the script contract with synthetic fixtures |
+| P0 | Shell scripts as black boxes (`.checks/*.sh` via subprocess) | Hybrid layer; validates the script contract with synthetic fixtures |
 | P1 | Constraints (`_load_constraints`, `_normalize_constraint`) | Drives Changes panel; two input formats; dot-notation skipping |
 | P1 | Settings migration (`_effective_setting`) | Just implemented; `.nb.md` wins, no fallback — must stay true |
 | P1 | `/api/list` — pinning, tag_color, prepend_date, access filtering | Core list behaviour; several new fields just added |
@@ -187,7 +187,7 @@ def test_prepend_date_default_adds_timestamp(client, tmp_nb):
 
 ## Layer 2: Shell Scripts as Black Boxes
 
-The hybrid layer. pytest sets up synthetic fixtures, invokes `.test/*.sh` via
+The hybrid layer. pytest sets up synthetic fixtures, invokes `.checks/*.sh` via
 subprocess, and asserts on exit code and stdout patterns.
 
 ```python
@@ -229,7 +229,7 @@ def test_check_front_no_default_type(tmp_nb):
 
 This is the bridge: the script's documented contract becomes an assertion.
 When `nb-check-front.sh` changes, the test catches regressions. When a new
-`.test/` script is added, a corresponding test block is added here.
+`.checks/` script is added, a corresponding test block is added here.
 
 ---
 
@@ -282,7 +282,7 @@ No server running. No real `~/.nb/` data touched. Clean run every time.
 | Multi-user | Session/auth tests, per-user fixture variants |
 
 The suite grows with the project. P0 tests land first — the riskiest logic gets
-coverage before the easy paths. The hybrid layer grows in step with `.test/`: every
+coverage before the easy paths. The hybrid layer grows in step with `.checks/`: every
 new shell script gets a corresponding test block in `test_shell_scripts.py`.
 
 ---

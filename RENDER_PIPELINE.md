@@ -28,7 +28,7 @@ openNote(selector)
                           ├── _enrichRendered(content, note)
                           │     ├── _resolveInlineQueries   ← creates {{}} spans, fires ALL fetches
                           │     ├── _renderCsvBlocks
-                          │     ├── NbWeb.renderCodeblocks  ← fires ALL test scripts
+                          │     ├── NbWeb.renderCodeblocks  ← fires ALL check scripts
                           │     ├── Prism highlighting
                           │     ├── copy buttons
                           │     └── wikilink handlers + _resolveWikilinks
@@ -43,7 +43,7 @@ A `type: book` with 8 chapters and 4 test blocks per chapter:
 
 ```
 _resolveInlineQueries fires 8 × _resolveInlineInclude  ← 8 simultaneous fetches
-NbWeb.renderCodeblocks fires 32 test scripts           ← 32 simultaneous API calls
+NbWeb.renderCodeblocks fires 32 check scripts           ← 32 simultaneous API calls
 _resolveWikilinks fires K title lookups                ← K simultaneous fetches
 
 Total: 40+ simultaneous API calls, all racing
@@ -80,7 +80,7 @@ appears.
 ### 4. Static and async work are mixed
 
 `_enrichRendered` interleaves synchronous work (event handler wiring, copy
-buttons) with async work (inline fetches, test scripts). This makes it
+buttons) with async work (inline fetches, check scripts). This makes it
 impossible to reason about timing, creates race conditions, and means the
 synchronous work runs multiple times (once per chapter enrichment).
 
@@ -408,7 +408,7 @@ Do not use for: errors, validation failures, destructive actions (those stay red
   `_watchInlineTocRebuild`, `renderPreview`
 - `~/dev/nb-web/styles.css` — `.nb-rendering-notice` and alert color palette
 - `~/dev/nb-web/app.py` — Flask endpoints including future `/api/test-blocks`
-- `~/.nb/.test/` — test scripts; `note-slow.sh` to be retired in Tier 1
+- `~/.nb/.checks/` — check scripts; `note-slow.sh` to be retired in Tier 1
 
 ---
 

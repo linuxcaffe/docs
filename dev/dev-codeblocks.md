@@ -6,7 +6,7 @@ toc: true
 
 # CODEBLOCKS (dev)
 
-Developer reference for the codeblock renderer system. For user-facing codeblock docs see [[docs:CODEBLOCKS]]. For writing test scripts see [[docs:dev/dev-testing.md]].
+Developer reference for the codeblock renderer system. For user-facing codeblock docs see [[docs:CODEBLOCKS]]. For writing check scripts see [[docs:dev/dev-checks.md]].
 
 ---
 
@@ -331,7 +331,7 @@ User-facing syntax: [[docs:CODEBLOCKS#test — Embedded Assertions]] § Form 4.
 
 **Endpoint:** `GET /api/test/glob?prefix=nb-schem-`
 
-Returns sorted list of `*.sh` filenames in `~/.nb/.test/` matching `{prefix}*.sh`. Prefix must end with `-` (enforced server-side). Returns `[]` if `TEST_DIR` doesn't exist.
+Returns sorted list of `*.sh` filenames in `~/.nb/.checks/` matching `{prefix}*.sh`. Prefix must end with `-` (enforced server-side). Returns `[]` if `TEST_DIR` doesn't exist.
 
 **JS resolution:** `_resolveTestGlob(prefix)` — async fetch, returns `[]` on any error. Called lazily at render time (not during `_collectAutoRunScripts`), so glob blocks don't block the batch pre-collection phase.
 

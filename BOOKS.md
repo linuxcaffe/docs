@@ -147,4 +147,4 @@ A guide might have a TOC and some inline includes. A book commits to the full pa
 3. Embed Form 2 test blocks in chapter notes at precondition points
 4. Optionally: add `{{inline: notebook:status.md}}` at the top for notebook-level health
 
-See [[docs:TEST_SCRIPTS]] for writing test scripts, and [[docs:CODEBLOCKS#test — Embedded Assertions|CODEBLOCKS]] for the test block syntax.
+See [[docs:CHECKS]] for writing check scripts, and [[docs:CODEBLOCKS#check — Embedded Assertions|CODEBLOCKS]] for the test block syntax.

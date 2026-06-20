@@ -42,7 +42,7 @@ is opened and that don't belong inside any one notebook.
   .nb.md              ← global config (access floor, tests:, tag_color:, etc.)
   .users/             ← user cards (djp.md, guest.md, office.md, admin.md …)
   .rules/             ← domain convention files (hledger.md, docs.md, preview.md …)
-  .test/              ← test scripts (hl-*, nb-*, note-*, tw-*)
+  .checks/              ← check scripts (hl-*, nb-*, note-*, tw-*)
   .templates/         ← global note templates
   .gitignore          ← ignores /[A-Za-z]*/ (each notebook is its own repo)
 ```
@@ -60,7 +60,7 @@ is opened and that don't belong inside any one notebook.
 
 | Path | Status |
 |------|--------|
-| `.tools/` | Utility scripts — should be tracked alongside `.test/` |
+| `.tools/` | Utility scripts — should be tracked alongside `.checks/` |
 | `.lib/` | Shared shell libs — should be tracked |
 | `.images/` | Global image stubs — probably worth tracking |
 | `.changes/` | UI snapshot cache — probably gitignore |
@@ -165,7 +165,7 @@ curl -LO https://raw.github.com/xwmx/nb/master/nb && chmod +x nb && sudo mv nb /
 
 # 2. Restore undercarriage
 git clone git@codeberg.org:linuxcaffe/nb-notes.git ~/.nb
-# .nb.md, .users/, .rules/, .test/, .templates/ are now present
+# .nb.md, .users/, .rules/, .checks/, .templates/ are now present
 
 # 3. Restore notebooks (each is a branch)
 for nb_name in home docs accts claude tw work nb pfinds openfilmmaker bkmk tasks contacts exp; do
@@ -199,7 +199,7 @@ Steps 5 and 6 are the fragile parts. Everything else is mechanical.
 ## What needs improvement
 
 1. **Add `preciousfinds.ca` as a Codeberg secondary remote** — GitHub-only is a single point
-2. **Track `.tools/` and `.lib/`** in the undercarriage alongside `.test/`
+2. **Track `.tools/` and `.lib/`** in the undercarriage alongside `.checks/`
 3. **Migrate `nb-settings.json`** portable keys into `.nb.md` (in progress)
 4. **Merge `Takeout/feature/notebook-config`** — notebook data shouldn't live on a dev branch
 5. **Bootstrap script** — automate the restore sequence above

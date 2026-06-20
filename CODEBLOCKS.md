@@ -291,7 +291,7 @@ Renders a stateful folder navigator in the preview pane. Clicking folders drills
 | Filesystem path | `~/.nb/accts/guide` | Same, via path |
 | Hidden dir path | `~/.nb/.test` | Raw filesystem listing |
 
-The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (test scripts), `~/.nb/.templates`, etc.
+The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (check scripts), `~/.nb/.templates`, etc.
 
 **Controls:** **▼/▶** collapse (persists in `localStorage` by starting path) · **↻** refresh · breadcrumb segments are clickable.
 
@@ -391,7 +391,7 @@ config: | All config files
 
 ### test — Embedded Assertions
 
-Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/` and run via the nb-web Flask server — no terminal needed. Browse the bundled scripts with a `nav` block:
+Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.checks/` and run via the nb-web Flask server — no terminal needed. Browse the bundled scripts with a `nav` block:
 
 ````markdown
 ```nav
@@ -481,7 +481,7 @@ tw-due
 
 **Form 4 — glob prefix (dangling dash):**
 
-A script name ending in `-` expands to all matching scripts in `~/.nb/.test/` at render time:
+A script name ending in `-` expands to all matching scripts in `~/.nb/.checks/` at render time:
 
 ````markdown
 ```check

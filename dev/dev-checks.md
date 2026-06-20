@@ -1,6 +1,6 @@
 ---
 title: testing
-caption: "test script naming, output model, grouping by namespace; nb-web automated suite planned"
+caption: "check script naming, output model, grouping by namespace; nb-web automated suite planned"
 toc: true
 processed: true
 ---
@@ -9,7 +9,7 @@ processed: true
 
 > Developer documentation for nb-web. See [[docs:DEVELOPERS.md]] for the full index.
 
-For the `test` codeblock syntax, exit codes, and context variables, see:
+For the `check` codeblock syntax, exit codes, and context variables, see:
 
 - [[docs:CODEBLOCKS#test — Embedded Assertions]] — syntax, bundled scripts, placement patterns, status panels
 - [[docs:dev/dev-codeblocks.md#test-block-internals]] — exit code contract, context vars, writing scripts, output anatomy
@@ -18,7 +18,7 @@ For the `test` codeblock syntax, exit codes, and context variables, see:
 
 ## Test script naming convention #pattern
 
-Test scripts live in `~/.nb/.test/` and follow a **hierarchical namespace** using `-`
+Test scripts live in `~/.nb/.checks/` and follow a **hierarchical namespace** using `-`
 as the separator. The namespace path reads left to right from broadest to most specific:
 
 ```
@@ -46,7 +46,7 @@ fires `hl-health-day.sh`, `hl-health-week.sh`, `hl-health-month.sh` — the whol
 hl-
 ```
 
-fires every hledger test in `.test/`. This replaces the old `hl-ok.sh` bundling pattern.
+fires every hledger test in `.checks/`. This replaces the old `hl-ok.sh` bundling pattern.
 
 ### Grouping — namespace over bundled scripts #pattern
 
@@ -63,7 +63,7 @@ it. `hl-check-tags.sh` + `hl-check-payees.sh` → clearly a `hl-check-` subgroup
 
 ## Preferred output model #pattern
 
-**Model: `~/.nb/.test/hl-optional.sh`** — the gold standard for multi-check tests.
+**Model: `~/.nb/.checks/hl-optional.sh`** — the gold standard for multi-check tests.
 
 Key properties:
 - **Form 2** (no label, auto-run, silent on pass) — failure output IS the signal
