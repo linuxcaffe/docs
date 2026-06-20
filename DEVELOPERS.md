@@ -9,6 +9,8 @@ processed: true
 
 Developer documentation for nb-web, organised by feature area. Each section below links to a dedicated file in `dev/`.
 
+nb-web is a Flask + vanilla JS web interface for [nb](https://github.com/xwmx/nb) — a plain-text, git-backed note-taking CLI. The architecture bets on simplicity: no ORM, no frontend framework, no build step. Notes are Markdown files on disk; git is the database; the browser is a thin client. What makes it interesting is what gets layered on top of that simplicity — a config walk-up chain (note → folder → notebook → global) that resolves access, constraints, display settings, and test coverage per-folder; a hybrid test layer that pairs pytest with the same shell scripts used for live monitoring; a plugin system that lets external repos register renderers without touching the core; and a branch-per-notebook git topology that gives each notebook its own history, its own sync cadence, and its own remote branch — all on a single Codeberg repo. The design rewards reading: almost everything is in `app.py` and `main.js`, both of which stay deliberately legible rather than clever.
+
 ---
 
 ## Index
