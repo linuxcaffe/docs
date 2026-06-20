@@ -25,6 +25,7 @@ Developer documentation for nb-web, organised by feature area. Each section belo
 | [[docs:dev/dev-sync.md]] | Pull-then-push flow, `git-wire` internals, status API |
 | [[docs:dev/dev-storage.md]] | Git topology: undercarriage repo, branch-per-notebook, restore sequence |
 | [[docs:dev/dev-testing.md]] | Writing and running nb-web test scripts via the `test` codeblock |
+| [[docs:dev/dev-test-suite.md]] | Automated test suite strategy: hybrid pytest + `.test/` scripts, synthetic fixtures, isolated repo |
 | [[docs:dev/dev-contributing.md]] | Reporting issues, submitting changes, running from source |
 | [[docs:dev/dev-xref.md]] | Stemming algorithm, prefix matching, `/api/xref` reference, `forceAll()` book behavior |
 | [[docs:dev/dev-security.md]] | Auth scheme — session login, user cards, dotfolder notebooks, level-based access |
