@@ -43,7 +43,7 @@ This is where books become something more than a reading aid.
 Each chapter note can carry **Form 2 test blocks** — script-driven checks that are completely invisible when they pass, and render a markdown warning (with a heading) when they fail:
 
 ````markdown
-```test
+```check
 hl-budget-has-periodic
 ```
 
@@ -73,14 +73,14 @@ Each chapter is a standalone note that also reads well in isolation. The stitchi
 **Test placement strategy:** put Form 2 checks immediately before the section that depends on what they test.
 
 ```markdown
-```test
+```check
 hl-budget-has-periodic          ← must pass before ## Periodic transactions makes sense
 ```
 
 ## Periodic transactions
 ...
 
-```test
+```check
 hl-budget-runs                  ← must pass before the bal --budget block is useful
 ```
 

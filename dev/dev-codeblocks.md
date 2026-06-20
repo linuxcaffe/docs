@@ -110,7 +110,7 @@ echo "### Uncommitted changes in \`$NB_NOTEBOOK\`"
 ~ monthly ...
 ```
 
-```test                         ← embedded verify block (shows pass/vanish in place)
+```check                         ← embedded verify block (shows pass/vanish in place)
 hl-budget-include-check
 ```
 

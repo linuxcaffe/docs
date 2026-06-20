@@ -402,7 +402,7 @@ Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/` 
 **Form 1 — on-demand (with label):**
 
 ````markdown
-```test
+```check
 hl-recent-txn | Recent transactions
 ```
 ````
@@ -412,7 +412,7 @@ Renders a `▶ Recent transactions` button. Click to run; output replaces the bu
 **Form 2 — automatic (no label):**
 
 ````markdown
-```test
+```check
 hl-ok
 ```
 ````
@@ -422,7 +422,7 @@ Runs at render time. **Exit 0 + no output → block vanishes completely.** Outpu
 **Form 3 — group (multiple scripts, one per line):**
 
 ````markdown
-```test
+```check
 hl-ok
 tw-due
 nb-dirty
@@ -432,7 +432,7 @@ nb-dirty
 All run in parallel. All pass → block vanishes. Any fail → `N of M checks failed` header with a collapsible toggle row per failure. Add a label to auto-run as a button instead:
 
 ````markdown
-```test
+```check
 hl-ok | Health checks
 tw-due
 nb-dirty
@@ -442,7 +442,7 @@ nb-dirty
 A bare `| Label` line sets the group label without labelling individual scripts:
 
 ````markdown
-```test
+```check
 | Dashboard checks
 hl-ok
 tw-due
@@ -484,7 +484,7 @@ tw-due
 A script name ending in `-` expands to all matching scripts in `~/.nb/.test/` at render time:
 
 ````markdown
-```test
+```check
 nb-schem-
 ```
 ````
@@ -492,7 +492,7 @@ nb-schem-
 Runs every `nb-schem-*.sh` script as a group. Add a new script to the family and it appears automatically — no codeblock edits needed. Works in single-line and multi-line forms:
 
 ````markdown
-```test
+```check
 | nb checks
 nb-config-
 nb-schem-
@@ -520,13 +520,13 @@ Scripts use hyphen-separated names. The prefix is the application domain; sub-fa
 **Health dashboard** — Form 2 blocks at the top of a hub note. Invisible when healthy; surface on failure:
 
 ````markdown
-```test
+```check
 hl-ok
 ```
-```test
+```check
 nb-dirty
 ```
-```test
+```check
 tw-due
 ```
 
@@ -536,10 +536,10 @@ tw-due
 **On-demand reference** — Form 1 in a journal or guide:
 
 ````markdown
-```test
+```check
 hl-recent-txn | Recent transactions
 ```
-```test
+```check
 hl-balances | Account balances
 ```
 ````

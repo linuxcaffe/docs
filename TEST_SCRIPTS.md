@@ -39,7 +39,7 @@ All scripts live in `~/.nb/.test/`. Browse them with:
 
 Scripts are resolved by name — `.sh` extension is optional:
 
-```test
+```check
 hl-ok        # finds ~/.nb/.test/hl-ok.sh
 hl-ok.sh     # same
 ```
@@ -183,11 +183,11 @@ Browse and edit them in-place:
 Wait — the syntax is a fenced block, not an inline expression. Correct form:
 
 ````markdown
-```test
+```check
 hl-ok
 ```
 
-```test
+```check
 nb-dirty
 ```
 ````
@@ -195,11 +195,11 @@ nb-dirty
 **On-demand reference** — Form 1 in a journal note or guide section:
 
 ````markdown
-```test
+```check
 hl-recent-txn | Recent transactions
 ```
 
-```test
+```check
 hl-balances | Account balances
 ```
 ````
@@ -207,7 +207,7 @@ hl-balances | Account balances
 **Invisible guardrail** — embed a check in a setup or onboarding note. New users see the error; experienced users with everything configured see nothing:
 
 ````markdown
-```test
+```check
 hl-ok
 ```
 
@@ -237,13 +237,13 @@ Because `{{inline:}}` runs the full rendering pipeline on included content, test
 A status file is just a note with tightly-packed Form 2 blocks and nothing else:
 
 ````markdown
-```test
+```check
 hl-ok
 ```
-```test
+```check
 nb-dirty
 ```
-```test
+```check
 note-disk-warn
 ```
 ````
@@ -292,7 +292,7 @@ If a second fix exists, name it **Fix 2** with a concrete example.
 
 An embedded block lets the user verify the fix without leaving the note:
 
-```test
+```check
 hl-budget-include-check
 ```
 

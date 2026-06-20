@@ -35,14 +35,14 @@ nb-sync-                nb sync sub-group
 A `test` block body ending with `-` fires every script whose name starts with that prefix:
 
 ````markdown
-```test
+```check
 hl-health-
 ```
 ````
 
 fires `hl-health-day.sh`, `hl-health-week.sh`, `hl-health-month.sh` — the whole subgroup.
 
-```test
+```check
 hl-
 ```
 
