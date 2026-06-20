@@ -143,12 +143,44 @@ def _effective_access(note_meta, nb_meta):
 
 Also a search field: `nb g "user: djp"` finds every note you've claimed.
 
+**`access: <username>` — person-specific private notes** #pattern
+
+If `access:` is set to a value that is not a recognised level string (`guest`/`user`/`office`/`admin`/`tech`), it is treated as a username. Only the user whose username matches exactly can see the note:
+
+```yaml
+---
+title: My private scratchpad
+access: djp
+---
+```
+
+This is a personal lock, not a level gate — even an `admin` logging in as a different user cannot see it. It silently disappears from the list and returns an empty body on inline fetch, exactly like any other inaccessible note.
+
+**Tech recovery bypass** #invariant — `tech` level overrides username-specific locks. Since notes are plain text files, a `tech` user can always recover content that would otherwise be unreachable through the web interface. This makes `access: username` safe to use without fear of permanent lockout:
+
+```
+access: djp    →  djp sees it   |  tech sees it   |  everyone else: invisible
+access: admin  →  admin/tech    |  below admin: invisible
+```
+
+Implemented in `_can_access(user, note_meta, nb_meta)` which wraps `_effective_access`:
+
+```python
+def _can_access(user, note_meta, nb_meta):
+    access = _effective_access(note_meta, nb_meta)
+    if access not in LEVELS:
+        return user.get('level') == 'tech' or user.get('username') == access
+    return _level_gte(user.get('level', ''), access)
+```
+
+All list/fetch/notebook-filter call sites use `_can_access`; `_effective_access` is internal.
+
 **Where filtering is applied:**
 
 | Location | Behaviour |
 |----------|-----------|
 | `_list_notes()` | Notebook config read once; each note's meta checked; inaccessible notes silently skipped |
-| `GET /api/note` | 403 returned if user level < effective access |
+| `GET /api/note` | 403 / empty body returned if access check fails |
 | `GET /api/notebooks` | Notebooks filtered by config access before being returned |
 | `GET /api/nb/notebooks` | Same |
 
