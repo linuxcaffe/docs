@@ -135,24 +135,23 @@ notebook. Notebooks sync without touching app code.
 
 ---
 
-## The orphan: `nb-settings.json`
+## `nb-settings.json` — in transition
 
-`~/dev/nb-web/nb-settings.json` is the **only unversioned config file** that isn't
-reconstructible from the repos above. It contains:
+`~/dev/nb-web/nb-settings.json` currently holds a mix of portable config and
+machine-specific settings. The portable keys are being migrated into `.nb.md` and
+notebook manifests via the config chain. What will remain in `nb-settings.json` is
+a thin residual of truly machine-specific values:
 
-```
-lang, hledger_web_url, tw_web_url, pty_height, pty_cwd, pty_init,
-git_repos, default_git_remote, notebook_prefs, hledger_web_cmd,
-tw_web_cmd, hledger_terminal, tw_terminal, plugins, codeblock_access,
-plugin_prefs
-```
+| Moving to `.nb.md` / manifests | Staying in `nb-settings.json` |
+|-------------------------------|-------------------------------|
+| `codeblock_access`, `lang` | server port, PTY dimensions |
+| `notebook_prefs` → notebook configs | `pty_init`, `pty_cwd` |
+| plugin config → notebook manifests | `git_repos` aliases (machine paths) |
+| `default_git_remote` → `.nb.md` | `hledger_web_cmd`, `tw_web_cmd` |
 
-This is machine-specific config (ports, paths, PTY settings) that deliberately does
-NOT travel with notebooks. But it's also not backed up anywhere. On a new machine,
-it must be recreated from scratch.
-
-**Mitigation:** keep a commented template at `~/.nb/.tools/nb-settings-template.json`
-in the undercarriage. Not a live config — a documented starting point.
+Once migration is complete, `nb-settings.json` will be small, clearly machine-specific,
+and reconstructible from a short checklist. It will still not be version-controlled
+(intentionally — ports and paths differ per machine) but it won't be a restore blocker.
 
 ---
 
@@ -199,12 +198,13 @@ Steps 5 and 6 are the fragile parts. Everything else is mechanical.
 
 ## What needs improvement
 
-1. **Wire `friends` and `hledger`** to Codeberg — data loss risk today
-2. **Add `preciousfinds.ca` as a Codeberg secondary remote** — GitHub-only is a single point
-3. **Track `.tools/` and `.lib/`** in the undercarriage alongside `.test/`
-4. **Write `nb-settings-template.json`** — only unversioned config that blocks restore
-5. **Merge `Takeout/feature/notebook-config`** — notebook data shouldn't live on a dev branch
-6. **Bootstrap script** — automate the restore sequence above
+1. **Add `preciousfinds.ca` as a Codeberg secondary remote** — GitHub-only is a single point
+2. **Track `.tools/` and `.lib/`** in the undercarriage alongside `.test/`
+3. **Migrate `nb-settings.json`** portable keys into `.nb.md` (in progress)
+4. **Merge `Takeout/feature/notebook-config`** — notebook data shouldn't live on a dev branch
+5. **Bootstrap script** — automate the restore sequence above
+
+~~Wire `friends` and `hledger`~~ — done 2026-06-20, both on `nb-notes.git`.
 
 ---
 
