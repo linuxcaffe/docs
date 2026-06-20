@@ -120,7 +120,9 @@ Visibility of a note is determined by resolving an **effective access level** an
 ```
 note frontmatter access:  → overrides everything (explicit)
 note frontmatter user:    → inherits that user's level from their card
+folder config access:     → .{folder}.md walk-up (innermost folder wins)
 notebook config access:   → default for all notes in the notebook
+global config access:     → ~/.nb/.nb.md
 system default:           → 'user'  (guests see nothing unless explicitly granted)
 ```
 
@@ -175,12 +177,14 @@ def _can_access(user, note_meta, nb_meta):
 
 All list/fetch/notebook-filter call sites use `_can_access`; `_effective_access` is internal.
 
+The full chain is computed by `_folder_config(notebook, note_path)` which walks from the note's directory up to the notebook root merging `.{folder}.md` configs (innermost wins), then merges over `_notebook_config()` (which itself merges over `_global_config()`).
+
 **Where filtering is applied:**
 
 | Location | Behaviour |
 |----------|-----------|
-| `_list_notes()` | Notebook config read once; each note's meta checked; inaccessible notes silently skipped |
-| `GET /api/note` | 403 / empty body returned if access check fails |
+| `_list_notes()` | Notebook config read once; each note meta checked; inaccessible notes silently skipped. Folder rows checked against their own `.{folder}.md`. |
+| `GET /api/note` | Uses `_folder_config()` for the full walk-up; 403 / empty body on failure. Returns `effective_access` field — the resolved value for the badge and other UI. |
 | `GET /api/notebooks` | Notebooks filtered by config access before being returned |
 | `GET /api/nb/notebooks` | Same |
 

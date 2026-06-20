@@ -53,13 +53,45 @@ thing they configure:
 Every config file MUST carry `config: <name>` in frontmatter — the identifier of what
 it configures. This is the hook for admin tooling (see Admin path below).
 
+### Naming convention — the stub #pattern
+
+The **stub** (the base name, e.g. `shots`) stays the same across three related files:
+
+| File | Role | Example |
+|------|------|---------|
+| `shots/` | the directory itself | folder |
+| `.shots.md` | config dotfile (`type: dotfile`) | machine-read; not indexed |
+| `shots.md` | dashboard note | human-read; pinned via `pinned: shots.md` in config |
+
+This scales uniformly across all four config levels:
+
+| Level | Config file | Dashboard | Stub |
+|-------|-------------|-----------|------|
+| Global | `~/.nb/.nb.md` | — | `nb` |
+| Notebook | `~/.nb/accts/.accts.md` | `accts.md` | `accts` |
+| Folder | `~/.nb/accts/reports/.reports.md` | `reports.md` | `reports` |
+| Subfolder | `~/.nb/accts/reports/2026/.2026.md` | `2026.md` | `2026` |
+
+**Why it matters:**
+- Template placeholders (`{{title}}`, `{{folder}}`) resolve to the stub in all creation paths
+- `pinned: {{title}}.md` in the template defaults the config to pin the matching dashboard note
+- `config tree` uses the stub to identify config files in the tree walk
+- `front config:` finds all config files regardless of level
+
+**`type: dotfile`** — all config files carry `type: dotfile` in frontmatter. The backend registers it as an FM type (indicator `⚙`) so config files are visually distinct in any list that shows them.
+
 ### What goes where
 
 | Field | Level | Notes |
 |-------|-------|-------|
 | `config:` | all levels | Required; names what this file configures |
 | `codeblock_access:` | `.nb.md` | Global security policy; merged into `/api/nb-settings` response |
-| `access:` | notebook, folder | Access floor; inherits up the chain |
+| `access:` | all levels | Access floor; inherits up the chain; `access: username` for person-specific |
+| `access_badge:` | all levels | `true` → show resolved access level in cmd-output-bar (diagnostic) |
+| `tests:` | all levels | Prefix(es) of `.test/` scripts to auto-inject as Type-1 fences at render time |
+| `pinned:` | folder, notebook | Filename stem always sorted to top of list |
+| `tag_color:` | folder, notebook | Map tag names to hex colours (values must be quoted) |
+| `prepend_date:` | folder, notebook | `false` to suppress YYYYMMDD prefix on new note filenames |
 | `default_type:` | folder | Type for new notes in this folder |
 | `sort:` | folder, notebook | Default sort for list panel |
 | `plugins:` | notebook | Active plugins for this notebook |
