@@ -39,7 +39,7 @@ is opened and that don't belong inside any one notebook.
 
 ```
 ~/.nb/
-  .nb.md              ← global config (access floor, tests:, tag_color:, etc.)
+  .nb.md              ← global config (access floor, checks:, tag_color:, etc.)
   .users/             ← user cards (djp.md, guest.md, office.md, admin.md …)
   .rules/             ← domain convention files (hledger.md, docs.md, preview.md …)
   .checks/              ← check scripts (hl-*, nb-*, note-*, tw-*)

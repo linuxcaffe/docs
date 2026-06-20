@@ -36,8 +36,8 @@ pinned: docs.md
 # Test-script family prefixes injected as Type 1 blocks at the top of every
 # note preview in this folder. Silent on pass. Set "" to suppress inherited.
 #
-# tests: [nb-, hl-]
-# tests: ""
+# checks: [nb-, hl-]
+# checks: ""
 ---
 
 <!-- NOTE: create this file via the ＋ button in a ```config block, not via Add —

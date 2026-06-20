@@ -88,7 +88,7 @@ This scales uniformly across all four config levels:
 | `codeblock_access:` | `.nb.md` | Global security policy; merged into `/api/nb-settings` response |
 | `access:` | all levels | Access floor; inherits up the chain; `access: username` for person-specific |
 | `access_badge:` | all levels | `true` → show resolved access level in cmd-output-bar (diagnostic) |
-| `tests:` | all levels | Prefix(es) of `.checks/` scripts to auto-inject as Type-1 fences at render time |
+| `checks:` | all levels | Prefix(es) of `.checks/` scripts to auto-inject as Type-1 fences at render time |
 | `pinned:` | folder, notebook | Filename stem always sorted to top of list |
 | `tag_color:` | folder, notebook | Map tag names to hex colours (values must be quoted) |
 | `prepend_date:` | folder, notebook | `false` to suppress YYYYMMDD prefix on new note filenames |
