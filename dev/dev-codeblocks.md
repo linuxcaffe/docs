@@ -164,6 +164,24 @@ Key reads before writing new scripts:
 
 ---
 
+## gallery block — implementation notes
+
+**Backend (`/api/gallery`):** Three path modes — walk-up (no `path` param), here-only (`path=.`), explicit (`path=nb:rel/`). Walk-up stops at `NB_DIR` boundary (`d.relative_to(NB_DIR)` raises `ValueError`). Returns `{'images': []}` for missing folders — no error, just an empty list — so the frontend can vanish cleanly.
+
+**`_GALLERY_IMAGE_EXTS`** — module-level frozenset. Skips dotfiles and non-image extensions. `classify()` is not used here because the gallery lists files directly from the filesystem, not via nb's index.
+
+**Frontend `_loadGalleryBlock(el)`:** parses `data-query` as `<size> [path]` with a single `indexOf(' ')` split. Fetches `/api/gallery?selector=<activeSelector>&path=<pathArg>`. Empty result → `el.innerHTML = ''` → block vanishes completely (no header, no spinner).
+
+**`wasCollapsed` preservation** — same pattern as `_loadFrontBlock`: reads `el.classList.contains('nb-collapsed')` before clearing innerHTML, restores the class after building. `_initCollapseToggle` then reads localStorage to apply the persisted state.
+
+**Lightbox `_galleryLightbox(images, activeUrl)`** — appended to `document.body`, not the block. `cur` index wraps with `((idx % len) + len) % len`. The `keydown` listener checks `document.getElementById('nb-gallery-lb')` on every key event — if the lightbox was removed (click-outside), the listener self-cleans on next key press rather than needing a MutationObserver.
+
+**FM-mode + `.` path** — `gallery: med .` in frontmatter injects the block into `#nb-fm-blocks` via `_buildFmBlocks`. The empty-result vanish means the block is completely invisible on dashboards until an `images/` folder exists. No placeholder, no error state needed.
+
+**Collapse key** — `_collapseKey` uses `block.dataset.query` (the raw fence text, e.g. `"med ."`) as the localStorage key. Different size/path combinations are independent collapse states.
+
+---
+
 ## front block — implementation notes
 
 Key lessons from the `front` codeblock (frontmatter filter/query block):

@@ -7,7 +7,7 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#front — Frontmatter Filter|front]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#front — Frontmatter Filter|front]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -331,6 +331,57 @@ The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for br
 **Controls:** **▼/▶** collapse (persists in `localStorage` by starting path) · **↻** refresh · breadcrumb segments are clickable.
 
 **Default collapsed** on first render for hidden-dir paths.
+
+---
+
+### gallery — Image Gallery
+
+````markdown
+```gallery
+med
+```
+````
+
+Renders a CSS grid of images from the nearest `images/` folder, found by walking up from the current note's location. Click any image to open a full-screen lightbox with keyboard navigation (← → Esc).
+
+**Sizes** — the first word sets the cell width:
+
+| Size | Cell width |
+|------|-----------|
+| `thumb` | 80 px |
+| `small` | 140 px |
+| `med` | 220 px |
+| `large` | 320 px |
+
+Grid columns auto-fill the available width at the chosen cell size.
+
+**Path argument** — optional second word overrides the folder search:
+
+````markdown
+```gallery
+med .
+```
+
+```gallery
+large pfinds:items/photos/
+```
+````
+
+| Path | Behaviour |
+|------|-----------|
+| *(absent)* | Walk up from note dir; use first `images/` found |
+| `.` | Look only for `images/` in the current note's folder; vanish silently if absent |
+| `notebook:path/` | Use that specific folder directly |
+
+**FM-mode** — declare in frontmatter to surface the gallery in the toolbar strip above the body (collapses to a header bar, invisible when no images exist):
+
+```yaml
+gallery: med .
+```
+
+The `.` form is ideal for dashboard templates: the block is completely invisible until an `images/` folder appears next to the note — no empty placeholder, no error.
+
+**Lightbox controls:** click any thumbnail to open · ← / → to navigate · Esc or click outside to close.
 
 ---
 
