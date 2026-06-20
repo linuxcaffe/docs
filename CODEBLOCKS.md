@@ -339,6 +339,56 @@ model:true | Example notes
 
 ---
 
+### config — Config Inheritance Tree
+
+````markdown
+```config
+access: .
+```
+````
+
+Visualises the configuration resolution chain from the global root (`~/.nb/.nb.md`) down to the current note's notebook and folder. Each level shows only what it **contributes** — inheritance is implied by indentation. Gated: `admin` read level.
+
+**Syntax:**
+
+| Form | Meaning |
+|------|---------|
+| `field: .` | Walk to current note's location; show `field` contributions |
+| `field: Notebook:folder/` | Walk to a specific target |
+| *(bare)* | Walk to current location; show all contributed keys |
+
+**Output:**
+
+```
+● 🌐 ~/.nb/.nb.md                 codeblock_access, …
+  ● 📒 Takeout/.Takeout.md        access, plugins, cine
+    ● 📁 shots/.shots.md          default_type, sort, constraints
+    ○ 📁 schedule/                (no config file)
+```
+
+`●` nodes are clickable — opens the config file in the preview pane for editing via **Changes** or **Edit**. `○` nodes have no config file yet.
+
+When a `field` is specified, only nodes that actually set that field show a value beside them:
+
+````markdown
+```config
+access: .
+```
+````
+
+Useful for tracing where `access:`, `default_type:`, or any other setting is actually coming from. Admin-only — does not appear for lower access levels.
+
+**Config file convention:** every config file must carry `config: <name>` in its frontmatter (the name of what it configures). This makes them queryable via `front`:
+
+````markdown
+```front
+read: admin
+config: | All config files
+```
+````
+
+---
+
 ### test — Embedded Assertions
 
 Script-driven checks embedded directly in notes. Scripts live in `~/.nb/.test/` and run via the nb-web Flask server — no terminal needed. Browse the bundled scripts with a `nav` block:
@@ -429,14 +479,39 @@ tw-due
 | `note-context` | 1 | Markdown table of all context variables — on demand |
 | `hl-balances` | 1 | Depth-1 balance table — on demand |
 
+**Form 4 — glob prefix (dangling dash):**
+
+A script name ending in `-` expands to all matching scripts in `~/.nb/.test/` at render time:
+
+````markdown
+```test
+nb-schem-
+```
+````
+
+Runs every `nb-schem-*.sh` script as a group. Add a new script to the family and it appears automatically — no codeblock edits needed. Works in single-line and multi-line forms:
+
+````markdown
+```test
+| nb checks
+nb-config-
+nb-schem-
+nb-ref-
+```
+````
+
+---
+
 **Script naming convention:**
 
-| Prefix | App |
-|--------|-----|
-| `hl-` | hledger |
-| `nb-` | nb |
-| `tw-` | Taskwarrior |
-| `note-` | system/global |
+Scripts use hyphen-separated names. The prefix is the application domain; sub-families add a second level separated by another hyphen. The dangling-dash glob runs an entire family.
+
+| Prefix | App | Example families |
+|--------|-----|-----------------|
+| `hl-` | hledger | `hl-budget-`, `hl-health-` |
+| `nb-` | nb / nb-web | `nb-config-`, `nb-schem-`, `nb-ref-` |
+| `tw-` | Taskwarrior | — |
+| `note-` | system/global | — |
 
 ---
 
