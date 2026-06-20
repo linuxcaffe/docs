@@ -37,6 +37,41 @@ These blocks are **local-first**: no cloud, no sync service. Data comes from you
 
 ---
 
+## FM-mode — Blocks Declared in Frontmatter
+
+Any codeblock type can be promoted out of the note body into the **toolbar strip** (between the TOC bar and body) by declaring it in frontmatter. The FM field name is the codeblock language tag; the value is the query — identical to what you'd write inside the fence.
+
+```yaml
+---
+front: type:item
+---
+```
+
+is equivalent to writing ` ```front\ntype:item\n``` ` in the body, except the block appears in `#nb-fm-blocks` (above the body, collapsed by default) rather than floating in the text.
+
+**Multiple blocks** — each key that matches a registered codeblock lang gets its own slot:
+
+```yaml
+---
+front: type:shot loc:LG
+tw:    project:film status:pending
+---
+```
+
+**Boolean shorthand** — `true` means an empty query (block with no filter):
+
+```yaml
+---
+front: true
+---
+```
+
+**Collapse state** — FM-mode blocks start collapsed. State is then persisted per-block in `localStorage` the same as body blocks.
+
+**The model** — the same promotion pattern as `toc: true`, which moved the Table of Contents from a body block into the persistent toolbar strip.
+
+---
+
 ## Block Controls
 
 Every block header carries the same universal controls:

@@ -345,6 +345,52 @@ Returns sorted list of `*.sh` filenames in `~/.nb/.checks/` matching `{prefix}*.
 
 ---
 
+## FM-mode — implementation
+
+**Concept:** the same promotion that moved TOC from a body `\`\`\`toc\`` block to the persistent `#nb-toc-bar` strip, generalised to any registered codeblock lang.
+
+**HTML slot:** `<div id="nb-fm-blocks" hidden></div>` — sits between `#nb-toc-bar` and `#nb-preview-content` in `index.html`. Hidden whenever the toolbar is hidden (editor, spreadsheet, PDF).
+
+**JS wiring (`main.js`):**
+
+```javascript
+async function _buildFmBlocks(note) {
+    const wrap = document.getElementById('nb-fm-blocks');
+    wrap.innerHTML = '';
+    wrap.hidden = true;
+    for (const [key, val] of Object.entries(note.meta ?? {})) {
+        const r = NbWeb.getCodeblockRenderer(key);
+        if (!r) continue;
+        const query = val === true ? '' : String(val ?? '').trim();
+        frags.push(r.html(query));
+    }
+    if (!frags.length) return;
+    wrap.innerHTML = frags.join('');
+    wrap.hidden = false;
+    await NbWeb.renderCodeblocks(wrap);
+}
+```
+
+Called (unawaited) from `_finishRendered`, after `_buildToc`. It fires independently — no dependency on the main-body `renderCodeblocks` pass.
+
+**`NbWeb.getCodeblockRenderer(lang)`** — returns the `{ html, render }` spec for a fence language from the first enabled module that registers it. Returns `null` if no match — harmless for unrelated FM fields.
+
+**`NbWeb.renderCodeblocks(container)`** — runs every registered `render(container)` in turn. Each renderer queries for its own divs in `container`; mismatched renderers find nothing and early-return. Calling it on `#nb-fm-blocks` rather than `#nb-preview-content` scopes rendering to only the injected blocks.
+
+**Default-collapsed invariant:** `front` blocks start without `nb-front-open`, so they render collapsed. Other block types vary by their own localStorage state. FM-mode blocks share the same localStorage key space as body blocks — if the user expanded one previously, it opens again. This is intentional (state persists).
+
+**Tricky bit — sibling CSS hide rule:** `#nb-preview-toolbar[hidden]` uses the general sibling selector `~`. Since `#nb-fm-blocks` is two siblings away (past `#nb-toc-bar`), the rule is:
+
+```css
+#nb-preview-toolbar[hidden] ~ * ~ #nb-fm-blocks { display: none !important; }
+```
+
+A single `~` would also work (CSS `~` matches any later sibling, not just adjacent), but the two-step form is explicit about the intended structure.
+
+**Not applicable to `toc:`** — TOC is already handled by `_buildToc` / `_finishRendered` via `note.meta.toc`. The FM-mode loop skips `toc` because no codeblock renderer is registered for lang `"toc"` — `NbWeb.getCodeblockRenderer('toc')` returns `null`.
+
+---
+
 ## mkd-codeblocks
 
 `NbWeb-codeblocks` is nb-web's implementation of the [mkd-codeblocks](https://github.com/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app.
