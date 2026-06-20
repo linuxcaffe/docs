@@ -23,6 +23,7 @@ Developer documentation for nb-web, organised by feature area. Each section belo
 | [[docs:dev/dev-wikilinks.md]] | Wikilink resolution algorithm, `_wikilinkCache`, `term:` link handling |
 | [[docs:dev/dev-templates.md]] | `_resolve_template_vars`, placeholder API, annotation templates |
 | [[docs:dev/dev-sync.md]] | Pull-then-push flow, `git-wire` internals, status API |
+| [[docs:dev/dev-storage.md]] | Git topology: undercarriage repo, branch-per-notebook, restore sequence |
 | [[docs:dev/dev-testing.md]] | Writing and running nb-web test scripts via the `test` codeblock |
 | [[docs:dev/dev-contributing.md]] | Reporting issues, submitting changes, running from source |
 | [[docs:dev/dev-xref.md]] | Stemming algorithm, prefix matching, `/api/xref` reference, `forceAll()` book behavior |
