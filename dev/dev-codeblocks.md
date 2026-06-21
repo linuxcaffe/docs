@@ -374,9 +374,14 @@ Returns sorted list of `*.sh` filenames in `~/.nb/.checks/` matching `{prefix}*.
 ```javascript
 async function _buildFmBlocks(note) {
     const wrap = document.getElementById('nb-fm-blocks');
+    if (!wrap) return;
     wrap.innerHTML = '';
     wrap.hidden = true;
-    for (const [key, val] of Object.entries(note.meta ?? {})) {
+    if (!note?.meta) return;
+
+    const frags = [];
+    for (const [key, val] of Object.entries(note.meta)) {
+        if (key === 'check') continue;
         const r = NbWeb.getCodeblockRenderer(key);
         if (!r) continue;
         const query = val === true ? '' : String(val ?? '').trim();
@@ -385,7 +390,27 @@ async function _buildFmBlocks(note) {
     if (!frags.length) return;
     wrap.innerHTML = frags.join('');
     wrap.hidden = false;
-    await NbWeb.renderCodeblocks(wrap);
+    await NbWeb.renderCodeblocks(wrap);   // render first — headers don't exist until after this
+
+    for (const block of [...wrap.children]) {
+        const bCls = [...block.classList].find(c => c.endsWith('-block')) || 'block';
+        const bId  = block.dataset.cmd || block.dataset.query || block.dataset.period || '';
+        const fmKey = `nb-fm:${bCls}:${bId}`;
+
+        if (localStorage.getItem(fmKey) !== '1') {
+            block.classList.add('nb-collapsed');    // default closed
+        }
+
+        const hdr = block.querySelector('[class*="-header"]');
+        if (hdr && !hdr.dataset.fmWired) {
+            hdr.dataset.fmWired = '1';
+            hdr.addEventListener('click', () => setTimeout(() => {
+                block.classList.contains('nb-collapsed')
+                    ? localStorage.removeItem(fmKey)
+                    : localStorage.setItem(fmKey, '1');
+            }, 0));
+        }
+    }
 }
 ```
 
@@ -395,7 +420,9 @@ Called (unawaited) from `_finishRendered`, after `_buildToc`. It fires independe
 
 **`NbWeb.renderCodeblocks(container)`** — runs every registered `render(container)` in turn. Each renderer queries for its own divs in `container`; mismatched renderers find nothing and early-return. Calling it on `#nb-fm-blocks` rather than `#nb-preview-content` scopes rendering to only the injected blocks.
 
-**Default-collapsed invariant:** `front` blocks start without `nb-front-open`, so they render collapsed. Other block types vary by their own localStorage state. FM-mode blocks share the same localStorage key space as body blocks — if the user expanded one previously, it opens again. This is intentional (state persists).
+**Default-closed invariant:** FM blocks always start collapsed. The render-then-collapse sequence is deliberate: block headers don't exist in the DOM until after `NbWeb.renderCodeblocks(wrap)`, so the collapse pass must run post-render.
+
+**`nb-fm:${cls}:${id}` localStorage key** — tracks whether the user has ever explicitly opened a specific FM block. Value `'1'` = opened at least once; absent = never opened (start collapsed). This is independent of the `nb-collapse:${cls}:${id}` key used by body-embedded blocks — FM blocks always default closed regardless of body-block state.
 
 **Tricky bit — sibling CSS hide rule:** `#nb-preview-toolbar[hidden]` uses the general sibling selector `~`. Since `#nb-fm-blocks` is two siblings away (past `#nb-toc-bar`), the rule is:
 
