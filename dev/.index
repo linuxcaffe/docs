@@ -7,9 +7,12 @@ dev-render-pipeline.md
 dev-security.md
 dev-sync.md
 dev-templates.md
-dev-testing.md
+
 dev-wikilinks.md
 dev-xref.md
 dev-notebook-config.md
 dev-frontmatter-editor.md
 dev-languages.md
+dev-checks.md
+dev-storage.md
+dev-test-suite.md
