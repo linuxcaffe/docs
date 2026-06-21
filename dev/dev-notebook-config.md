@@ -60,7 +60,7 @@ The **stub** (the base name, e.g. `shots`) stays the same across three related f
 | File | Role | Example |
 |------|------|---------|
 | `shots/` | the directory itself | folder |
-| `.shots.md` | config dotfile (`type: dotfile`) | machine-read; not indexed |
+| `.shots.md` | config dotfile (`type: dotfile`) | machine-read; not indexed by nb, but wikilinks resolve — see [[dev-wikilinks]] |
 | `shots.md` | dashboard note | human-read; pinned via `pinned: shots.md` in config |
 
 This scales uniformly across all four config levels:

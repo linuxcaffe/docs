@@ -59,6 +59,44 @@ not by `alias:` field value.
 
 ---
 
+## Dotfile wikilinks
+
+Config dotfiles (`.shots.md`, `.Takeout.md`, `.nb.md`) are not indexed by nb,
+so `nb search` never finds them. Two mechanisms make wikilinks to dotfiles work
+transparently:
+
+### Search supplement — bare stem form
+
+`_search_notes()` in `app.py` checks whether the query starts with `.`. If so,
+it `rglob`s the notebook for matching filenames after the main nb search:
+
+- `[[.shots]]` → globs for `.shots.md` → finds `shots/.shots.md` → selector `Takeout:shots/.shots.md`
+- `[[.Takeout]]` → globs for `.Takeout.md` → finds `.Takeout.md` at notebook root
+
+Accepts bare stem (`.shots`) or explicit name (`.shots.md`). The JS resolver
+matches on filename stem as normal — `[[.shots]]` matches a result whose
+`filename` is `.shots.md` because `.shots.md`.replace last extension = `.shots`.
+
+### Direct filesystem fallback — explicit selector form
+
+`GET /api/note` falls back to direct filesystem lookup when `nb show` fails.
+For any `notebook:rel-path` selector, it tries `NB_DIR/notebook/rel-path`
+directly (must resolve within `NB_DIR` — path traversal safe):
+
+- `[[Takeout:.Takeout.md]]` → skips search (has `:`), `/api/note` hits fallback
+- `[[Takeout:shots/.shots.md]]` → same path
+
+**Recommended form:** `[[.shots]]` (bare stem) for same-notebook links — shorter,
+and the search supplement handles it. Use `[[Notebook:.file.md]]` when linking
+cross-notebook or when the stem is ambiguous.
+
+**Display label:** `data-autolabel` fetches the note via `/api/note` and uses
+`meta.alias || title || filename`. Config dotfiles typically have `config: shots`
+in frontmatter; `title:` is usually absent. The `config:` field is not used as
+autolabel — include a pipe label for a clean display: `[[.shots|shots config]]`.
+
+---
+
 ## term: link implementation
 
 `term:` links execute arbitrary shell commands in the built-in terminal pane. The click handler:
