@@ -57,6 +57,45 @@ A YAML list. Each target is fetched independently (in parallel); ref numbers are
 
 ---
 
+## Config-chain seeding
+
+Instead of adding `xref:` to every note, declare it once in a notebook or folder config — it flows to every note in that scope automatically.
+
+```yaml
+# in .nb.md (notebook config) or .folder.md (folder config)
+xref: docs:
+```
+
+Every note in the notebook now behaves as if it had `xref: docs:` in its own frontmatter. No per-note changes needed.
+
+**Domain seeding** — different notebooks point at their own reference domain:
+
+```yaml
+# ~/.nb/nb/.nb.md
+xref: docs:           # nb-web docs for every nb: note
+
+# ~/.nb/accts/.accts.md
+xref: docs:hledger/   # hledger reference for every accts: note
+```
+
+**Suppress at a narrower scope** — a folder or individual note can opt out:
+
+```yaml
+xref:
+```
+
+Bare field with no value. Clears the inherited target at this level without affecting siblings. `xref: ""` also works; bare `xref:` is preferred (less is more).
+
+---
+
+## Config dialog fields
+
+When a config note (`.nb.md`, `.folder.md`) is open, the config form's field labels — `access`, `pinned`, `check`, `tag_color`, etc. — participate in xref exactly like headings. If the notebook's `xref:` points at documentation that has matching sections, the field labels get superscript reference links automatically.
+
+This creates contextual help at zero cost: hover for the tooltip, click to read the doc, back to return. The links appear only on fields that have matching documentation — self-selecting, no noise on simple fields.
+
+---
+
 ## Domain stop words
 
 Universal English stop words are always ignored (articles, prepositions, auxiliaries, common noise words like "use", "file", "note").
