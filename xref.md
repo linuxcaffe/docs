@@ -144,7 +144,7 @@ For best performance on very long books, add `xref:` to individual chapter notes
 
 - **Top-level files only** — folder-scoped targets scan one directory; nested subdirectories are not recursed.
 - **Titles and annotations only** — index vocabulary comes from note title and annotation sidecar; note body text is not indexed.
-- **Heading text nodes only** — xref only injects into `<h1>`–`<h6>` text. Body paragraphs and codeblocks are untouched.
+- **Headings and labelled elements only** — xref injects into `<h1>`–`<h6>` and any element with `data-xref-heading` (config form labels, config codeblock field names). Body paragraphs and codeblocks are untouched.
 - **Cache is mtime-based** — the index refreshes when the target directory's mtime changes. Adding or editing a note in the target notebook invalidates the cache automatically.
 
 ---
