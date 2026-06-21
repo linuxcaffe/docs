@@ -39,10 +39,11 @@ is opened and that don't belong inside any one notebook.
 
 ```
 ~/.nb/
-  .nb.md              ← global config (access floor, checks:, tag_color:, etc.)
+  .nb.md              ← global config (access floor, check:, tag_color:, etc.)
   .users/             ← user cards (djp.md, guest.md, office.md, admin.md …)
   .rules/             ← domain convention files (hledger.md, docs.md, preview.md …)
-  .checks/              ← check scripts (hl-*, nb-*, note-*, tw-*)
+  .checks/            ← check scripts (hl-*, nb-*, note-*, tw-*)
+  .tools/             ← utility scripts (nb-restore.sh, nb-daily-init.sh, nb-settings-template.json)
   .templates/         ← global note templates
   .gitignore          ← ignores /[A-Za-z]*/ (each notebook is its own repo)
 ```
@@ -60,7 +61,6 @@ is opened and that don't belong inside any one notebook.
 
 | Path | Status |
 |------|--------|
-| `.tools/` | Utility scripts — should be tracked alongside `.checks/` |
 | `.lib/` | Shared shell libs — should be tracked |
 | `.images/` | Global image stubs — probably worth tracking |
 | `.changes/` | UI snapshot cache — probably gitignore |
@@ -107,8 +107,8 @@ and type definitions. No separate config step needed.
 |----------|--------|-------|
 | `preciousfinds.ca` | GitHub `linuxcaffe/preciousfinds.ca` | Publishing pipeline requires GitHub; no Codeberg backup |
 | `Takeout` | Codeberg `nb-notes.git` | On `feature/notebook-config` branch — should be on `Takeout` |
-| `friends` | none | **No backup** |
-| `hledger` | none | **No backup** |
+| `friends` | Codeberg `nb-notes.git` | Wired 2026-06-20 |
+| `hledger` | Codeberg `nb-notes.git` | Wired 2026-06-20 |
 | `tutorial` | none | No backup (low priority) |
 
 **Fix for unwired notebooks:** run "Wire remotes" from the Git menu, or manually:
@@ -124,9 +124,10 @@ nb {notebook}: sync
 | Repo | Remote | Notes |
 |------|--------|-------|
 | `~/dev/nb-web/` | Codeberg `linuxcaffe/nb-web` | Core app — Flask + JS |
-| `~/dev/nbweb-cine/` | GitHub `linuxcaffe/nbweb-cine` | Cine plugin |
-| `~/dev/nbweb-hledger/` | GitHub `linuxcaffe/nbweb-hledger` | hledger plugin |
+| `~/dev/tw-web/` | Codeberg `linuxcaffe/tw-web` | Taskwarrior web UI |
 | `~/dev/nb-plugins/` | GitHub `linuxcaffe/nb-plugins` | CLI plugins (grep, cal…) |
+| `~/dev/nbweb-cine/` | GitHub `linuxcaffe/nbweb-cine` | Cine plugin |
+| `~/dev/nbweb-hledger/` | none yet | hledger plugin — no remote, not restored by script |
 | `~/dev/nb-website/` | GitHub `linuxcaffe/nb-website` | Quartz publishing package |
 | `~/dev/nb/` | GitHub `linuxcaffe/nb` | nb CLI fork/notes |
 
@@ -157,34 +158,41 @@ and reconstructible from a short checklist. It will still not be version-control
 
 ## Restore sequence (new machine)
 
-What you'd need to do today to reconstruct from scratch:
+A bootstrap script handles the full restore. On a fresh machine:
 
 ```bash
-# 1. Install nb
-curl -LO https://raw.github.com/xwmx/nb/master/nb && chmod +x nb && sudo mv nb /usr/local/bin/
-
-# 2. Restore undercarriage
-git clone git@codeberg.org:linuxcaffe/nb-notes.git ~/.nb
-# .nb.md, .users/, .rules/, .checks/, .templates/ are now present
-
-# 3. Restore notebooks (each is a branch)
-for nb_name in home docs accts claude tw work nb pfinds openfilmmaker bkmk tasks contacts exp; do
-  mkdir -p ~/.nb/${nb_name}
-  git -C ~/.nb/${nb_name} init
-  git -C ~/.nb/${nb_name} remote add origin git@codeberg.org:linuxcaffe/nb-notes.git
-  git -C ~/.nb/${nb_name} fetch origin ${nb_name}
-  git -C ~/.nb/${nb_name} checkout -b master origin/${nb_name}
-done
-
-# 4. Clone app code
-git clone git@codeberg.org:linuxcaffe/nb-web.git ~/dev/nb-web
-git clone git@github.com:linuxcaffe/nbweb-cine.git ~/dev/nbweb-cine
-
-# 5. Recreate nb-settings.json  ← currently manual; see .tools/nb-settings-template.json
-# 6. Install plugins:  nb plugin install ~/dev/nb-plugins/grep.nb-plugin  etc.
+# Prerequisites: git, curl, SSH key added to Codeberg
+curl -fsSL "https://codeberg.org/linuxcaffe/nb-notes/raw/branch/master/.tools/nb-restore.sh" | bash
 ```
 
-Steps 5 and 6 are the fragile parts. Everything else is mechanical.
+Or after cloning the undercarriage manually, or to resume a partial run:
+
+```bash
+bash ~/.nb/.tools/nb-restore.sh
+```
+
+The script is **idempotent** — safe to re-run; each phase skips steps already complete.
+
+### What `nb-restore.sh` does
+
+| Phase | Action |
+|-------|--------|
+| 0 | Pre-flight: verify `git`, `curl`, SSH → Codeberg |
+| 1 | Install `nb` binary if missing |
+| 2 | Clone undercarriage (`nb-notes.git master → ~/.nb`) |
+| 3 | Restore all notebooks — discovers branches from remote, no hardcoded list |
+| 4 | Clone dev repos (`nb-web`, `nb-plugins`, `nbweb-cine`, `tw-web`) |
+| 5 | Install nb CLI plugins from `~/dev/nb-plugins/*.nb-plugin` |
+| 6 | Seed `nb-settings.json` from `.tools/nb-settings-template.json` |
+| 7 | Write and enable `nb-daily-init` systemd timer (06:00 daily note) |
+
+Prints `✓` / `·` / `✗` per step; summarises failures and manual steps at the end.
+
+### After restore — manual steps
+
+- Edit `~/dev/nb-web/nb-settings.json` — fill in `__SET_ME__` values (port, `tw_web_cmd`, `hledger_web_cmd`)
+- Wire `nbweb-hledger` to a remote (no remote yet — see Layer 3 table)
+- Merge `Takeout` off `feature/notebook-config` onto its own branch
 
 ---
 
@@ -199,10 +207,11 @@ Steps 5 and 6 are the fragile parts. Everything else is mechanical.
 ## What needs improvement
 
 1. **Add `preciousfinds.ca` as a Codeberg secondary remote** — GitHub-only is a single point
-2. **Track `.tools/` and `.lib/`** in the undercarriage alongside `.checks/`
+2. ~~**Track `.tools/` and `.lib/`**~~ — `.tools/` tracked 2026-06-20; `.lib/` still pending
 3. **Migrate `nb-settings.json`** portable keys into `.nb.md` (in progress)
 4. **Merge `Takeout/feature/notebook-config`** — notebook data shouldn't live on a dev branch
-5. **Bootstrap script** — automate the restore sequence above
+5. ~~**Bootstrap script**~~ — done 2026-06-20; see `.tools/nb-restore.sh`
+6. **Wire `nbweb-hledger` remote** — no git remote; not included in restore script yet
 
 ~~Wire `friends` and `hledger`~~ — done 2026-06-20, both on `nb-notes.git`.
 
