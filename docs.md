@@ -1,7 +1,7 @@
 ---
 config: docs
 type: dotfile
-title: docs config
+title: docs notebook config
 date: 2026-06-19
 #
 # ── Access ───────────────────────────────────────────────────────────────────
