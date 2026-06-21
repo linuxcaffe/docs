@@ -81,6 +81,34 @@ Returns a flat JSON object:
 
 ---
 
+## Config form save — nested object trap #gotcha
+
+`_configFmToContent()` in `main.js` re-serialises the **entire** frontmatter on
+every save — not just the fields the form renders. The form manages a small set
+of scalar fields (access, pinned, prepend_date, check, tag_color). All other
+fields pass through the serialiser unchanged.
+
+**The trap:** any catch-all that uses a template literal on an unknown value will
+coerce nested objects to `[object Object]`:
+
+```javascript
+lines.push(`${key}: ${v}`);  // v = {journal: '...', commodity: 'CAD'}
+// → "hledger: [object Object]"  ← silent data loss
+```
+
+This destroyed the `hledger:`, `cine:`, `constraints:`, and `types:` blocks in
+`.Takeout.md` when the user changed `access:` and saved (2026-06-21).
+
+**Fix in place:** `emitYaml(key, v, indent)` — recursive, handles nested objects
+as indented block YAML at any depth. Auto-quotes strings containing `:` or `#`.
+
+**Deeper fix (not yet done):** fields the form never touches should be
+round-tripped as raw YAML text from the original file, not re-serialised from
+the parsed object. This preserves comments, quote style, and any YAML the parser
+may not perfectly reconstruct.
+
+---
+
 ## Changes toolbar button
 
 Added to `#nb-preview-actions` in `index.html` — sits left of Edit in the grey toolbar bar, always visible regardless of note scroll depth.

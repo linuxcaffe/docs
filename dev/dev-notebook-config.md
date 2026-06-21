@@ -166,6 +166,23 @@ else: read cine: block from _notebook_config()
 New notebooks should put plugin config in the manifest. Existing notebooks keep
 working until JSON files are removed.
 
+**The list builder is a third consumer.** #gotcha The `/api/notebooks` list
+endpoint (app.py ~line 6433) builds the per-notebook `cine:` and `hledger:`
+fields that the JS plugin `detect` functions read. It has its own inline loading
+code — separate from `_hledger_config_for_notebook()` and `api_cine_data()`.
+When the JSON files were deleted without updating the list builder, `nb.cine`
+came back `null` and the entire cine plugin deactivated (storylines, shots,
+stripboard all gone).
+
+Rule: before retiring a legacy JSON config file, grep every reference to it in
+`app.py`. All three consumers must be updated atomically:
+
+| Consumer | Location | Fallback added? |
+|----------|----------|----------------|
+| `_hledger_config_for_notebook()` | app.py | ✓ |
+| `api_cine_data()` | app.py | ✓ |
+| `/api/notebooks` list builder | app.py ~line 6433 | ✓ (2026-06-21) |
+
 ### Admin path — `front` finds all config files
 
 `/api/front-query` now scans dotfiles (including NB_DIR root for `.nb.md`).
