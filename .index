@@ -23,7 +23,7 @@ index.md
 _meta.md
 
 wikilinks.md
-TEST_SCRIPTS.md
+
 BOOKS.md
 RENDER_PIPELINE.md
 hledger
@@ -34,3 +34,4 @@ plugins
 LANGUAGES.md
 
 docs.md
+CHECKS.md
