@@ -407,6 +407,14 @@ A single `~` would also work (CSS `~` matches any later sibling, not just adjace
 
 **Not applicable to `toc:`** — TOC is already handled by `_buildToc` / `_finishRendered` via `note.meta.toc`. The FM-mode loop skips `toc` because no codeblock renderer is registered for lang `"toc"` — `NbWeb.getCodeblockRenderer('toc')` returns `null`.
 
+**`check:` is explicitly excluded** — `check:` in frontmatter is a config-chain directive (specifies which scripts auto-run on notes inheriting that config via `_virtualTestPrefix`), not a display block. The loop has an explicit guard:
+
+```javascript
+if (key === 'check') continue; // config directive, not a toolbar block
+```
+
+Renamed from `checks:` to `check:` (2026-06-20) — singular, consistent with all other FM field names. `check:` takes a multiline value (one script per line) or a single script name.
+
 ---
 
 ## mkd-codeblocks

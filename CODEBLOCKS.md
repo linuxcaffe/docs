@@ -68,6 +68,8 @@ front: true
 
 **Collapse state** — FM-mode blocks start collapsed. State is then persisted per-block in `localStorage` the same as body blocks.
 
+**`check:` is excluded** — `check:` in frontmatter is a config directive (see below), not a codeblock to display. It has no FM-mode toolbar incarnation. To show check output explicitly, use ` ```check``` ` in the body.
+
 **The model** — the same promotion pattern as `toc: true`, which moved the Table of Contents from a body block into the persistent toolbar strip.
 
 ---
@@ -631,6 +633,25 @@ hl-balances | Account balances
 ````
 
 **Invisible guardrail** — embed a check in a setup note. New users see the error; experienced users with everything configured see nothing.
+
+---
+
+#### `check:` as a config directive
+
+Declared in a config note's frontmatter, `check:` specifies scripts that auto-run (Form 2) on every note that inherits that config — no explicit codeblock in the body needed:
+
+```yaml
+# in .notebook.md or .folder.md
+check: |
+  nb-dirty
+  note-disk-warn
+```
+
+Notes inheriting this config behave as if they had an unlabelled ` ```check``` ` block at render time. All pass → invisible. Any fail → surfaces at the top of the note.
+
+Inherited through the config chain: notebook config → folder config → note. A folder config scopes checks to that folder only; a notebook config applies across the whole notebook.
+
+`check:` is **not** a toolbar block (it has no FM-mode incarnation). It is a policy directive — declare it in config files, not in regular notes.
 
 ---
 
