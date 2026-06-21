@@ -107,6 +107,35 @@ round-tripped as raw YAML text from the original file, not re-serialised from
 the parsed object. This preserves comments, quote style, and any YAML the parser
 may not perfectly reconstruct.
 
+## `emitYaml` — array element quoting #gotcha
+
+Flow-sequence items must be individually quoted, not just joined:
+
+```javascript
+// wrong — element "festival, drama" becomes two items after round-trip
+lines.push(`${key}: [${v.join(', ')}]`);
+
+// right — quote elements that contain , : # or surrounding spaces
+const items = v.map(item => needsQuote(item) ? `"${item}"` : item);
+lines.push(`${key}: [${items.join(', ')}]`);
+```
+
+Low-probability but silent: the YAML parses without error, just with wrong
+cardinality. Fixed 2026-06-21 (commit 681d136).
+
+## Raw editor save — notebook config cache not busted #gotcha
+
+`_saveNote()` (raw markdown editor) called `bustNoteCache()` but not
+`bustNotebookConfigCache()`. Editing a config dotfile (`.{notebook}.md`,
+`.nb.md`) via the raw editor left stale access levels, plugin detection, and
+inherited form values cached until page reload.
+
+The config form save (`_saveConfigForm`) already busted both caches correctly.
+The gap was the raw editor path only.
+
+**Fix:** `_saveNote()` now checks if the saved filename starts with `.` and calls
+`bustNotebookConfigCache(NbNav.notebook)` when true. Fixed 2026-06-21 (commit 681d136).
+
 ---
 
 ## Changes toolbar button
