@@ -35,6 +35,27 @@ For a plain `[[text]]` wikilink, nb-web tries in order:
 
 The filename-stem fallback means you can freely set a descriptive `title:` on a note without breaking existing links that use its short filename. For example, if `1b.md` has `title: 1-1b — Wide establishing shot`, the link `[[1b]]` still resolves because `1b` matches the filename stem `1b.md`.
 
+### Config dotfiles
+
+Config dotfiles (`.shots.md`, `.Takeout.md`, `.nb.md`) are hidden from the note
+index but **wikilinks to them resolve normally**. Use the bare stem — no leading
+dot, no extension needed:
+
+| Link | Resolves to |
+|------|-------------|
+| `[[.shots]]` | `shots/.shots.md` in current notebook |
+| `[[.Takeout]]` | `.Takeout.md` at notebook root |
+| `[[Takeout:.Takeout.md]]` | explicit cross-notebook form |
+
+The stem convention (`.shots`) matches the filename stem of `.shots.md` via the
+standard filename-stem fallback. The explicit `notebook:path` form also works for
+cross-notebook links or when the stem is ambiguous.
+
+**Display label:** config dotfiles don't usually have a `title:` field. Add a
+pipe label for clean display: `[[.shots|shots config]]`.
+
+---
+
 ### Display label priority
 
 Once a wikilink resolves to a note, nb-web chooses its display label in this order:
