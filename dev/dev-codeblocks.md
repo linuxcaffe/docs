@@ -390,82 +390,56 @@ Returns sorted list of `*.sh` filenames in `~/.nb/.checks/` matching `{prefix}*.
 
 ## FM-mode — implementation
 
-**Concept:** the same promotion that moved TOC from a body `\`\`\`toc\`` block to the persistent `#nb-toc-bar` strip, generalised to any registered codeblock lang.
+**Concept:** any registered codeblock lang can be promoted out of the note body into the `#nb-fm-blocks` strip by declaring it as a frontmatter key. The field value becomes the block query.
 
 **HTML slot:** `<div id="nb-fm-blocks" hidden></div>` — sits between `#nb-toc-bar` and `#nb-preview-content` in `index.html`. Hidden whenever the toolbar is hidden (editor, spreadsheet, PDF).
 
-**JS wiring (`main.js`):**
-
-```javascript
-async function _buildFmBlocks(note) {
-    const wrap = document.getElementById('nb-fm-blocks');
-    if (!wrap) return;
-    wrap.innerHTML = '';
-    wrap.hidden = true;
-    if (!note?.meta) return;
-
-    const frags = [];
-    for (const [key, val] of Object.entries(note.meta)) {
-        if (key === 'check') continue;
-        const r = NbWeb.getCodeblockRenderer(key);
-        if (!r) continue;
-        const query = val === true ? '' : String(val ?? '').trim();
-        frags.push(r.html(query));
-    }
-    if (!frags.length) return;
-    wrap.innerHTML = frags.join('');
-    wrap.hidden = false;
-    await NbWeb.renderCodeblocks(wrap);   // render first — headers don't exist until after this
-
-    for (const block of [...wrap.children]) {
-        const bCls = [...block.classList].find(c => c.endsWith('-block')) || 'block';
-        const bId  = block.dataset.cmd || block.dataset.query || block.dataset.period || '';
-        const fmKey = `nb-fm:${bCls}:${bId}`;
-
-        if (localStorage.getItem(fmKey) !== '1') {
-            block.classList.add('nb-collapsed');    // default closed
-        }
-
-        const hdr = block.querySelector('[class*="-header"]');
-        if (hdr && !hdr.dataset.fmWired) {
-            hdr.dataset.fmWired = '1';
-            hdr.addEventListener('click', () => setTimeout(() => {
-                block.classList.contains('nb-collapsed')
-                    ? localStorage.removeItem(fmKey)
-                    : localStorage.setItem(fmKey, '1');
-            }, 0));
-        }
-    }
-}
-```
-
-Called (unawaited) from `_finishRendered`, after `_buildToc`. It fires independently — no dependency on the main-body `renderCodeblocks` pass.
-
-**`NbWeb.getCodeblockRenderer(lang)`** — returns the `{ html, render }` spec for a fence language from the first enabled module that registers it. Returns `null` if no match — harmless for unrelated FM fields.
-
-**`NbWeb.renderCodeblocks(container)`** — runs every registered `render(container)` in turn. Each renderer queries for its own divs in `container`; mismatched renderers find nothing and early-return. Calling it on `#nb-fm-blocks` rather than `#nb-preview-content` scopes rendering to only the injected blocks.
-
-**Default-closed invariant:** FM blocks always start collapsed. The render-then-collapse sequence is deliberate: block headers don't exist in the DOM until after `NbWeb.renderCodeblocks(wrap)`, so the collapse pass must run post-render.
-
-**`nb-fm:${cls}:${id}` localStorage key** — tracks whether the user has ever explicitly opened a specific FM block. Value `'1'` = opened at least once; absent = never opened (start collapsed). This is independent of the `nb-collapse:${cls}:${id}` key used by body-embedded blocks — FM blocks always default closed regardless of body-block state.
-
-**Tricky bit — sibling CSS hide rule:** `#nb-preview-toolbar[hidden]` uses the general sibling selector `~`. Since `#nb-fm-blocks` is two siblings away (past `#nb-toc-bar`), the rule is:
-
+**Sibling CSS hide rule:**
 ```css
 #nb-preview-toolbar[hidden] ~ * ~ #nb-fm-blocks { display: none !important; }
 ```
+`~` matches any later sibling; the two-step form is explicit about the structure (toc-bar is the intermediate sibling).
 
-A single `~` would also work (CSS `~` matches any later sibling, not just adjacent), but the two-step form is explicit about the intended structure.
+### Lazy render-on-demand #pattern
 
-**Not applicable to `toc:`** — TOC is already handled by `_buildToc` / `_finishRendered` via `note.meta.toc`. The FM-mode loop skips `toc` because no codeblock renderer is registered for lang `"toc"` — `NbWeb.getCodeblockRenderer('toc')` returns `null`.
+FM blocks load their content **on first expand only** — no API calls fire at note-load time for collapsed blocks. This keeps note switching fast when a note has many FM blocks.
 
-**`check:` is explicitly excluded** — `check:` in frontmatter is a config-chain directive (specifies which scripts auto-run on notes inheriting that config via `_virtualTestPrefix`), not a display block. The loop has an explicit guard:
+**Flow:**
+
+1. `_buildFmBlocks` calls `r.html(query)` for each FM key → skeleton `<div class="nb-{lang}-block">` in DOM.
+2. If the renderer has `renderOne`, `NbWeb.fmUtils.buildFmSkeleton(block, lang)` replaces the spinner with a real barblock header (correct icon, `…` in meta) and sets `data-fm-lazy='1'`.
+3. Block starts collapsed (unless `nb-fm:…` key says it was open last session).
+4. First click to expand → `renderer.renderOne(block)` fires → loader runs, rebuilds header + body → FM tracking re-wired on the new real header.
+5. Blocks that were open last session call `renderOne` immediately (async, parallel with any eager blocks).
+
+**`renderOne(el)` — the per-block loader method** (added to each renderer in `codeblockRenderers`):
 
 ```javascript
-if (key === 'check') continue; // config directive, not a toolbar block
+// Simple loaders — just call the private loader directly:
+renderOne: async el => _loadNavBlock(el),
+
+// Loaders that need a requirements check:
+renderOne: async el => {
+    const w = await NbWeb.checkWhich('task');
+    return w.found ? _loadTwBlock(el) : NbWeb.renderRequirementsCard(el, '...');
+},
 ```
 
-Renamed from `checks:` to `check:` (2026-06-20) — singular, consistent with all other FM field names. `check:` takes a multiline value (one script per line) or a single script name.
+`renderOne` is only called from the FM lazy path — body codeblocks still use `render(container)` via `NbWeb.renderCodeblocks`. **Adding `renderOne` to a new renderer is required for it to participate in lazy FM loading.** Without it the block falls through to the eager path.
+
+**`NbWeb.fmUtils.buildFmSkeleton(block, lang)`** — builds a proper barblock header (calls `_buildBarHeader` with the right `cls` alias for hledger) and sets `data-fm-lazy`. Lives in `nbweb-codeblocks.js`, exported via `NbWeb.fmUtils` so `main.js` can call it without coupling to plugin internals.
+
+**Eager path** (renderers without `renderOne` — currently `tui`, `check`): `r.render(wrap)` is called directly per renderer, scoped to `#nb-fm-blocks`. These renderers' `querySelectorAll` calls are type-specific enough that they never accidentally pick up lazy blocks from other renderers.
+
+**`nb-fm:${cls}:${id}` localStorage key** — tracks open/closed state per FM block. Value `'1'` = user has opened it; absent = start collapsed. Independent of the `nb-collapse:${cls}:${id}` key used by body blocks.
+
+**`check:` is explicitly excluded** — config-chain directive, not a display block:
+
+```javascript
+if (key === 'check') continue;
+```
+
+**`toc:` is included** — `toc` now has a registered renderer (`renderOne: el => _loadTocBlock(el)`). `toc: true` adds a TOC barblock to the FM strip; `_buildToc` in `_finishRendered` sets heading IDs as a side effect but suppresses the sidebar `#nb-toc-bar` when the FM renderer is registered.
 
 ---
 
