@@ -22,6 +22,31 @@ All block renderers wire into `NbWeb.statusPill` for render progress tracking. S
 
 ---
 
+## "." current-location awareness #pattern
+
+Several block types accept **`.`** as a shorthand for the current note's location, resolved at render time via `NbMain?.activeSelector?.()`.
+
+| Block | `.` resolves to | Implementation |
+|-------|----------------|----------------|
+| `nav` | Current note's `notebook:folder` | `_navParseQuery(raw, currentSelector)` — exact `raw === '.'` branch |
+| `front` | Current notebook (scope prefix) | `_frontParseQuery(raw, currentSelector)` — dot token in notebook list |
+| `git` | Current notebook (repo name) | Inline in `_loadGitBlock` before fetch |
+| `config` | Current note's `notebook:folder/` | `_configParseQuery(raw, currentSelector)` — `!target \|\| target === '.'` |
+| `gallery` | Current note's folder | `selector` param passed to `/api/gallery` with `path=.` |
+
+**Selector extraction pattern** (used by `nav`, `front`, `git`):
+```javascript
+const sel = NbMain?.activeSelector?.() || '';
+const colon = sel.indexOf(':');
+const notebook = colon >= 0 ? sel.slice(0, colon) : '';
+const rel      = colon >= 0 ? sel.slice(colon + 1) : '';
+const folder   = rel.split('/').length > 1 ? rel.split('/').slice(0, -1).join('/') : '';
+```
+
+**YAML gotcha** — any FM-mode codeblock query ending with `:` (e.g. `config: . access:`) is invalid YAML: PyYAML treats the trailing `:` as a nested mapping indicator and throws, silently falling back to the dumb line-split parser. Quote the value: `config: ". access:"`. #gotcha
+
+---
+
 ## External block renderers
 
 Two codeblock types are provided by external plugins rather than `NbWeb-codeblocks`:

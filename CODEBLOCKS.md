@@ -182,7 +182,15 @@ nb-web log --oneline -10
 ```
 ````
 
-The first word is a repo **alias** configured in `nb-settings.json`; the rest is the git subcommand and flags. Useful for dev-journal notes, project planning pages, or any note that lives alongside a codebase.
+The first word is a repo **alias** (configured in `nb-settings.json`) or **`.`** to use the current note's notebook. The rest is the git subcommand and flags. Useful for dev-journal notes, project planning pages, or any note that lives alongside a codebase.
+
+**`.` (current notebook)** — resolves to the notebook containing the open note:
+
+````markdown
+```git
+. log --oneline -6
+```
+````
 
 **Configuration** — add repo aliases to `nb-settings.json`:
 
@@ -324,9 +332,12 @@ Renders a stateful folder navigator in the preview pane. Clicking folders drills
 
 | Format | Example | Navigates to |
 |--------|---------|-------------|
+| `.` | `.` | Current note's folder |
 | nb selector | `accts:guide/` | Notebook folder |
 | Filesystem path | `~/.nb/accts/guide` | Same, via path |
 | Hidden dir path | `~/.nb/.test` | Raw filesystem listing |
+
+**`.` (current folder)** — resolves to the folder containing the open note. Useful as a dashboard block or FM-mode entry on a hub note: the navigator starts where you are.
 
 The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (check scripts), `~/.nb/.templates`, etc.
 
@@ -397,7 +408,7 @@ shot: | All shots
 
 Renders a collapsible list of notes matching frontmatter field conditions. Results are clickable — opening the note in the preview pane. Hover any row to see all frontmatter fields in a tooltip.
 
-**Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks.
+**Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks. **`.`** resolves to the current note's notebook.
 
 **Filter conditions** (AND logic):
 
