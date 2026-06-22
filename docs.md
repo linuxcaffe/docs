@@ -3,6 +3,7 @@ config: docs
 type: dotfile
 title: docs notebook config
 date: 2026-06-19
+nav: "."
 #
 # ── Access ───────────────────────────────────────────────────────────────────
 # Who can see notes in this folder? Inherited from notebook if not set.
