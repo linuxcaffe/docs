@@ -68,6 +68,31 @@ The `alias:` field is intended for content whose short identifier changes over t
 
 ---
 
+## Tab strip — `tabs:` frontmatter
+
+Add a `tabs:` list to any note's frontmatter and nb-web renders a tab strip above the content. The note declaring `tabs:` is always the active tab (tab 1). The others are peer notes you can switch between with one click.
+
+```yaml
+---
+title: Users
+tabs: [tools.md, rules.md, lib.md, checks.md]
+---
+```
+
+Entry forms:
+
+| Entry | Resolves to |
+|-------|-------------|
+| `other.md` | same folder as current note |
+| `../folder/file.md` | relative path from current note |
+| `notebook:path/file.md` | explicit cross-notebook selector |
+
+Tab labels are fetched automatically from each note's `alias:` → `title:` → filename stem. No pipe labels needed.
+
+`tabs:` is **not inherited** — it only activates on the note where it is declared, never from a parent config.
+
+---
+
 ## Anchor Links
 
 Append `#Heading Text` to jump directly to a section within a note:

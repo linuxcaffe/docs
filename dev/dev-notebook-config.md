@@ -183,6 +183,28 @@ Rule: before retiring a legacy JSON config file, grep every reference to it in
 | `api_cine_data()` | app.py | ✓ |
 | `/api/notebooks` list builder | app.py ~line 6433 | ✓ (2026-06-21) |
 
+### Dotfolder dashboards — the same pattern at global scope
+
+The stub convention (config dotfile + dashboard note sharing the same stem) extends naturally to the global dotfolders. Each dotfolder has a `{name}.md` dashboard note — the human face of that infrastructure layer:
+
+| Dotfolder | Dashboard | Purpose |
+|-----------|-----------|---------|
+| `.users/` | `.users:users.md` | User roster, access levels, management UI |
+| `.tools/` | `.tools:tools.md` | Utility scripts listing with run links |
+| `.rules/` | `.rules:rules.md` | Domain convention files |
+| `.lib/` | `.lib:lib.md` | Reusable component inventory |
+| `.test/` | `.test:checks.md` | Check scripts, run controls, pass/fail status |
+
+All five share a nav clipping injected at the top:
+
+```
+{{inline: .lib:nav-config-admin.md}}
+```
+
+`nav-config-admin.md` is a single line of wikilinks to all five dashboards. Edit it once, propagates everywhere instantly. Gated `-admin` so only admin+ users see it in inline includes.
+
+Navigation between a dotfolder and its dashboard: `[[.users:users]]` from anywhere, or `[[.users:users.md]]` explicit form. Both work — `_dot_selector_to_path` tries `.md` extension when bare stem doesn't match.
+
 ### Admin path — `front` finds all config files
 
 `/api/front-query` now scans dotfiles (including NB_DIR root for `.nb.md`).

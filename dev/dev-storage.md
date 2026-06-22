@@ -41,9 +41,19 @@ is opened and that don't belong inside any one notebook.
 ~/.nb/
   .nb.md              ← global config (access floor, check:, tag_color:, etc.)
   .users/             ← user cards (djp.md, guest.md, office.md, admin.md …)
+    users.md          ← dotfolder dashboard (pinned, admin-only)
   .rules/             ← domain convention files (hledger.md, docs.md, preview.md …)
-  .checks/            ← check scripts (hl-*, nb-*, note-*, tw-*)
-  .tools/             ← utility scripts (nb-restore.sh, nb-daily-init.sh, nb-settings-template.json)
+    rules.md          ← dotfolder dashboard
+  .test/              ← check scripts (nb-*, hl-*, tw-*); named .test/ not .checks/
+    checks.md         ← dotfolder dashboard
+  .tools/             ← utility scripts (nb-restore.sh, nb-daily-init.sh …)
+    tools.md          ← dotfolder dashboard
+  .lib/               ← reusable inline components (.md and .html)
+    lib.md            ← dotfolder dashboard
+    nav-config-admin.md  ← nav clipping: row of links to all five dashboards
+    user-mgmt-admin.md   ← admin user management component
+    user-mgmt-office.html
+    user-mgmt-user.html
   .templates/         ← global note templates
   .gitignore          ← ignores /[A-Za-z]*/ (each notebook is its own repo)
 ```
@@ -61,7 +71,6 @@ is opened and that don't belong inside any one notebook.
 
 | Path | Status |
 |------|--------|
-| `.lib/` | Shared shell libs — should be tracked |
 | `.images/` | Global image stubs — probably worth tracking |
 | `.changes/` | UI snapshot cache — probably gitignore |
 

@@ -53,6 +53,56 @@ Special keys recognised by nb-web beyond standard `title:`, `tags:`, and `type:`
 | `xref-ignore:` | list of strings | Words to exclude from xref heading scans on this note. |
 | `alias:` | string | Short mutable display label for the note — overrides `title:` in wikilink display. Useful when a short identifier (scene number, draft version) changes over time while the filename stays fixed. |
 | `draft: true` | `true` | Marks a note as a draft — not published by Quartz. |
+| `tabs:` | list of selectors | Renders a tab strip above the TOC. Current note is always tab 1 (active). Other entries are selectors resolved relative to the note's folder; titles fetched async. **Not inherited** — only meaningful in the note where it is declared. See [Tab strip](#tab-strip) below. |
+| `check:` | prefix or list | Specifies which `.test/` scripts to inject as auto-run fences at render time. `nb-` runs all `nb-` prefixed scripts; bare name runs one. Not inherited at note level — resolved from folder walk-up. |
+
+---
+
+## Tab strip
+
+`tabs:` in frontmatter renders `#nb-tabs-bar` — a row of buttons above the TOC bar. The note declaring `tabs:` is always tab 1 (active, accent underline). Other entries are clickable and open that note.
+
+```yaml
+tabs: [config.md, ../overview.md, accts:budget.md]
+```
+
+**Entry forms:**
+- Bare filename — resolved relative to note's own folder
+- Relative path — `../folder/file.md` normalised against note's folder
+- Full selector — `notebook:path/file.md` used as-is
+
+Tab labels: fetched async from each note's `alias:` → `title:` → filename stem. Interim label is the filename stem while fetch is in flight.
+
+**Not inherited** — `tabs:` is never read from parent config. It only activates on the note where it is declared. This is intentional: tabs describe the local peer structure of that specific note, not a global navigation policy.
+
+**Implementation:** `_buildTabs(note)` in `main.js`, called from `_finishRendered`. CSS in `#nb-tabs-bar` / `.nb-tab` / `.nb-tab--active`.
+
+---
+
+## `.lib` inline components
+
+`~/.nb/.lib/` holds reusable Markdown/HTML fragments injected anywhere via:
+
+```
+{{inline: .lib:component-name.md}}
+```
+
+**Access gating by filename suffix** — the backend checks the filename stem against `LEVELS` and returns an empty body if the requesting user's level is below the required level:
+- `nav-config-admin.md` → admin only
+- `user-mgmt-office.html` → office and above
+- `user-mgmt-user.html` → any logged-in user
+
+**Two file types:**
+- `.md` — Markdown + codeblocks, rendered through the full pipeline
+- `.html` — raw HTML + inline JS, injected directly into the DOM
+
+**Nav clipping pattern** — a `.lib` component containing only wikilinks, included at the top of a set of related notes. Edit once, updates everywhere. Example: `nav-config-admin.md` contains links to all five dotfolder dashboards and is included at the top of each.
+
+```markdown
+[[.users:users|Users]] · [[.tools:tools|Tools]] · [[.rules:rules|Rules]] · [[.lib:lib|Lib]] · [[.test:checks|Checks]]
+```
+
+Include it in any admin note: `{{inline: .lib:nav-config-admin.md}}`
 
 ---
 
