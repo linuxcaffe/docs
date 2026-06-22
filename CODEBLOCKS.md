@@ -7,7 +7,7 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#front — Frontmatter Filter|front]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#front — Frontmatter Filter|front]] · [[#config — Config Inheritance Tree|config]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -70,7 +70,13 @@ front: true
 
 **`check:` is excluded** — `check:` in frontmatter is a config directive (see below), not a codeblock to display. It has no FM-mode toolbar incarnation. To show check output explicitly, use ` ```check``` ` in the body.
 
-**The model** — the same promotion pattern as `toc: true`, which moved the Table of Contents from a body block into the persistent toolbar strip.
+**`toc: true`** — adds a Table of Contents barblock to the FM strip. Collapses to a heading count; expands to a clickable list that scrolls to any heading in the note.
+
+```yaml
+---
+toc: true
+---
+```
 
 ---
 
@@ -386,13 +392,26 @@ large pfinds:items/photos/
 | `.` | Look only for `images/` in the current note's folder; vanish silently if absent |
 | `notebook:path/` | Use that specific folder directly |
 
-**FM-mode** — declare in frontmatter to surface the gallery in the toolbar strip above the body (collapses to a header bar, invisible when no images exist):
+**FM-mode** — declare in frontmatter to surface the gallery in the toolbar strip above the body (collapses to a header bar, shows "no images" when empty):
 
 ```yaml
 gallery: med .
+gallery: "thumb .images:"
+gallery: "large pfinds:items/photos/"
 ```
 
-The `.` form is ideal for dashboard templates: the block is completely invisible until an `images/` folder appears next to the note — no empty placeholder, no error.
+**YAML syntax rules for FM-mode:**
+
+- The value is always `size path` — the size keyword must come first, separated by a space. A value with no space (e.g. `gallery: ../.images`) is parsed entirely as the size key; the path is silently ignored and defaults to walk-up behaviour.
+- Values ending with `:` must be quoted — `"thumb .images:"` not `thumb .images:` (bare trailing colon breaks YAML).
+- Values starting with `.` or `/` must be quoted — `"med ~/.nb/.images"`.
+
+| Path in FM value | Behaviour |
+|-----------------|-----------|
+| *(absent — size only)* | Walk up from note dir; use first `images/` found |
+| `.` | Look only for `images/` in the current note's folder |
+| `notebook:path/` | Explicit folder — `.images:` resolves to `~/.nb/.images/` |
+| `~/path` | Absolute path with `~` expansion |
 
 **Lightbox controls:** click any thumbnail to open · ← / → to navigate · Esc or click outside to close.
 
@@ -455,6 +474,21 @@ Visualises the configuration resolution chain from the global root (`~/.nb/.nb.m
 | `field: .` | Walk to current note's location; show `field` contributions |
 | `field: Notebook:folder/` | Walk to a specific target |
 | *(bare)* | Walk to current location; show all contributed keys |
+| `tree` | Folder-tree walk mode — shows all config nodes in the notebook |
+| `tree access nb:` | Tree walk, filtered to nodes that set `access`, scoped to `nb` notebook |
+
+**FM-mode syntax rules:**
+
+`field` must start with a word character (`a-z`, `0-9`, `_`). The parser splits on the first `:` after a valid field name. A value like `. access:` fails — the leading `.` is not a word character, so the whole string is treated as the target, not a field name.
+
+```yaml
+config: "access:"      # ✓ field=access, target=current note's notebook
+config: "access: ."    # ✓ same — explicit current-context dot
+config: "access: nb:"  # ✓ explicit notebook target
+config: ". access:"    # ✗ parses as target='. access', not field=access
+```
+
+Values ending with `:` must be quoted in YAML.
 
 **Output:**
 
@@ -485,6 +519,24 @@ read: admin
 config: | All config files
 ```
 ````
+
+---
+
+### toc — Table of Contents
+
+`toc` is FM-mode only — declare `toc: true` in frontmatter; there is no fenced body form.
+
+```yaml
+---
+toc: true
+---
+```
+
+Adds a collapsible TOC barblock to the FM strip. The header shows the heading count; expanding it reveals a clickable list of every heading in the note. Clicking a heading scrolls smoothly to it.
+
+Headings `h1`–`h6` are all included. Indentation in the list reflects heading level. IDs are auto-assigned via slug if the heading has none (`# My Section` → `my-section`).
+
+The block starts collapsed; open/closed state persists in `localStorage` per note.
 
 ---
 
