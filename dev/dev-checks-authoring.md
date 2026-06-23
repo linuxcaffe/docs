@@ -99,6 +99,30 @@ The `data-xref-heading` attribute registers the heading with the xref enrichment
 
 ---
 
+## Domain icons
+
+The renderer automatically prepends a domain icon before the first `**` in your output — you don't add it yourself.
+
+| Prefix | Icon |
+|--------|------|
+| `hl-` | hledger logo (image) |
+| `nb-`, `note-` | nb logo (image) |
+| `tw-` | Taskwarrior logo (image) |
+| `git-` | git logo (image) |
+| `flask-` | `FLK` chip (until logo lands in `.images/`) |
+| `sys-` | `SYS` chip |
+| `test-` | `TST` chip |
+
+**Placement** — the icon is injected by the renderer, not by the script:
+- **Group result** — icon leads the script name on each toggle row (`[logo] nb-orphan-annotations`)
+- **Single result** — icon appears as a small block above the content
+
+The body text you write in the script is always icon-free. No duplication when multiple checks from the same domain fail.
+
+To add a new domain icon: drop a PNG into `~/.nb/.images/` and add an entry to `_checkDomainIcon()` in `nbweb-codeblocks.js`.
+
+---
+
 ## Voice guidelines
 
 Checks speak to the user, not to a log file.
