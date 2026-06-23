@@ -19,8 +19,8 @@ Scripts are called with no arguments. They receive context about the current not
 
 | Exit code | stdout | Result |
 |---|---|---|
-| 0 | empty | **Invisible** (Form 2) or silent reset (Form 1) |
-| 0 | has content | Output rendered as markdown |
+| 0 | empty | **Invisible** — block disappears entirely |
+| 0 | has content | Output rendered as markdown (no error styling) |
 | non-zero | anything | Output rendered as markdown with red left border |
 
 Output is rendered as full markdown — headings, tables, lists, blockquotes, `{{hledger: query}}` inline expressions, `[[docs:wikilinks]]`, `term:` links, and `note:` links all work.
@@ -33,15 +33,23 @@ All scripts live in `~/.nb/.checks/`. Browse them with:
 
 ````markdown
 ```nav
-~/.nb/.test
+~/.nb/.checks
 ```
 ````
+
+Any script works in all three invocation modes — the script itself is mode-agnostic:
+
+| Invocation | Behaviour |
+|---|---|
+| `` ```check`\n`script-name \| Label` `` | Rendered as a clickable button; runs on click |
+| `` ```check`\n`script-name` `` | Auto-runs; invisible on pass, shows output on fail |
+| `checks: script-name` in frontmatter / config | Injected automatically at render time; same as above |
 
 Scripts are resolved by name — `.sh` extension is optional:
 
 ```check
-hl-ok        # finds ~/.nb/.checks/hl-ok.sh
-hl-ok.sh     # same
+hl-core-journal        # finds ~/.nb/.checks/hl-core-journal.sh
+hl-core-journal.sh     # same
 ```
 
 ---
@@ -132,35 +140,40 @@ echo '```'
 
 | Script | Form | Purpose |
 |---|---|---|
-| `hl-test` | 2 | hledger binary self-test; silent when all 245 pass; surfaces failing test names |
-| `hl-ok` | 2 | Silent when journal is clean; shows `hledger check` errors |
-| `hl-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
-| `hl-optional` | 2 | Radar sweep — all 5 optional checks; silent when all pass |
-| `hl-ordereddates` | 2 | Transactions out of date order within a file |
-| `hl-recentassertions` | 2 | Balance assertions older than 7 days; guides reconciliation |
-| `hl-tags` | 2 | Undeclared tag names (opt-in strict check) |
-| `hl-payees` | 2 | Undeclared payees (opt-in strict check) |
-| `hl-uniqueleafnames` | 2 | Two accounts share a leaf name (opt-in strict check) |
+| `hl-core-journal` | 2 | Silent when journal is clean; shows `hledger check` errors |
+| `hl-core-test` | 2 | hledger binary self-test; silent when all pass; surfaces failing test names |
+| `hl-mode-strict` | 2 | `hledger check --strict`; explains undeclared commodity errors |
+| `hl-opt-ordereddates` | 2 | Transactions out of date order within a file |
+| `hl-opt-recentassertions` | 2 | Balance assertions older than 7 days; guides reconciliation |
+| `hl-opt-tags` | 2 | Undeclared tag names (opt-in strict check) |
+| `hl-opt-payees` | 2 | Undeclared payees (opt-in strict check) |
+| `hl-opt-uniqueleafnames` | 2 | Two accounts share a leaf name (opt-in strict check) |
+| `hl-health-day` | 2 | Silent if entries today; coaches when there's a gap |
+| `hl-health-week` | 2 | Silent if entries this week; flags a growing gap |
+| `hl-health-month` | 2 | Silent if past months cleared; flags unreconciled |
+| `hl-health-year` | 2 | Silent if previous year fully cleared |
+| `hl-health-taxes` | 2 | Silent if tax-ready; flags what's missing |
 | `hl-budget-has-periodic` | 2 | Guides setup if no `~ monthly` rules found |
-| `hl-budget-balanced` | 2 | Detects unbalanced budget transactions; computes fix amount |
-| `hl-budget-include-check` | 2 | Verifies periodic journal is included in main journal |
 | `hl-budget-has-actuals` | 2 | Checks that actual transactions exist to compare against budget |
 | `hl-budget-has-income` | 2 | Checks that income postings exist in the budget |
+| `hl-budget-balanced` | 2 | Detects unbalanced budget transactions; computes fix amount |
+| `hl-budget-include-check` | 2 | Verifies periodic journal is included in main journal |
 | `hl-budget-runs` | 2 | Verifies `hledger bal --budget` runs without error |
 | `nb-dirty` | 2 | Silent when committed; lists dirty files in current notebook |
-| `note-disk-warn` | 2 | Silent under 80% disk usage; warns above that |
-| `note-slow` | 2 | Silent for fast notes; notice (no red border) when file >50 KB or ≥5 inline includes |
+| `nb-check-front` | 2 | Validates note frontmatter against folder `constraints:` |
+| `sys-disk-warn` | 2 | Silent under 80% disk usage; warns above that |
 | `tw-due` | 2 | Silent with no due tasks; lists overdue/today tasks |
 | `note-approved` | 2 | Silent when `approved:` frontmatter has a value; amber banner when blank |
-| `hl-recent-txn` | 1 | `hl-recent-txn \| Recent transactions` — last 14 days from journal |
+| `note-slow` | — | Retired; rendering notices now injected by main.js |
+| `hl-disp-recent-txn` | 1 | `hl-disp-recent-txn \| Recent transactions` — last 14 days from journal |
+| `hl-disp-balances` | 1 | `hl-disp-balances \| Account balances` — depth-1 balance table |
 | `note-context` | 1 | `note-context \| Note context` — markdown table of all context vars |
-| `hl-balances` | 1 | `hl-balances \| Account balances` — depth-1 balance table |
 
 Browse and edit them in-place:
 
 ````markdown
 ```nav
-~/.nb/.test
+~/.nb/.checks
 ```
 ````
 
@@ -170,25 +183,21 @@ Browse and edit them in-place:
 
 **Health dashboard** — drop Form 2 checks at the top of a hub note. They're invisible when everything is fine; they surface when something needs attention:
 
-```markdown
-{{test: hl-ok}}
-{{test: nb-dirty}}
-{{test: note-disk-warn}}
-{{test: tw-due}}
-
-# My Hub Note
-...
-```
-
-Wait — the syntax is a fenced block, not an inline expression. Correct form:
-
 ````markdown
 ```check
-hl-ok
+hl-core-journal
 ```
 
 ```check
 nb-dirty
+```
+
+```check
+sys-disk-warn
+```
+
+```check
+tw-due
 ```
 ````
 
@@ -196,11 +205,11 @@ nb-dirty
 
 ````markdown
 ```check
-hl-recent-txn | Recent transactions
+hl-disp-recent-txn | Recent transactions
 ```
 
 ```check
-hl-balances | Account balances
+hl-disp-balances | Account balances
 ```
 ````
 
@@ -208,7 +217,7 @@ hl-balances | Account balances
 
 ````markdown
 ```check
-hl-ok
+hl-core-journal
 ```
 
 ## Your Journal
@@ -238,13 +247,13 @@ A status file is just a note with tightly-packed Form 2 blocks and nothing else:
 
 ````markdown
 ```check
-hl-ok
+hl-core-journal
 ```
 ```check
 nb-dirty
 ```
 ```check
-note-disk-warn
+sys-disk-warn
 ```
 ````
 
@@ -328,30 +337,28 @@ Browse and edit all scripts in place:
 
 ````markdown
 ```nav
-~/.nb/.test
+~/.nb/.checks
 ```
 ````
 
 Key scripts — read these for reference before writing new ones:
 
-- [hl-test.sh](note:/home/djp/.nb/.checks/hl-test.sh) — "is the tool intact?" check; complements hl-ok which checks data, not binary
-- [hl-ok.sh](note:/home/djp/.nb/.checks/hl-ok.sh) — simplest Form 2: silent pass, one check, raw error fallback
-- [hl-strict.sh](note:/home/djp/.nb/.checks/hl-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
-- [hl-optional.sh](note:/home/djp/.nb/.checks/hl-optional.sh) — radar sweep of all 5 optional checks; surfaces failures, defers to individual scripts for fixes
-- [hl-ordereddates.sh](note:/home/djp/.nb/.checks/hl-ordereddates.sh) — out-of-order date check; explains secondary-date workaround
-- [hl-recentassertions.sh](note:/home/djp/.nb/.checks/hl-recentassertions.sh) — stale assertion check; shows `hledger close --assert` workflow
-- [hl-tags.sh](note:/home/djp/.nb/.checks/hl-tags.sh) — undeclared tags; warns about accidental tags in comments
-- [hl-payees.sh](note:/home/djp/.nb/.checks/hl-payees.sh) — undeclared payees; links to `payees` command for discovery
-- [hl-uniqueleafnames.sh](note:/home/djp/.nb/.checks/hl-uniqueleafnames.sh) — duplicate leaf names; shows grep to find all affected postings
+- [hl-core-journal.sh](note:/home/djp/.nb/.checks/hl-core-journal.sh) — simplest Form 2: silent pass, one check, raw error fallback
+- [hl-core-test.sh](note:/home/djp/.nb/.checks/hl-core-test.sh) — "is the tool intact?" check; complements hl-core-journal which checks data, not binary
+- [hl-mode-strict.sh](note:/home/djp/.nb/.checks/hl-mode-strict.sh) — multiple fix options (A/B/C), handles bare-number commodity `""`
+- [hl-opt-ordereddates.sh](note:/home/djp/.nb/.checks/hl-opt-ordereddates.sh) — out-of-order date check; explains secondary-date workaround
+- [hl-opt-recentassertions.sh](note:/home/djp/.nb/.checks/hl-opt-recentassertions.sh) — stale assertion check; shows `hledger close --assert` workflow
+- [hl-opt-tags.sh](note:/home/djp/.nb/.checks/hl-opt-tags.sh) — undeclared tags; warns about accidental tags in comments
+- [hl-opt-payees.sh](note:/home/djp/.nb/.checks/hl-opt-payees.sh) — undeclared payees; links to `payees` command for discovery
+- [hl-opt-uniqueleafnames.sh](note:/home/djp/.nb/.checks/hl-opt-uniqueleafnames.sh) — duplicate leaf names; shows grep to find all affected postings
 - [hl-budget-has-periodic.sh](note:/home/djp/.nb/.checks/hl-budget-has-periodic.sh) — gold standard: heading, context, fix block, embedded verify, open link
 - [hl-budget-balanced.sh](note:/home/djp/.nb/.checks/hl-budget-balanced.sh) — computes fix amount, shows mtime so user knows if edit landed
 - [hl-budget-include-check.sh](note:/home/djp/.nb/.checks/hl-budget-include-check.sh) — used as an embedded verify block inside hl-budget-has-periodic
 - [nb-dirty.sh](note:/home/djp/.nb/.checks/nb-dirty.sh) — uses `NB_NOTEBOOK` context var; scoped to current notebook
-- [note-disk-warn.sh](note:/home/djp/.nb/.checks/note-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
+- [sys-disk-warn.sh](note:/home/djp/.nb/.checks/sys-disk-warn.sh) — minimal Form 2 shown in the Writing Scripts section above
 - [note-approved.sh](note:/home/djp/.nb/.checks/note-approved.sh) — reference implementation for amber `.nb-alert-banner` output; reads frontmatter with awk
-- [note-slow.sh](note:/home/djp/.nb/.checks/note-slow.sh) — informational notice (exit 0, no red border) for large files or books with many chapters
-- [hl-recent-txn.sh](note:/home/djp/.nb/.checks/hl-recent-txn.sh) — Form 1 (label, on-demand); markdown table output
-- [hl-balances.sh](note:/home/djp/.nb/.checks/hl-balances.sh) — Form 1 with table and blockquote timestamp
+- [hl-disp-recent-txn.sh](note:/home/djp/.nb/.checks/hl-disp-recent-txn.sh) — Form 1 (label, on-demand); markdown table output
+- [hl-disp-balances.sh](note:/home/djp/.nb/.checks/hl-disp-balances.sh) — Form 1 with table and blockquote timestamp
 
 ---
 

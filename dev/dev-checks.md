@@ -23,11 +23,13 @@ as the separator. The namespace path reads left to right from broadest to most s
 
 ```
 hl-                     all hledger tests
+hl-core-                hledger core validity (hl-core-journal, hl-core-test)
 hl-health-              hledger health sub-group
 hl-health-day.sh        one specific daily health check
-hl-optional.sh          named check (not in a subgroup)
+hl-opt-                 optional checks sub-group
+hl-opt-ordereddates.sh  one specific optional check
 nb-                     all nb tests
-nb-sync-                nb sync sub-group
+sys-                    system health (disk, process, version)
 ```
 
 ### Trailing-dash glob #pattern
@@ -46,60 +48,59 @@ fires `hl-health-day.sh`, `hl-health-week.sh`, `hl-health-month.sh` — the whol
 hl-
 ```
 
-fires every hledger test in `.checks/`. This replaces the old `hl-ok.sh` bundling pattern.
+fires every hledger test in `.checks/`. This replaces any hand-written bundler script.
 
 ### Grouping — namespace over bundled scripts #pattern
 
-The old pattern was a wrapper script (`hl-ok.sh`) that called other scripts. **Don't do
-this.** Grouping is now done entirely by:
+The old pattern was a wrapper script that called other scripts. **Don't do this.**
+Grouping is done entirely by naming — no exceptions:
 
 1. **Namespace prefix** — `hl-health-` is a group. The trailing-dash glob covers it.
-2. **Codeblock cluster** — multiple `test` blocks in one note, each focused on one check.
+2. **Sub-sub-groups are encouraged** — `hl-budget-has-` is a valid group within `hl-budget-`.
+3. **Codeblock cluster** — multiple `check` blocks in one note, each focused on one script.
 
 If a conceptual subgroup emerges within an existing set, rename the scripts to reflect
-it. `hl-check-tags.sh` + `hl-check-payees.sh` → clearly a `hl-check-` subgroup.
+it. `hl-opt-tags.sh` + `hl-opt-payees.sh` → clearly the `hl-opt-` subgroup.
 
 ---
 
 ## Preferred output model #pattern
 
-**Model: `~/.nb/.checks/hl-optional.sh`** — the gold standard for multi-check tests.
-
-Key properties:
+Key properties of a well-written Form 2 check:
 - **Form 2** (no label, auto-run, silent on pass) — failure output IS the signal
 - **Collect all failures** before reporting — never fail-fast in a grouped test
 - **Markdown output** with links to subtests and relevant files
-- **`subtest:` links** — `[description](subtest:hl-${check})` lets the user drill into one failure
+- **`subtest:` links** — `[description](subtest:scriptname)` lets the user drill into one failure
 - **`note:` links** — link to the journal or source file for quick access
 - **Guard at top** — `[ ! -f "$journal" ] && exit 0` for missing prerequisites
-- **Counter `n`** for the summary line: `N of 5 failed`
+- **Counter `n`** for the summary line: `N of M failed`
 
 ```bash
 #!/usr/bin/env bash
-# Form 2: runs all 5 optional hledger checks; silent when all pass.
+# hl-example — Form 2: runs multiple checks; silent when all pass.
 
 journal="${HLEDGER_FILE:-$HOME/.hledger.journal}"
 [ ! -f "$journal" ] && exit 0
 
 desc_ordereddates="transactions out of date order"
-# ... one desc_ var per check ...
+desc_recentassertions="balance assertions older than 7 days"
 
 links=""
 n=0
 
-for check in ordereddates recentassertions tags payees uniqueleafnames; do
+for check in ordereddates recentassertions; do
   result=$(hledger check "$check" -f "$journal" 2>&1)
   [ -z "$result" ] && continue
   n=$((n + 1))
   desc_var="desc_${check}"
-  links="${links}- [hledger check ${check} — ${!desc_var}](subtest:hl-${check})
+  links="${links}- [hledger check ${check} — ${!desc_var}](subtest:hl-opt-${check})
 "
 done
 
 [ "$n" -eq 0 ] && exit 0
 
 cat << EOF
-### ⚠ Optional checks — ${n} of 5 failed
+### ⚠ Checks — ${n} of 2 failed
 
 ${links}
 [Open $(basename "$journal")](note:${journal})
@@ -109,8 +110,8 @@ exit 1
 
 ### Why this model works
 
-- The summary line (`N of 5 failed`) gives immediate scope.
-- `subtest:` links are clickable in the nb-web test result panel — user goes straight to the broken check with one click, without having to re-run or navigate.
+- The summary line (`N of M failed`) gives immediate scope.
+- `subtest:` links are clickable in the nb-web check result panel — user goes straight to the broken check with one click, without having to re-run or navigate. Use the full new script name (`hl-opt-ordereddates`, not `hl-ordereddates`).
 - `note:` link opens the source file in nb-web for inspection/edit.
 - Silent pass means dashboards using Form 2 stay clean; noise only appears on failure.
 
@@ -190,6 +191,61 @@ invisible when passing — they only surface on failure. This is deliberate: a d
 with `checks: hl-` should look clean 99% of the time and only shout when something breaks.
 
 If you need a labeled button (Type 2), put the block explicitly in the note body.
+
+---
+
+## Script environment #pattern
+
+Every check script receives the full Flask process environment plus these nb-web additions:
+
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `NB_DIR` | `/home/djp/.nb` | Root nb notebooks directory |
+| `NB_APP_DIR` | `/home/djp/dev/nb-web` | Flask app directory — use to locate `nb-settings.json` etc. |
+| `NB_NOTEBOOK` | `accts` | Current notebook name (empty if no note context) |
+| `NB_NOTE_PATH` | `/home/djp/.nb/accts/2025.md` | Absolute path to current note file (empty if none) |
+| `NB_NOTE_SELECTOR` | `accts:42` | nb selector for current note (empty if none) |
+| `NO_COLOR` | `1` | Suppresses ANSI colour in subprocesses |
+
+Guard pattern — exit silently if required context is absent:
+
+```bash
+if [ -z "$NB_NOTEBOOK" ]; then exit 0; fi
+nb_path="$NB_DIR/$NB_NOTEBOOK"
+if [ ! -d "$nb_path" ]; then exit 0; fi
+```
+
+---
+
+## Exit codes and severity #pattern
+
+| Code | Colour | Border | Use when |
+|------|--------|--------|----------|
+| `0` | — | none | Pass — no output, block removed |
+| `1` | red | solid red | Error — action required |
+| `2` | amber | solid amber | Warn — advisory, non-urgent |
+
+---
+
+## Response package header #pattern
+
+The first line of stdout may be a `#!` metadata line. The renderer strips it before display:
+
+```bash
+echo '#! fix:nb-sync-add-remote'
+echo '**Notebook unwired** — no git remote, sync disabled.'
+exit 2
+```
+
+`fix:script-name` appends an inline `[→ run fix](subtest:script-name)` link to the output. Other keys are reserved for future use.
+
+---
+
+## Snooze — `check_timeout:` FM key #pattern
+
+When a note has `check_timeout: 10` in its frontmatter, the dismiss button becomes a snooze button. Clicking it suppresses that check for 10 minutes (stored in `localStorage`). Auto-runs silently skip snoozed checks; button-triggered runs always fire.
+
+The script is unaware of snooze state — the renderer handles it entirely.
 
 ---
 

@@ -94,7 +94,7 @@ journal="${HLEDGER_FILE:-$HOME/.hledger.journal}"
 
 ### `subtest:` links
 
-A script can output `[label](subtest:scriptname)` in its markdown. Renders as a toggle row; click fetches and expands the named script's output inline — no pre-run. `hl-optional` uses this: radar sweep of all 5 optional checks, each failure becomes a drill-down link to the dedicated script.
+A script can output `[label](subtest:scriptname)` in its markdown. Renders as a toggle row; click fetches and expands the named script's output inline — no pre-run. Use the full script name including subgroup: `(subtest:hl-opt-ordereddates)`, not `(subtest:hl-ordereddates)`.
 
 ### Writing scripts
 
@@ -182,8 +182,8 @@ Browse and edit in place:
 Key reads before writing new scripts:
 
 - `hl-budget-has-periodic.sh` — gold standard: heading, context, fix, embedded verify, open link
-- `hl-ok.sh` — simplest Form 2: silent pass, one check, raw error fallback
-- `hl-optional.sh` — radar sweep with `subtest:` drill-down links
+- `hl-core-journal.sh` — simplest Form 2: silent pass, one check, raw error fallback
+- `hl-opt-*.sh` — the `hl-opt-` subgroup; `subtest:` drill-down links show the pattern
 - `note-approved.sh` — reference for amber `.nb-alert-banner`; reads frontmatter with awk
 - `nb-dirty.sh` — `NB_NOTEBOOK` context var usage
 

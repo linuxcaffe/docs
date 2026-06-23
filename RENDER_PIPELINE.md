@@ -315,9 +315,9 @@ Replace M individual `/api/run?script=X` calls with a single:
 
 ```
 POST /api/test-blocks
-{ scripts: ["hl-ok", "nb-dirty", "note-disk-warn"],
+{ scripts: ["hl-core-journal", "nb-dirty", "sys-disk-warn"],
   context: { NB_NOTE_PATH: "...", NB_NOTEBOOK: "...", ... } }
-→ [{ script: "hl-ok", exit: 0, output: "" }, ...]
+→ [{ script: "hl-core-journal", exit: 0, output: "" }, ...]
 ```
 
 For a book with 32 test blocks, this is 1 round trip instead of 32. Server
