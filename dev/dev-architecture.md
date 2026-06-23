@@ -53,29 +53,36 @@ Special keys recognised by nb-web beyond standard `title:`, `tags:`, and `type:`
 | `xref-ignore:` | list of strings | Words to exclude from xref heading scans on this note. |
 | `alias:` | string | Short mutable display label for the note — overrides `title:` in wikilink display. Useful when a short identifier (scene number, draft version) changes over time while the filename stays fixed. |
 | `draft: true` | `true` | Marks a note as a draft — not published by Quartz. |
-| `tabs:` | list of selectors | Renders a tab strip above the TOC. Current note is always tab 1 (active). Other entries are selectors resolved relative to the note's folder; titles fetched async. **Not inherited** — only meaningful in the note where it is declared. See [Tab strip](#tab-strip) below. |
+| `tabs:` | list of selectors | Renders a tab strip above the TOC. The entry matching the current note is shown active. Note, relative path, full selector, and folder (`trailing/`) entries supported. Titles fetched async; folder tabs use last path segment. Propagates from notebook/folder config via `effective_fm`. See [Tab strip](#tab-strip) below. |
 | `check:` | prefix or list | Specifies which `.test/` scripts to inject as auto-run fences at render time. `nb-` runs all `nb-` prefixed scripts; bare name runs one. Not inherited at note level — resolved from folder walk-up. |
 
 ---
 
 ## Tab strip
 
-`tabs:` in frontmatter renders `#nb-tabs-bar` — a row of buttons above the TOC bar. The note declaring `tabs:` is always tab 1 (active, accent underline). Other entries are clickable and open that note.
+`tabs:` renders `#nb-tabs-bar` — a row of buttons above the TOC bar. The entry whose resolved selector matches `note.selector` gets `nb-tab--active` (accent underline, no click handler). All others are clickable.
 
 ```yaml
-tabs: [config.md, ../overview.md, accts:budget.md]
+tabs: [users.md, tools.md, ../overview.md, accts:budget.md, shots/]
 ```
 
 **Entry forms:**
-- Bare filename — resolved relative to note's own folder
-- Relative path — `../folder/file.md` normalised against note's folder
-- Full selector — `notebook:path/file.md` used as-is
 
-Tab labels: fetched async from each note's `alias:` → `title:` → filename stem. Interim label is the filename stem while fetch is in flight.
+| Form | Behaviour |
+|------|-----------|
+| `file.md` | Resolved relative to the note's own folder |
+| `../folder/file.md` | Normalised against note's folder via `..` reduction |
+| `notebook:path/file.md` | Used as-is — required form for cross-notebook notes |
+| `folder/` | **Folder tab** — trailing `/` triggers folder navigation |
+| `notebook:folder/` | Cross-notebook folder tab — fully qualified path required |
 
-**Not inherited** — `tabs:` is never read from parent config. It only activates on the note where it is declared. This is intentional: tabs describe the local peer structure of that specific note, not a global navigation policy.
+**Note tabs** — label fetched async (`alias:` → `title:` → filename stem); interim label is the filename stem while fetch is in flight.
 
-**Implementation:** `_buildTabs(note)` in `main.js`, called from `_finishRendered`. CSS in `#nb-tabs-bar` / `.nb-tab` / `.nb-tab--active`.
+**Folder tabs** — label is the last non-empty path segment of the entry (no fetch). Click calls `NbNav.drillFolderInNotebook(nb, folder)`, which switches notebook scope and reloads the list. The auto-select then opens the first non-folder note, which is the config-pinned note if one is set. Sub-notebook paths are not supported (illogical in the nb folder model).
+
+**Propagation** — `tabs:` is included in `_FM_BLOCK_KEYS` and propagates via `effective_fm` from notebook/folder config to every note in scope. A note's own `tabs:` overrides the inherited value. This makes it practical to define a notebook-wide tab strip once in `.nb.md`.
+
+**Implementation:** `_buildTabs(note)` in `main.js`, called from `_finishRendered`. Propagation: `_FM_BLOCK_KEYS` in `app.py` + `effective_fm` in note API response + `note.effective_fm?.tabs` fallback in `_buildTabs`. CSS: `#nb-tabs-bar` / `.nb-tab` / `.nb-tab--active`.
 
 ---
 

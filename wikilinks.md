@@ -70,12 +70,12 @@ The `alias:` field is intended for content whose short identifier changes over t
 
 ## Tab strip — `tabs:` frontmatter
 
-Add a `tabs:` list to any note's frontmatter and nb-web renders a tab strip above the content. The note declaring `tabs:` is always the active tab (tab 1). The others are peer notes you can switch between with one click.
+Add a `tabs:` list to a note's frontmatter — or to a notebook/folder config to give every note in scope the same tab strip — and nb-web renders a row of tabs above the content. The entry that matches the current note is shown as active; clicking any other tab opens it.
 
 ```yaml
 ---
 title: Users
-tabs: [tools.md, rules.md, lib.md, checks.md]
+tabs: [users.md, tools.md, rules.md, lib.md, checks.md]
 ---
 ```
 
@@ -85,11 +85,13 @@ Entry forms:
 |-------|-------------|
 | `other.md` | same folder as current note |
 | `../folder/file.md` | relative path from current note |
-| `notebook:path/file.md` | explicit cross-notebook selector |
+| `notebook:path/file.md` | cross-notebook note — fully qualified path required |
+| `subfolder/` | folder tab — navigates into that subfolder, opens its pinned note |
+| `notebook:folder/` | cross-notebook folder tab — fully qualified path required |
 
-Tab labels are fetched automatically from each note's `alias:` → `title:` → filename stem. No pipe labels needed.
+Tab labels are fetched automatically from each note's `alias:` → `title:` → filename stem. Folder tabs use the last path segment as their label — no fetch needed.
 
-`tabs:` is **not inherited** — it only activates on the note where it is declared, never from a parent config.
+`tabs:` **propagates** from notebook and folder config. Set it once in `.nb.md` or a folder's config and every note in that scope gets the tab strip. A note's own `tabs:` overrides the inherited value.
 
 ---
 

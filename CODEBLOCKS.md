@@ -7,7 +7,7 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hledger — Accounting|hledger]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#front — Frontmatter Filter|front]] · [[#config — Config Inheritance Tree|config]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hl — Accounting|hl]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -20,7 +20,7 @@ Write a fenced code block with a recognised language tag and nb-web renders it a
 status:pending due:today
 ```
 
-```hledger
+```hl
 bal -p thisweek
 ```
 
@@ -43,18 +43,19 @@ Any codeblock type can be promoted out of the note body into the **toolbar strip
 
 ```yaml
 ---
-front: type:item
+fm: type:item
 ---
 ```
 
-is equivalent to writing ` ```front\ntype:item\n``` ` in the body, except the block appears in `#nb-fm-blocks` (above the body, collapsed by default) rather than floating in the text.
+is equivalent to writing ` ```fm\ntype:item\n``` ` in the body, except the block appears in `#nb-fm-blocks` (above the body, collapsed by default) rather than floating in the text.
 
 **Multiple blocks** — each key that matches a registered codeblock lang gets its own slot:
 
 ```yaml
 ---
-front: type:shot loc:LG
-tw:    project:film status:pending
+fm: type:shot loc:LG
+tw: project:film status:pending
+hl: bal expenses
 ---
 ```
 
@@ -62,7 +63,7 @@ tw:    project:film status:pending
 
 ```yaml
 ---
-front: true
+fm: true
 ---
 ```
 
@@ -88,7 +89,7 @@ Every block header carries the same universal controls:
 |---------|--------|
 | **▼/▶** | Collapse / expand the block body. State is persisted in `localStorage` keyed on block type + query, so collapsed blocks stay collapsed across reloads and note switches. |
 | **↻** | Refresh — re-fetch data on demand |
-| **+** | Open inline add form (where supported: `tw`, `hledger`). Hidden when the current user is below the configured write level for that block type; also hidden when the note has `lock: yes` frontmatter. |
+| **+** | Open inline add form (where supported: `tw`, `hl`). Hidden when the current user is below the configured write level for that block type; also hidden when the note has `lock: yes` frontmatter. |
 | **⎋** | Launch external app (where supported: `t`) |
 
 ---
@@ -108,7 +109,7 @@ Block types fall into two categories: those with a **codeblock-level gate** (the
 Add `read:` and `write:` lines anywhere in the fence body to override the defaults for that specific block:
 
 ````markdown
-```hledger
+```hl
 read: office
 write: tech
 bal expenses --monthly
@@ -121,15 +122,15 @@ These lines are stripped before the query runs — they never reach hledger. Any
 
 | Block | Read gate | Write gate | Notes |
 |-------|-----------|------------|-------|
-| `hledger`, `chart` | `office` | `admin` | `chart` has no write |
+| `hl`, `chart` | `office` | `admin` | `chart` has no write |
 | `tw` | `user` | `user` | |
 | `git`, `t`, `test`, `tui` | `user` | none | read-only |
-| `front` | `admin` | none | system-wide metadata search |
+| `fm` | `admin` | none | system-wide metadata search |
 | `nav`, `nb` | — | none | gated by destination, not tool |
 
 **`nav`** respects the target's own access level: a dotfolder requires admin+; a regular notebook follows its `.<notebook>.md` config `access:` field. A 403 from the destination → silent removal, never an error banner.
 
-**`front`** is admin-gated by default because it queries frontmatter across all notebooks — a broad view of the whole system that lower-level users shouldn't have by default.
+**`fm`** is admin-gated by default because it queries frontmatter across all notebooks — a broad view of the whole system that lower-level users shouldn't have by default.
 
 See [[docs:dev/dev-security.md]] for the full access level scheme.
 
@@ -213,10 +214,10 @@ Permitted subcommands (read-only): `branch`, `describe`, `diff`, `log`, `ls-file
 
 ---
 
-### hledger — Accounting
+### hl — Accounting
 
 ````markdown
-```hledger
+```hl
 bal expenses --monthly -3
 ```
 ````
@@ -238,12 +239,12 @@ The hledger panel (☰ → hledger) has a persistent **+ Add Transaction** secti
 
 The hledger panel's **Files** tab handles bulk import and export between daily notes and journal files:
 
-- **Export** — scans `YYYYMMDD.md` daily notes for ` ```hledger ``` ` fenced blocks and writes their contents to a `.journal` file. Optionally filtered by date range.
+- **Export** — scans `YYYYMMDD.md` daily notes for ` ```hl ``` ` fenced blocks and writes their contents to a `.journal` file. Optionally filtered by date range.
 - **Import** — parses an existing `.journal` file and appends each dated transaction block to the matching `YYYYMMDD.md` daily note (creating it if it doesn't exist), then commits.
 
 **Static `ledger` blocks**
 
-Use ` ```ledger ` (not ` ```hledger `) for example journal entries in tutorial or documentation notes. These render as static syntax-highlighted code via Prism — never executed against your real journal.
+Use ` ```ledger ` (not ` ```hl `) for example journal entries in tutorial or documentation notes. These render as static syntax-highlighted code via Prism — never executed against your real journal.
 
 Requires `hledger` on `$PATH`. See also: [hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock) — this block is also released as a standalone package.
 
@@ -294,6 +295,37 @@ today
 ````
 
 Shows the clocked-in account, elapsed time, and a period report. The argument is a period expression (`today`, `thisweek`, `lastmonth`). The **⎋** button opens the full timeclock UI.
+
+---
+
+### toolbar — Shortcut Buttons
+
+Notes with `toolbar: true` frontmatter appear as icon shortcut buttons in the list toolbar — instant one-click access to any note regardless of which folder or sort is active.
+
+```yaml
+---
+title: Cashflow Report
+toolbar: true
+toolbar_icon: 💰
+---
+```
+
+The button appears in the list header bar alongside any plugin-provided toolbar buttons. Clicking it opens the note in the preview pane immediately.
+
+**`toolbar_icon:`** — sets the icon displayed on the button. Falls back in order: `toolbar_icon:` value → plugin icon function (if the note's type has a registered icon) → `indicator:` frontmatter → 📌.
+
+**Scope** — toolbar notes are scanned notebook-wide at load time. A note in any folder of the current notebook can expose a button. Switching notebooks rebuilds the toolbar.
+
+**Common patterns:**
+
+| Note | `toolbar_icon:` | Purpose |
+|------|----------------|---------|
+| `cashflow.md` | `💰` | Jump to financial overview |
+| `checklist.md` | `📋` | Daily checklist |
+| `schedule.md` | `🗓` | Weekly schedule |
+| `dashboard.md` | `📊` | Project hub |
+
+There is no codeblock form — `toolbar: true` is a frontmatter-only directive. No FM-mode slot; the button itself is the presentation.
 
 ---
 
@@ -417,10 +449,10 @@ gallery: "large pfinds:items/photos/"
 
 ---
 
-### front — Frontmatter Filter
+### fm — Frontmatter Filter
 
 ````markdown
-```front
+```fm
 shot: | All shots
 ```
 ````
@@ -442,25 +474,25 @@ Renders a collapsible list of notes matching frontmatter field conditions. Resul
 **Examples:**
 
 ````markdown
-```front
+```fm
 shot: | All shots
 ```
 
-```front
+```fm
 Takeout type:shot loc:LG | Lee Gardens shots
 ```
 
-```front
+```fm
 model:true | Example notes
 ```
 ````
 
 ---
 
-### config — Config Inheritance Tree
+### cfg — Config Inheritance Tree
 
 ````markdown
-```config
+```cfg
 access: .
 ```
 ````
@@ -482,10 +514,10 @@ Visualises the configuration resolution chain from the global root (`~/.nb/.nb.m
 `field` must start with a word character (`a-z`, `0-9`, `_`). The parser splits on the first `:` after a valid field name. A value like `. access:` fails — the leading `.` is not a word character, so the whole string is treated as the target, not a field name.
 
 ```yaml
-config: "access:"      # ✓ field=access, target=current note's notebook
-config: "access: ."    # ✓ same — explicit current-context dot
-config: "access: nb:"  # ✓ explicit notebook target
-config: ". access:"    # ✗ parses as target='. access', not field=access
+cfg: "access:"      # ✓ field=access, target=current note's notebook
+cfg: "access: ."    # ✓ same — explicit current-context dot
+cfg: "access: nb:"  # ✓ explicit notebook target
+cfg: ". access:"    # ✗ parses as target='. access', not field=access
 ```
 
 Values ending with `:` must be quoted in YAML.
@@ -504,19 +536,19 @@ Values ending with `:` must be quoted in YAML.
 When a `field` is specified, only nodes that actually set that field show a value beside them:
 
 ````markdown
-```config
+```cfg
 access: .
 ```
 ````
 
 Useful for tracing where `access:`, `default_type:`, or any other setting is actually coming from. Admin-only — does not appear for lower access levels.
 
-**Config file convention:** every config file must carry `config: <name>` in its frontmatter (the name of what it configures). This makes them queryable via `front`:
+**Config files** are identified by `type: dotfile` in frontmatter and their path convention (`~/.nb/notebook/folder/.folder.md`). Query them with `fm`:
 
 ````markdown
-```front
+```fm
 read: admin
-config: | All config files
+type:dotfile | All config files
 ```
 ````
 

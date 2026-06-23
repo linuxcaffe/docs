@@ -29,12 +29,12 @@ Several block types accept **`.`** as a shorthand for the current note's locatio
 | Block | `.` resolves to | Implementation |
 |-------|----------------|----------------|
 | `nav` | Current note's `notebook:folder` | `_navParseQuery(raw, currentSelector)` — exact `raw === '.'` branch |
-| `front` | Current notebook (scope prefix) | `_frontParseQuery(raw, currentSelector)` — dot token in notebook list |
+| `fm` | Current notebook (scope prefix) | `_frontParseQuery(raw, currentSelector)` — dot token in notebook list |
 | `git` | Current notebook (repo name) | Inline in `_loadGitBlock` before fetch |
-| `config` | Current note's `notebook:folder/` | `_configParseQuery(raw, currentSelector)` — `!target \|\| target === '.'` |
+| `cfg` | Current note's `notebook:folder/` | `_configParseQuery(raw, currentSelector)` — `!target \|\| target === '.'` |
 | `gallery` | Current note's folder | `selector` param passed to `/api/gallery` with `path=.` |
 
-**Selector extraction pattern** (used by `nav`, `front`, `git`):
+**Selector extraction pattern** (used by `nav`, `fm`, `git`):
 ```javascript
 const sel = NbMain?.activeSelector?.() || '';
 const colon = sel.indexOf(':');
@@ -43,7 +43,7 @@ const rel      = colon >= 0 ? sel.slice(colon + 1) : '';
 const folder   = rel.split('/').length > 1 ? rel.split('/').slice(0, -1).join('/') : '';
 ```
 
-**YAML gotcha** — any FM-mode codeblock query ending with `:` (e.g. `config: . access:`) is invalid YAML: PyYAML treats the trailing `:` as a nested mapping indicator and throws, silently falling back to the dumb line-split parser. Quote the value: `config: ". access:"`. #gotcha
+**YAML gotcha** — any FM-mode codeblock query ending with `:` (e.g. `cfg: . access:`) is invalid YAML: PyYAML treats the trailing `:` as a nested mapping indicator and throws, silently falling back to the dumb line-split parser. Quote the value: `cfg: ". access:"`. #gotcha
 
 ---
 
@@ -207,9 +207,9 @@ Key reads before writing new scripts:
 
 ---
 
-## front block — implementation notes
+## fm block — implementation notes
 
-Key lessons from the `front` codeblock (frontmatter filter/query block):
+Key lessons from the `fm` codeblock (frontmatter filter/query block):
 
 **Scope prefix parsing** — leading bare words (no colon) are notebook names; the first token containing `:` ends the notebook list and begins field:value filters. `Takeout shot:` → Takeout notebook, field `shot`. Parser: consume tokens from start until a `:` token is hit; remainder is filters.
 
@@ -225,7 +225,7 @@ Key lessons from the `front` codeblock (frontmatter filter/query block):
 
 **API meta field** — return `{k: str(v) for k,v in meta.items()}` — stringify all values so YAML lists/dicts don't break JSON serialisation. Multiline YAML strings: collapse to single space in tooltip via `v.replace(/\n/g,' ')` in JS.
 
-**`model: true` convention** — frontmatter key to mark exemplary/reference notes. `` ```front\nmodel:true | Model notes\n``` `` lists them across all notebooks.
+**`model: true` convention** — frontmatter key to mark exemplary/reference notes. `` ```fm\nmodel:true | Model notes\n``` `` lists them across all notebooks.
 
 ---
 
@@ -249,16 +249,16 @@ A 403 from a destination endpoint is caught in the load function and becomes `_c
 
 ```json
 "codeblock_access": {
-  "hledger": {"read": "office", "write": "admin"},
-  "chart":   {"read": "office", "write": null},
-  "tw":      {"read": "user",   "write": "user"},
-  "git":     {"read": "user",   "write": null},
-  "t":       {"read": "user",   "write": null},
-  "test":    {"read": "user",   "write": null},
-  "tui":     {"read": "user",   "write": null},
-  "front":   {"read": "admin",  "write": null},
-  "nav":     {"read": null,     "write": null},
-  "nb":      {"read": null,     "write": null}
+  "hl":    {"read": "office", "write": "admin"},
+  "chart": {"read": "office", "write": null},
+  "tw":    {"read": "user",   "write": "user"},
+  "git":   {"read": "user",   "write": null},
+  "t":     {"read": "user",   "write": null},
+  "test":  {"read": "user",   "write": null},
+  "tui":   {"read": "user",   "write": null},
+  "fm":    {"read": "admin",  "write": null},
+  "nav":   {"read": null,     "write": null},
+  "nb":    {"read": null,     "write": null}
 }
 ```
 
@@ -290,7 +290,7 @@ if (!_cbCan(el, 'blocktype', 'read')) { _cbDenyRead(el); return; }
 Write buttons (`+`, `✎`) are conditionally created:
 
 ```javascript
-if (_cbCan(el, 'hledger', 'write')) {
+if (_cbCan(el, 'hl', 'write')) {
     const addBtn = ...
     acts.appendChild(addBtn);
 }
@@ -328,13 +328,13 @@ const r = await fetch(`/api/fs/list?path=${encodeURIComponent(rawPath)}`);
 if (r.status === 403) { _cbDenyRead(el); return; }
 ```
 
-Applied in `_loadNavBlock` (rawPath and notebook paths) and `_loadFrontBlock`. Any new load function that calls a listing or content endpoint should follow this pattern.
+Applied in `_loadNavBlock` (rawPath and notebook paths) and `_loadFmBlock`. Any new load function that calls a listing or content endpoint should follow this pattern.
 
 ---
 
-## config block internals
+## cfg block internals
 
-User-facing syntax: [[docs:CODEBLOCKS#config — Config Inheritance Tree]].
+User-facing syntax: [[docs:CODEBLOCKS#cfg — Config Inheritance Tree]].
 
 **Endpoint:** `GET /api/config-tree?notebook=X&folder=Y&key=Z&selector=S`
 
@@ -364,7 +364,7 @@ The `note` level (appended last, highest priority) is the currently open note's 
 
 **Effective marker** (`▶` amber): the last node in the array (highest priority) that contributes the queried key. When no key specified, the deepest existing node. `◉` blue when `currentSelector` matches a node exactly (viewing a config file that has its own `config` block).
 
-**`access: guest` in `.nb.md`** — global floor set to `guest`. Every notebook and folder gates up from there; the `config` block makes the chain visible and shows where the effective value comes from. #invariant
+**`access: guest` in `.nb.md`** — global floor set to `guest`. Every notebook and folder gates up from there; the `cfg` block makes the chain visible and shows where the effective value comes from. #invariant
 
 ---
 
@@ -427,7 +427,7 @@ renderOne: async el => {
 
 `renderOne` is only called from the FM lazy path — body codeblocks still use `render(container)` via `NbWeb.renderCodeblocks`. **Adding `renderOne` to a new renderer is required for it to participate in lazy FM loading.** Without it the block falls through to the eager path.
 
-**`NbWeb.fmUtils.buildFmSkeleton(block, lang)`** — builds a proper barblock header (calls `_buildBarHeader` with the right `cls` alias for hledger) and sets `data-fm-lazy`. Lives in `nbweb-codeblocks.js`, exported via `NbWeb.fmUtils` so `main.js` can call it without coupling to plugin internals.
+**`NbWeb.fmUtils.buildFmSkeleton(block, lang)`** — builds a proper barblock header (calls `_buildBarHeader` with the right `cls` alias for `cfg`, which emits `nb-config-*` CSS rather than `nb-cfg-*` to avoid conflict with the dotfile form) and sets `data-fm-lazy`. Lives in `nbweb-codeblocks.js`, exported via `NbWeb.fmUtils` so `main.js` can call it without coupling to plugin internals.
 
 **Eager path** (renderers without `renderOne` — currently `tui`, `check`): `r.render(wrap)` is called directly per renderer, scoped to `#nb-fm-blocks`. These renderers' `querySelectorAll` calls are type-specific enough that they never accidentally pick up lazy blocks from other renderers.
 
@@ -447,4 +447,4 @@ if (key === 'check') continue;
 
 `NbWeb-codeblocks` is nb-web's implementation of the [mkd-codeblocks](https://github.com/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app.
 
-The `hledger` block is already released as a standalone package ([hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock)). The others (`tw`, `nb`, `git`, `t`, `nav`, `front`, `test`) are planned for extraction as the project matures.
+The `hl` block is already released as a standalone package ([hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock)). The others (`tw`, `nb`, `git`, `t`, `nav`, `fm`, `test`) are planned for extraction as the project matures. The `cfg` block is nb-web-specific (config chain resolution) and is not planned for standalone release.
