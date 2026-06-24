@@ -460,3 +460,34 @@ Start with the visual stuff — it's immediately satisfying and purely additive.
 ---
 
 > The notebook config file is nb-web's answer to the question: *"what if every notebook knew what it was for?"*
+
+---
+
+## tag_color — UI surfaces #implemented
+
+`tag_color:` maps tag names to CSS color values. Declared in note FM, folder config,
+or notebook config (note wins, then folder, then notebook).
+
+**Format** (YAML object or key:value strings):
+```yaml
+tag_color:
+  bug: "#e74c3c"
+  rfe: "#3498db"
+  done: "#27ae60"
+```
+
+`_matchTagColor(raw, tags)` resolves: iterates `tags[]` and returns the first
+matching color. Now exported as `NbMain.matchTagColor(raw, tags)` for plugin use.
+
+**Where tag_color is applied (2026-06-23):**
+
+| Surface | How |
+|---------|-----|
+| List panel title | `title.style.color = tc` |
+| FM tabs — active tab | `btn.style.setProperty('--tab-active-color', tc)` → CSS var fallback to `--accent` |
+| nav codeblock note titles | `btn.style.color = tc` |
+
+TOC headings intentionally excluded — those are structural, not note titles.
+
+**Plugin access:** `NbMain.matchTagColor(n.tag_color, n.tags)` — use bare `NbMain`,
+not `window.NbMain` (`const` globals don't attach to `window`). #gotcha
