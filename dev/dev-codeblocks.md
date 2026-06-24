@@ -511,3 +511,47 @@ url=$(python3 -c "import json,sys; print(json.loads(sys.stdin.read()).get('url',
 
 - **Button trigger** (`⎋`): `disabled` during fetch
 - **Title trigger** (span): `nb-lib-loading` class → `opacity: 0.45; pointer-events: none`
+
+### Journal scoping — block carries its own resolution #invariant
+
+`_execLibOpen(trigger, lang, { journal })` accepts an optional `journal` override.
+For `hl` blocks, the title-click passes `el.dataset.hlJournalSel` directly:
+
+```javascript
+if (_blockExtras?.open?.hl) {
+    _execLibOpen(nameEl, 'hl', { journal: el.dataset.hlJournalSel || '' });
+    return;
+}
+```
+
+`el.dataset.hlJournalSel` is set at block load time from the API response
+(`d.journalSelector`). It is always the authoritative journal — the same one
+the codeblock queried — regardless of which note or folder the block lives in.
+
+**Why not derive from note FM?** A note in `Takeout:reports/` may have no
+`journal:` FM but its hl block correctly queries the Takeout journal (via
+the hledger config chain). Reading `effective_fm.journal` on the note would
+miss this and fall through to the fallback, opening the wrong journal.
+
+**Priority in `_execLibOpen`:**
+```
+journalOverride (from block dataset)   ← most specific, set by loader
+  ?? effective_fm.journal               ← folder config propagation
+  ?? meta.journal                       ← per-note FM override  
+  ?? ''                                 ← script's own fallback logic
+```
+
+**Three-tier discovery in `open-block-hl-admin.sh`:**
+```
+NB_JOURNAL set    → echo "nb:$NB_JOURNAL"            (direct)
+NB_NOTEBOOK set   → query /api/notes?type=journal     (discovery)
+fallback          → echo "nb:accts:hledger.journal"   (hardcoded)
+```
+
+`type: journal` notes (`.md` files) are discoverable; raw `.journal` files
+cannot carry YAML frontmatter. Companion portal notes (like `ledger.md` in
+`Takeout/accounting/`) serve as the typed entry-point.
+
+`journal:` in `_FM_BLOCK_KEYS` — propagates from folder config down to notes
+via `effective_fm`. `journal` in `_FM_TYPES` — enables `type: journal` list
+indicator (📒) and slim meta treatment.
