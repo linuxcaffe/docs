@@ -466,7 +466,10 @@ The suffix convention also works for markdown files — useful when the filename
 
 ### `.lib/` — reusable self-censoring components
 
-`~/.nb/.lib/` holds HTML components designed for inline inclusion. Files are readable by all authenticated users (unlike other dotfolders which require admin); the level suffix controls what renders. Additive tier pattern:
+`~/.nb/.lib/` holds three kinds of files — all access-gated by filename suffix:
+
+**Inline HTML components** (`.html`) — designed for `{{inline: .lib:…}}` inclusion.
+Additive tier pattern:
 
 ```markdown
 {{inline: .lib:user-mgmt-user.html}}
@@ -474,7 +477,15 @@ The suffix convention also works for markdown files — useful when the filename
 {{inline: .lib:user-mgmt-admin.html}}
 ```
 
-One note, all users, each sees exactly their tier's content accumulated. No conditionals in the note, no JS level-checking — the server handles it all.
+One note, all users, each sees exactly their tier's content accumulated. No conditionals
+in the note, no JS level-checking — the server handles it all.
+
+**Help docs** (`help-block-{lang}-{access}.md`) — adds a `?` button to a barblock header.
+
+**Open scripts** (`open-block-{lang}-{access}.sh`) — wires the barblock title-click and
+`⎋` button to run a shell script. Script stdout is a dispatch line:
+`nb:<selector>` / `file:<path>` / `term:<cmd>` / `https://…`
+See `dev-codeblocks.md` § `.lib/ block extras` for full protocol.
 
 ---
 

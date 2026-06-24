@@ -448,3 +448,66 @@ if (key === 'check') continue;
 `NbWeb-codeblocks` is nb-web's implementation of the [mkd-codeblocks](https://github.com/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app.
 
 The `hl` block is already released as a standalone package ([hledger-codeblock](https://github.com/linuxcaffe/hledger-codeblock)). The others (`tw`, `nb`, `git`, `t`, `nav`, `fm`, `test`) are planned for extraction as the project matures. The `cfg` block is nb-web-specific (config chain resolution) and is not planned for standalone release.
+
+---
+
+## `.lib/` block extras — help buttons and open protocol #implemented
+
+`~/.nb/.lib/` holds two kinds of barblock extension files, auto-discovered at startup
+via `/api/lib/block-extras` and stored in `_blockExtras` in the plugin.
+
+### File naming
+
+| Pattern | Effect |
+|---------|--------|
+| `help-block-{lang}-{access}.md` | Adds `?` button to that lang's barblock header |
+| `open-block-{lang}-{access}.sh` | Wires title-click + `⎋` button to run the script |
+
+Access level follows the standard five-point scale; the highest level the current user
+meets wins. Scripts must be executable (`chmod +x`).
+
+### Open protocol — script stdout decides the action
+
+The script prints exactly one line; `_dispatchLibOpen(out)` parses the prefix:
+
+| Output line | Action |
+|-------------|--------|
+| `nb:<selector>` | `NbMain.openNote(selector)` — opens note in preview pane |
+| `file:<path>` | `NbMain.openNote(path)` — same, for bare filesystem paths |
+| `term:<cmd>` | `NbTerminal.run(cmd)` — runs command in the PTY terminal |
+| `http://…` / `https://…` | `window.open(url, '_blank')` — new browser tab |
+
+### Title-click routing
+
+When `_blockExtras.open[lang]` is set, the barblock's clickable title routes through
+`_execLibOpen` instead of its hardcoded default. Fallback chain:
+
+```
+title click
+  → lib script exists?  yes → _execLibOpen → _dispatchLibOpen
+                         no → block's hardcoded default (tw-web launch, hledger-web, etc.)
+```
+
+The `⎋` button and title click call the same `_execLibOpen` function — same action,
+two entry points. When a lib script handles the title, the `⎋` button becomes redundant
+(but is not hidden automatically).
+
+### Example scripts
+
+```bash
+# open-block-hl-admin.sh — open hledger journal in nb-web preview
+echo "nb:accts:hledger.journal"
+```
+
+```bash
+# open-block-tw-admin.sh — launch tw-web (start if needed) and open it
+NB_PORT="${NB_PORT:-5001}"
+result=$(curl -sf -X POST "http://localhost:${NB_PORT}/api/tw/launch" 2>/dev/null)
+url=$(python3 -c "import json,sys; print(json.loads(sys.stdin.read()).get('url',''))" <<< "$result" 2>/dev/null)
+[ -n "$url" ] && echo "$url" || echo "http://localhost:5000"
+```
+
+### Loading state
+
+- **Button trigger** (`⎋`): `disabled` during fetch
+- **Title trigger** (span): `nb-lib-loading` class → `opacity: 0.45; pointer-events: none`
