@@ -349,6 +349,23 @@ With these keys set, **every** interaction — clock in, clock out, report, dot-
 
 The `timedot` block renders a static timesheet written in [hledger timedot format](https://hledger.org/timedot.html) — accounts and durations, one per line, grouped by date. Unlike the `t` block (which reads an external file), a timedot block's data lives *inside the note itself* — it is the note body, not a live query.
 
+**Getting started (no existing data)**
+
+You never need to pre-populate a timedot block. Write an empty fence and click `+`:
+
+````markdown
+```timedot
+```
+````
+
+The block shows *No entries yet* with a `+` button. Clicking it opens the add form; on Save the note source is updated automatically — a date heading and the first entry are written into the fence for you. From that point forward the data grows inside the note.
+
+If you have an existing `tw.timedot` file from the `t .` CLI, use [external file mode](#external-file-mode) instead — point `timedot_file:` at it and the block reads your existing history.
+
+**With existing data**
+
+Paste or type timedot entries directly inside the fence:
+
 ````markdown
 ```timedot
 2024/06/25
@@ -450,7 +467,11 @@ timedot: thismonth
 
 The value is treated as an initial filter hint (future use; currently renders the block in the strip).
 
-**External file mode** — instead of embedding data in the note, point the block at an external `.timedot` file:
+**External file mode** — instead of embedding data in the note, point the block at an external `.timedot` file. This is the right choice when:
+
+- you already have a `tw.timedot` file built up with `t . i` from the CLI, or
+- you want one shared timesheet file that multiple notes can display, or
+- the notebook's `.notebook` config should scope every note to the same file.
 
 ```yaml
 ---
@@ -458,7 +479,7 @@ timedot_file: ~/client/acme/time.timedot
 ---
 ```
 
-When `timedot_file:` is set the block fetches content from that file on every render. The `+` button appends to the file rather than editing the note. The note itself can have an empty timedot fence:
+When `timedot_file:` is set the block fetches content from that file on every render. The `+` button appends to the file rather than editing the note. **The file does not need to exist yet** — the first `+` save creates it. The note's fence content is ignored; write an empty fence as a placeholder:
 
 ````markdown
 ```timedot
