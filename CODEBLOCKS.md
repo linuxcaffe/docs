@@ -7,7 +7,7 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hl — Accounting|hl]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hl — Accounting|hl]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -294,7 +294,213 @@ today
 ```
 ````
 
-Shows the clocked-in account, elapsed time, and a period report. The argument is a period expression (`today`, `thisweek`, `lastmonth`). The **⎋** button opens the full timeclock UI.
+The `t` block is a live time-tracking widget. It reads your `tw.timeclock` file via the `t` CLI and shows clock-in/out status and a period report side-by-side.
+
+**Argument** — a period expression that controls the report column:
+
+| Value | Period |
+|-------|--------|
+| `today` *(default)* | Since midnight |
+| `thisweek` | Since Monday |
+| `lastweek` | Previous Mon–Sun |
+| `thismonth` | Since 1st of month |
+| `lastmonth` | Previous calendar month |
+
+**Header controls:**
+
+| Button | Action |
+|--------|--------|
+| `.` | Toggle to timedot mode (shows last timedot entry + timedot report) |
+| `tc` | Toggle back to timeclock mode |
+| `⏱ In` | Open the clock-in form (account picker + description) |
+| `◼ Out` | Clock out of the current entry |
+| `↻` | Refresh |
+
+**The combined total row** — when both your timeclock file and timedot file have entries in the selected period, a summary row appears at the bottom of the report:
+
+```
+1h15m tc + 2.5h td  →  3.8h
+```
+
+**Timedot mode (`.` toggle)** — switches the header to show your last timedot entry (account, time logged, date) and the report to show timedot hours. The combined total remains visible at the foot so you always see the full picture.
+
+**FM usage** — put a `t` block in the frontmatter toolbar strip:
+
+```yaml
+---
+t: thisweek
+---
+```
+
+**File scoping** — by default the block uses the timeclock file from `~/.task/config/timelog.rc`. Override per-note or per-notebook:
+
+```yaml
+---
+timelog_file: ~/client/acme/time.timeclock
+timedot_file: ~/client/acme/time.timedot
+---
+```
+
+With these keys set, **every** interaction — clock in, clock out, report, dot-mode — targets those files instead of the global ones. Set them in a `.notebook` config note to scope an entire notebook at once. See [[#File Scoping|File Scoping]] below.
+
+---
+
+### timedot — Time Journal
+
+The `timedot` block renders a static timesheet written in [hledger timedot format](https://hledger.org/timedot.html) — accounts and durations, one per line, grouped by date. Unlike the `t` block (which reads an external file), a timedot block's data lives *inside the note itself* — it is the note body, not a live query.
+
+````markdown
+```timedot
+2024/06/25
+work:client-a  2.5h    ; website redesign
+work:client-b  ....    ; emails
+
+2024/06/26
+work:client-a  1.5h
+admin          ..
+```
+````
+
+**Time format** — multiple styles, freely mixed:
+
+| Syntax | Meaning |
+|--------|---------|
+| `....` | Dots — each dot = 15 min (four dots = 1 h) |
+| `.... ....` | Dot groups separated by spaces — all counted |
+| `1.5h` | Decimal hours |
+| `90m` | Minutes |
+| `1.5` | Decimal hours (bare number) |
+
+**Account names** — accounts may contain single spaces; the separator between account and time is **two or more spaces**:
+
+```
+home laundry  2.5h     ← "home laundry" is the account
+home:laundry  2.5h     ← "home:laundry" is the account (colon hierarchy)
+```
+
+**Section headings** — use `##`, `###`, or `####` (with optional `-`) to divide the block into collapsible sections. Level-2 sections start open; level-3 and level-4 start collapsed. State persists in `localStorage`.
+
+````markdown
+```timedot
+##- November
+
+###- Week 45
+
+####- Thursday
+2024/11/14
+work:hh  8.5h
+
+####- Friday
+2024/11/15
+work:hh  8.5h
+sleep    6h
+```
+````
+
+**Other extended syntax** (passed through / skipped by the renderer):
+
+| Syntax | Meaning |
+|--------|---------|
+| `; comment` | Comment line — ignored |
+| `* task item` | Task line — ignored |
+| `// vim: ...` | Vim modeline — ignored |
+
+**Header controls:**
+
+| Button | Action |
+|--------|--------|
+| `+` | Open the add-entry form (date · time · sub-account · comment) |
+| `all` / `mo` / `wk` | Cycle date filter: all entries → this month → this week → all |
+| `↻` | Re-render from source |
+| total display | Click `12.5h · $1062` to open the summary popover |
+
+**Date filter** — cycles through `all → mo → wk → all`. The filter applies to both the section bodies and the totals shown in each section header. Sections with no entries in the filtered window are hidden.
+
+**Summary popover** — click the hours/amount display in the block header to open a floating breakdown of hours (and billing amount, if `rate:` is set) per account, for the current filter window.
+
+**Add-entry form** — the `+` button inserts a row directly below the block header:
+
+| Field | Notes |
+|-------|-------|
+| Date | Defaults to today |
+| Time | Any supported format: `....`, `1.5h`, `90m` |
+| Sub-account | Optional `:sub` suffix or full account name; autocomplete from existing accounts |
+| Comment | Appended as `; comment` |
+
+The entry is appended to the note source. If the last date in the block is today, no new date heading is written; otherwise a new `YYYY/MM/DD` line is added first.
+
+**FM frontmatter keys:**
+
+```yaml
+---
+project: work:client-a     # prefixes bare entries and :sub accounts
+rate: 85                   # enables the $ billing column (hourly rate)
+---
+```
+
+With `project: work:client-a`, bare time entries (`....`) are rewritten to `work:client-a  ....` before display. Sub-accounts (`:website`) become `work:client-a:website`. Full accounts pass through unchanged.
+
+**FM usage** — place in the FM toolbar strip (collapsed by default, collapsed on load):
+
+```yaml
+---
+timedot: thismonth
+---
+```
+
+The value is treated as an initial filter hint (future use; currently renders the block in the strip).
+
+**External file mode** — instead of embedding data in the note, point the block at an external `.timedot` file:
+
+```yaml
+---
+timedot_file: ~/client/acme/time.timedot
+---
+```
+
+When `timedot_file:` is set the block fetches content from that file on every render. The `+` button appends to the file rather than editing the note. The note itself can have an empty timedot fence:
+
+````markdown
+```timedot
+```
+````
+
+Set `timedot_file:` on a `.notebook` config note to scope the whole notebook — every note's timedot block reads the same file. See [[#File Scoping|File Scoping]] below.
+
+---
+
+### File Scoping
+
+Two FM keys redirect the `t` and `timedot` blocks to project-specific files instead of the global defaults:
+
+| Key | Affects | Default |
+|-----|---------|---------|
+| `timelog_file:` | `t` block — clock-in/out, status, report | `timelog.file` in `~/.task/config/timelog.rc` |
+| `timedot_file:` | `timedot` block — content, `+` append | `timelog.timedot_file` in rc (or `tw.timedot` alongside timeclock) |
+
+**Per-note** — set in the note's own frontmatter. Only that note's blocks are scoped:
+
+```yaml
+---
+title: Acme Project — March 2025
+timelog_file: ~/client/acme/time.timeclock
+timedot_file: ~/client/acme/time.timedot
+rate: 85
+project: work:acme
+---
+```
+
+**Per-notebook** — set in the `.notebook` config note (Hamburger → Configure Notebook). Every note in the notebook inherits the keys automatically via the config walk-up chain:
+
+```yaml
+---
+title: .notebook
+timelog_file: ~/freelance/time.timeclock
+timedot_file: ~/freelance/time.timedot
+---
+```
+
+When both keys are set on a note that has both a `t` block and a `timedot` block, the `t` block's clock-in/out and dot-mode toggle, and the `timedot` block's `+` add form, all write to the same pair of files — keeping timeclock and timedot in sync for the same project.
 
 ---
 
