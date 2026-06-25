@@ -1,56 +1,87 @@
 ---
 title: CHECKS
-caption: Writing check scripts for the nb-web check codeblock
+caption: Check scripts — all modes, script authoring, naming, tiers, --demo
 toc: true
 processed: true
 ---
 
-> Moved to [[docs:dev/dev-checks.md]] — this file is a redirect stub.
+# Checks
 
-# Check Scripts
+The checks system embeds live, script-driven diagnostics directly in notes. Scripts live in `~/.nb/.checks/` and run via the Flask server — no terminal needed. A passing check is completely invisible; a failing check surfaces its output inline.
 
-The `check` codeblock runs bash scripts from `~/.nb/.checks/` — embedding live system checks directly in notes. See [[docs:CODEBLOCKS#check — Embedded Assertions|CODEBLOCKS]] for the codeblock syntax.
-
----
-
-## How It Works
-
-Scripts are called with no arguments. They receive context about the current note as environment variables. Exit code and stdout together determine what the note displays:
-
-| Exit code | stdout | Result |
-|---|---|---|
-| 0 | empty | **Invisible** — block disappears entirely |
-| 0 | has content | Output rendered as markdown (no error styling) |
-| non-zero | anything | Output rendered as markdown with red left border |
-
-Output is rendered as full markdown — headings, tables, lists, blockquotes, `{{hledger: query}}` inline expressions, `[[docs:wikilinks]]`, `term:` links, and `note:` links all work.
+**Four modes, one script fleet** — the same scripts work in all modes:
 
 ---
 
-## Script Location
+## Modes
 
-All scripts live in `~/.nb/.checks/`. Browse them with:
+| Mode | Syntax | Behaviour |
+|------|--------|-----------|
+| **Form 1** — on-demand | `` ```check`` + `script \| Label` | Renders a `▶ Label` button; runs on click |
+| **Form 2** — auto-run | `` ```check`` + `script` (no label) | Runs at render time; silent on pass |
+| **Form 3** — group | `` ```check`` + multiple scripts, one per line | All run in parallel; failure summary with per-script toggles |
+| **Form 4** — list | `` ```check`` + `list` or `list prefix-` | Script browser barblock — starts collapsed; click icon for `--demo` |
+| **Virtual** | `checks: prefix` in note FM / folder / notebook config | Injects Form 2 fences at render time; never fires on config files |
+
+`check: list` cannot be set via the `checks:` FM key — YAML parses it as a config key/value, not a fenced block. **List mode is body-fenced only.**
+
+---
+
+## Exit codes
+
+Scripts communicate severity through exit code:
+
+| Code | Border | Meaning |
+|------|--------|---------|
+| `0` + no output | none | **Pass** — block vanishes entirely |
+| `0` + output | none | Advisory render (amber banner pattern — see `note-approved`) |
+| `1` | red | **Error** — action required |
+| `2` | amber | **Warn** — advisory, non-urgent |
+
+Output is rendered as full markdown — headings, tables, blockquotes, `{{hledger: query}}` inline expressions, `[[wikilinks]]`, `term:` links, and `note:` links all work.
+
+---
+
+## Script location and naming
+
+All scripts live in `~/.nb/.checks/`. Scripts are resolved by name — `.sh` extension is optional.
+
+### Namespace convention
+
+Scripts follow a **left-to-right hierarchical namespace** using `-` as separator:
+
+```
+hl-                       all hledger scripts
+hl-core-                  hledger core validity (journal, binary test)
+hl-health-                hledger health sub-group (day, week, month, year, taxes)
+hl-opt-                   optional hledger checks (ordereddates, tags, payees…)
+hl-budget-                budget integrity sub-group
+nb-                       all nb scripts (dirty, orphan-annotations, sync-unwired…)
+sys-                      system health (disk, process, version)
+tw-                       Taskwarrior integration checks
+note-                     per-note checks (approved, slow)
+test-                     nb-web self-tests (access, syntax, settings…)
+```
+
+**The trailing-dash glob** — a `check` block body ending with `-` runs every script in that subgroup:
+
+````markdown
+```check
+hl-health-
+```
+````
+
+fires `hl-health-day.sh`, `hl-health-week.sh`, `hl-health-month.sh`, etc.
+
+**No bundler scripts** — grouping is name-driven only. A script that does nothing but call other scripts does not exist.
+
+Browse and edit all scripts in place:
 
 ````markdown
 ```nav
 ~/.nb/.checks
 ```
 ````
-
-Any script works in all three invocation modes — the script itself is mode-agnostic:
-
-| Invocation | Behaviour |
-|---|---|
-| `` ```check`\n`script-name \| Label` `` | Rendered as a clickable button; runs on click |
-| `` ```check`\n`script-name` `` | Auto-runs; invisible on pass, shows output on fail |
-| `checks: script-name` in frontmatter / config | Injected automatically at render time; same as above |
-
-Scripts are resolved by name — `.sh` extension is optional:
-
-```check
-hl-core-journal        # finds ~/.nb/.checks/hl-core-journal.sh
-hl-core-journal.sh     # same
-```
 
 ---
 
@@ -72,6 +103,66 @@ journal="${HLEDGER_FILE:-$HOME/.hledger.journal}"
 [ ! -f "$journal" ] && exit 0
 hledger bal -f "$journal" ...
 ```
+
+---
+
+## `--demo` escape hatch
+
+Every script must implement `--demo` — checked **before** the env guard, so it works from the CLI with no nb context:
+
+```bash
+if [[ "$1" == "--demo" ]]; then
+    echo '**Problem name** — realistic consequence sentence.'
+    echo ''
+    echo '- `realistic-filename-or-item`'
+    echo ''
+    echo 'Specific action to fix it.'
+    exit 1  # match the real failure exit code
+fi
+
+[ -z "$NB_NOTE_PATH" ] && exit 0   # env guard follows
+```
+
+**The demo block is a recipe.** It must be written with enough fidelity that it could be mistaken for real output — realistic filenames, plausible values, the actual error voice. If you can't write a convincing demo block, you don't yet understand the failure well enough to ship the script.
+
+**Three purposes:**
+1. **Testability** — `bash script.sh --demo` works immediately from any terminal
+2. **List mode** — `check: list` icon click triggers `--demo` on the selected script (no real condition needed)
+3. **Specification** — writing the demo block forces clarity about what the failure looks like
+
+---
+
+## Tier model
+
+Scripts are graded by how completely they answer the three core questions (what / why / now what):
+
+| Tier | Answers | State |
+|------|---------|-------|
+| 1 | What only | Draft / acknowledged debt |
+| 2 | What + Why + Now what | Minimum for a shipped script |
+| 3 | Tier 2 + automated `fix:` link | High-frequency, high-friction issues only |
+
+The `#!` response package header on the first line of stdout attaches a fix link:
+
+```bash
+echo '#! fix:nb-sync-add-remote'
+echo '**Notebook unwired** — no git remote, sync is disabled.'
+exit 2
+```
+
+This appends `[→ run fix](subtest:nb-sync-add-remote)` to the output inline. Tier 3 is reserved for issues where running a fix script is genuinely faster than following a manual instruction.
+
+---
+
+## Shared libraries
+
+Scripts should source from `~/.nb/.checks/lib/` rather than duplicating logic:
+
+| Library | Provides |
+|---------|----------|
+| `hl-common.sh` | `hl_is_query_word()` — full hledger command dict; `hl_journal()` — active journal resolver |
+
+Add to `lib/` when two or more scripts need the same logic.
 
 ---
 
@@ -179,6 +270,34 @@ Browse and edit them in-place:
 
 ---
 
+## `check: list` — script browser
+
+A `list` query turns the `check` block into a **barblock** — a collapsible header-bar block that starts closed and lists all scripts (or a filtered subset):
+
+````markdown
+```check
+list
+```
+````
+
+Or scoped to a namespace prefix:
+
+````markdown
+```check
+list hl-
+```
+````
+
+The header shows the block name, script count, and prefix filter. On expand: one row per script with an icon button (left) and name button (right).
+
+- **Icon click** — runs the script in `--demo` mode and shows the output inline. Click again to dismiss. This is a preview of what the failure looks like, not a live check.
+- **Name click** — opens the script file in preview for reading/editing.
+- **↻ refresh** — re-fetches the script list (picks up newly added scripts).
+
+**FM restriction** — `check: list` cannot appear in a `checks:` FM config key. YAML would parse it as `{check: "list"}` — a key/value, not a fenced block trigger. Use list mode only in note body fences.
+
+---
+
 ## Placement Patterns
 
 **Health dashboard** — drop Form 2 checks at the top of a hub note. They're invisible when everything is fine; they surface when something needs attention:
@@ -223,6 +342,38 @@ hl-core-journal
 ## Your Journal
 ...
 ````
+
+---
+
+## Virtual checks — `checks:` config key
+
+The `checks:` key in note FM, folder config, or notebook config injects Form 2 fences automatically at render time — no fenced block needed in the note body.
+
+```yaml
+# ~/.nb/.nb.md (global — fires on every note)
+checks: nb-
+
+# ~/.nb/accts/.accts.md (notebook — fires on every accts: note)
+checks: hl-health-day
+
+# ~/.nb/accts/guide/.guide.md (folder — fires on every note in guide/)
+checks: hl-
+
+# In any individual note's frontmatter (per-note override)
+checks: hl-health-week
+```
+
+Resolution: note FM wins → folder config walk-up (innermost first) → notebook config → global.
+
+**Suppression** — set `checks:` (bare null) in a child config to silence inherited checks for that scope. Prefer bare `checks:` over `checks: ""` — the manual YAML fallback parser reads `""` as the literal string `'""'` and tries to run it as a script name.
+
+Virtual checks are always **Form 2** (auto-run, silent on pass). If you need a labeled button (Form 1), put the fenced block explicitly in the note body. Config files (`type: dotfile`) are exempt — the system never injects checks into its own config sources.
+
+---
+
+## Snooze — `check_timeout:` FM key
+
+When a note has `check_timeout: 10` in its frontmatter, the dismiss button becomes a snooze button — clicking it suppresses that check for 10 minutes (stored in `localStorage`). Auto-runs silently skip snoozed checks; button-triggered runs (Form 1) always fire. The script is unaware of snooze state.
 
 ---
 
@@ -369,3 +520,12 @@ When Form 2 test blocks are embedded in chapter notes inside a `type: book`, som
 A healthy book shows a clean TOC. A book with configuration problems shows `⚠` entries inline with chapter headings. No separate dashboard, no extra code — it's an emergent property of the test + inline + TOC pipeline.
 
 See [[docs:BOOKS]] for the full pattern, design guidance, and The Bookkeeper's Guide as a worked example.
+
+---
+
+## See also
+
+- [[docs:CODEBLOCKS#test — Embedded Assertions]] — codeblock syntax reference; access gates; fenced Forms 1–3
+- [[docs:dev/dev-checks.md]] — renderer internals, virtual check wiring, API endpoints, batch fetch
+- [[docs:dev/dev-checks-authoring.md]] — detailed authoring guide; output conventions; developer checklist
+- [[.rules/checks.md]] — normative laws (Laws 1–8); tier model contract; shared library convention
