@@ -6,7 +6,9 @@ tags: [checks, authoring, guide]
 
 # Check Script Authoring Guide
 
-A check script is a bash script that runs in the context of a note and reports on its health. This guide covers everything from naming to output formatting to the developer quality checklist.
+> **The governing model is [[.rules/checks.md]].** This guide is the implementation companion — how to write a script that conforms to that model.
+
+A check script is a bash script that runs in the context of a note and reports on its health. This guide covers naming, output formatting, and the developer quality checklist.
 
 ---
 
