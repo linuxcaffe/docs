@@ -1085,7 +1085,7 @@ The template file (`~/.nb/.lib/materials.csv`) defines the structure:
 ```csv
 Description,Qty,Unit,Unit Cost,Total
 contents
-TOTAL,,,,=SUM(E1:E6)
+TOTAL,,,,=SUM(E1:E1)
 ```
 
 **Template format:**
@@ -1097,6 +1097,10 @@ TOTAL,,,,=SUM(E1:E6)
 | Rows after `contents` | Footer rows — appended after user data; formula cells are evaluated by Jspreadsheet |
 
 The `contents` row never appears in the rendered grid. Rows above it become column headers; rows below become a fixed footer (useful for `=SUM()` totals). The codeblock body holds only the **data rows** — the template rows are never written back to the note.
+
+**Formula ranges are rewritten at render time.** The upper bound of any range starting at row 1 is replaced with the actual data row count before the grid is initialised. This prevents circular references when the footer row lands inside the formula range (which happens whenever the data is shorter than the range you wrote).
+
+In practice: always write footer formulas with `1` as the upper bound — `=SUM(E1:E1)`, `=SUM(D1:D1)`. The renderer expands it to the correct last row automatically. You never need to update the template when rows are added or removed, and the same template works correctly for notes with one row or a hundred.
 
 **Template controls:**
 
