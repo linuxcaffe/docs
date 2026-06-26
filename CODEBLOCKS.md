@@ -7,7 +7,7 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hl — Accounting|hl]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#cine — Film Production|cine]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hl — Accounting|hl]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#cine — Film Production|cine]] · [[#csv — Spreadsheet Table|csv]]
 
 ---
 
@@ -1038,6 +1038,75 @@ Users below `admin` see an empty render. The note is not visible, not 403'd — 
 Each file renders for users at that level and above; others see nothing. Stack multiple inlines for additive tiers — guest through admin each see their appropriate layer accumulate.
 
 See [[docs:dev/dev-security.md#ii-access-control]] and `.rules/access.md` for the full convention.
+
+---
+
+---
+
+### csv — Spreadsheet Table
+
+Renders an editable spreadsheet grid directly in the note preview. Data lives inside the fenced block and is written back on save — no separate file, no sync step.
+
+````markdown
+```csv
+Item,Qty,Price
+Wrench,2,14.99
+Tape,5,3.50
+```
+````
+
+The first row is always the **column header**. Remaining rows are data. The grid uses [Jspreadsheet CE](https://bossanova.uk/jspreadsheet/) — you can sort, resize columns, and manage rows via right-click context menu.
+
+**Controls:**
+
+| Control | Action |
+|---------|--------|
+| Click header bar | Collapse / expand the block |
+| Right-click cell | Jspreadsheet context menu — insert/delete rows and columns, copy, paste |
+| **↓** (save button) | Write current grid contents back to the note |
+
+Changes made directly in the grid are **not auto-saved** — click **↓** when done.
+
+---
+
+#### csv templates
+
+A named token after `csv` loads a reusable column template from `~/.nb/.lib/<token>.csv`, keeping column structure out of the note body.
+
+````markdown
+```csv materials
+Copper pipe 1/2,3,m,4.50,13.50
+PVC elbow fitting,6,ea,1.20,7.20
+```
+````
+
+The template file (`~/.nb/.lib/materials.csv`) defines the structure:
+
+```csv
+Description,Qty,Unit,Unit Cost,Total
+contents
+TOTAL,,,,=SUM(E1:E6)
+```
+
+**Template format:**
+
+| Row | Role |
+|-----|------|
+| First row | Column headers — displayed as the spreadsheet header |
+| `contents` | Sentinel — separates header rows from footer rows |
+| Rows after `contents` | Footer rows — appended after user data; formula cells are evaluated by Jspreadsheet |
+
+The `contents` row never appears in the rendered grid. Rows above it become column headers; rows below become a fixed footer (useful for `=SUM()` totals). The codeblock body holds only the **data rows** — the template rows are never written back to the note.
+
+**Template controls:**
+
+| Control | Action |
+|---------|--------|
+| **+** button | Reserved — constrained input dialog (coming) |
+| **↓** button | Save data rows back to the note (header and footer rows excluded) |
+| Right-click | Jspreadsheet context menu for row/column management |
+
+**Creating a template:** write a plain `.csv` file to `~/.nb/.lib/` with the token name. The `contents` sentinel and footer rows are optional — a template with only a header row is valid. Formula syntax is standard spreadsheet style (`=SUM(E1:E6)`, `=E2*D2`); adjust row ranges to match your expected data size.
 
 ---
 
