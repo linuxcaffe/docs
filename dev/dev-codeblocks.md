@@ -296,6 +296,45 @@ if (_cbCan(el, 'hl', 'write')) {
 }
 ```
 
+### render() vs renderOne() for different behaviour #pattern
+
+Most renderers use the same private loader for both paths: `render(container)` iterates body blocks and calls `_loadXBlock(el)`, while `renderOne(el)` is the same call routed through the FM lazy expand. Same function, two call sites.
+
+The `timedot` renderer breaks this pattern intentionally — body and FM need genuinely different UIs:
+
+```javascript
+{
+    lang: 'timedot',
+    renderOne: async el => _loadTimedotBlock(el),    // FM: aggregate summary + filter
+    render: async container => {
+        ...blocks.map(el => _loadTimedotRawBlock(el)) // body: verbatim + ✎ inline edit
+    },
+}
+```
+
+Use this split when a block type has semantically different display needs in body vs FM context. The body block is data-entry; the FM block is overview. Same source format, different viewer.
+
+### _CB_ICONS — text, image, and emoji variants
+
+Block icons are defined in `_CB_ICONS` at the top of the IIFE:
+
+```javascript
+const _CB_ICONS = {
+    hl:      { img: '.images:hledger-logo.png', alt: 'hledger' },  // image
+    nav:     { text: 'NAV' },                                       // text chip
+    timedot: { text: '⏱', emoji: true },                           // emoji
+};
+```
+
+| Spec field | CSS class added | Renders as |
+|------------|----------------|-----------|
+| `img:` | `nb-cb-icon` (img element) | Logo image at 1.2em |
+| `text:` only | `nb-cb-icon` (span) | Monospace chip with border, 0.65em |
+| `text:` + `large: true` | + `nb-cb-icon--large` | Serif italic, 1.1em, no border |
+| `text:` + `emoji: true` | + `nb-cb-icon--emoji` | Default font, 1.1em, no border |
+
+Use `emoji: true` for any icon that is a Unicode emoji — it disables the monospace chip styling and lets the emoji render at a readable size.
+
 ### test block special case #pattern
 
 Other block types auto-render so a denied read → silent removal is always correct. `test` blocks have two forms:
@@ -440,6 +479,8 @@ if (key === 'check') continue;
 ```
 
 **`toc:` is included** — `toc` now has a registered renderer (`renderOne: el => _loadTocBlock(el)`). `toc: true` adds a TOC barblock to the FM strip; `_buildToc` in `_finishRendered` sets heading IDs as a side effect but suppresses the sidebar `#nb-toc-bar` when the FM renderer is registered.
+
+**`timedot:` FM aggregation** — when `timedot:` appears in frontmatter with no `timedot_file:` set, `_loadTimedotBlock` queries `#nb-preview-content .nb-timedot-block` (body blocks only — FM blocks live in `#nb-fm-blocks`) and concatenates their `data-src` into one aggregate. This is safe: body blocks have `data-src` populated from parse time, before FM blocks are built. The `+` add button is suppressed in this mode since there is no single write target.
 
 ---
 

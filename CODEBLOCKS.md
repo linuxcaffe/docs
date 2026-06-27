@@ -347,36 +347,66 @@ With these keys set, **every** interaction — clock in, clock out, report, dot-
 
 ### timedot — Time Journal
 
-The `timedot` block renders a static timesheet written in [hledger timedot format](https://hledger.org/timedot.html) — accounts and durations, one per line, grouped by date. Unlike the `t` block (which reads an external file), a timedot block's data lives *inside the note itself* — it is the note body, not a live query.
+The `timedot` block tracks time in [hledger timedot format](https://hledger.org/timedot.html) — accounts and durations, one per line, optionally grouped by date or section headings. It works in two modes depending on where it appears:
 
-**Getting started (no existing data)**
+| Mode | How declared | What you see |
+|------|-------------|-------------|
+| **Body block** | ` ```timedot ``` ` fence in note body | Raw entries verbatim, with inline `✎` editing |
+| **FM barblock** | `timedot: true` in frontmatter | Aggregate summary: hours, billing, filter, sections |
 
-You never need to pre-populate a timedot block. Write an empty fence and click `+`:
+---
 
-````markdown
-```timedot
-```
-````
+**Body block — verbatim view**
 
-The block shows *No entries yet* with a `+` button. Clicking it opens the add form; on Save the note source is updated automatically — a date heading and the first entry are written into the fence for you. From that point forward the data grows inside the note.
-
-If you have an existing `tw.timedot` file from the `t .` CLI, use [external file mode](#external-file-mode) instead — point `timedot_file:` at it and the block reads your existing history.
-
-**With existing data**
-
-Paste or type timedot entries directly inside the fence:
+The body block shows your entries exactly as written in a monospace block. This is the right mode for a project diary, where timedot entries live inside the note and grow with it.
 
 ````markdown
 ```timedot
-2024/06/25
-work:client-a  2.5h    ; website redesign
-work:client-b  ....    ; emails
+2026/06/24
+djp:siding  ....  ; prepped surfaces
+djp:siding  ....  ; first coat
 
-2024/06/26
-work:client-a  1.5h
-admin          ..
+2026/06/25
+djp:siding  1.5   ; trim work
 ```
 ````
+
+**Body block header controls:**
+
+| Button | Action |
+|--------|--------|
+| `✎` | Switch to textarea edit — change entries directly, then Save / Cancel |
+| `↻` | Re-render (after editing in Edit mode) |
+
+The meta slot shows an entry count (`N entries`). On Save the fence content in the note source is replaced in-place.
+
+---
+
+**FM barblock — aggregate summary**
+
+Declaring `timedot:` in frontmatter adds a collapsible barblock to the FM strip. It collects all inline timedot blocks from the note body and shows an aggregate total — hours by account, optional billing if `rate:` is set, and a date filter.
+
+```yaml
+---
+timedot: true
+---
+```
+
+**FM barblock header controls (inline aggregation mode):**
+
+| Button | Action |
+|--------|--------|
+| `all` / `mo` / `wk` | Cycle date filter: all entries → this month → this week → all |
+| `↻` | Re-aggregate from body blocks |
+| total display | Click `12.5h · $1062` to open per-account summary popover |
+
+The `+` add-entry form is not available in inline aggregation mode — the FM block reads from all body blocks and has no single write target. Use the body block's `✎` edit to add entries directly.
+
+**Date filter** — cycles through `all → mo → wk → all`. Applies to section bodies and subtotals; sections with no entries in the filtered window are hidden.
+
+**Summary popover** — click the hours/amount display in the FM header to open a floating per-account breakdown (and billing amounts if `rate:` is set) for the current filter window.
+
+---
 
 **Time format** — multiple styles, freely mixed:
 
@@ -395,7 +425,7 @@ home laundry  2.5h     ← "home laundry" is the account
 home:laundry  2.5h     ← "home:laundry" is the account (colon hierarchy)
 ```
 
-**Section headings** — use `##`, `###`, or `####` (with optional `-`) to divide the block into collapsible sections. Level-2 sections start open; level-3 and level-4 start collapsed. State persists in `localStorage`.
+**Section headings** — use `##`, `###`, or `####` (with optional `-`) to divide entries into collapsible groups. These headings are visible in the FM barblock aggregate view. Level-2 sections start open; level-3 and level-4 start collapsed. State persists in `localStorage`.
 
 ````markdown
 ```timedot
@@ -403,48 +433,18 @@ home:laundry  2.5h     ← "home:laundry" is the account (colon hierarchy)
 
 ###- Week 45
 
-####- Thursday
 2024/11/14
 work:hh  8.5h
-
-####- Friday
-2024/11/15
-work:hh  8.5h
-sleep    6h
 ```
 ````
 
-**Other extended syntax** (passed through / skipped by the renderer):
+**Other extended syntax** (passed through / skipped):
 
 | Syntax | Meaning |
 |--------|---------|
 | `; comment` | Comment line — ignored |
 | `* task item` | Task line — ignored |
 | `// vim: ...` | Vim modeline — ignored |
-
-**Header controls:**
-
-| Button | Action |
-|--------|--------|
-| `+` | Open the add-entry form (date · time · sub-account · comment) |
-| `all` / `mo` / `wk` | Cycle date filter: all entries → this month → this week → all |
-| `↻` | Re-render from source |
-| total display | Click `12.5h · $1062` to open the summary popover |
-
-**Date filter** — cycles through `all → mo → wk → all`. The filter applies to both the section bodies and the totals shown in each section header. Sections with no entries in the filtered window are hidden.
-
-**Summary popover** — click the hours/amount display in the block header to open a floating breakdown of hours (and billing amount, if `rate:` is set) per account, for the current filter window.
-
-**Add-entry form** — the `+` button inserts a row directly below the block header:
-
-| Field | Notes |
-|-------|-------|
-| Date | Defaults to today |
-| Time | Any supported format: `....`, `1.5h`, `90m` |
-| Sub-account | Optional `:sub` suffix or full account name; autocomplete from existing accounts |
-| Comment | Appended as `; comment` |
-
-The entry is appended to the note source. If the last date in the block is today, no new date heading is written; otherwise a new `YYYY/MM/DD` line is added first.
 
 **FM frontmatter keys:**
 
@@ -457,17 +457,9 @@ rate: 85                   # enables the $ billing column (hourly rate)
 
 With `project: work:client-a`, bare time entries (`....`) are rewritten to `work:client-a  ....` before display. Sub-accounts (`:website`) become `work:client-a:website`. Full accounts pass through unchanged.
 
-**FM usage** — place in the FM toolbar strip (collapsed by default, collapsed on load):
-
-```yaml
 ---
-timedot: thismonth
----
-```
 
-The value is treated as an initial filter hint (future use; currently renders the block in the strip).
-
-**External file mode** — instead of embedding data in the note, point the block at an external `.timedot` file. This is the right choice when:
+**External file mode** — instead of embedding data in the note body, point at an external `.timedot` file. This is the right choice when:
 
 - you already have a `tw.timedot` file built up with `t . i` from the CLI, or
 - you want one shared timesheet file that multiple notes can display, or
@@ -479,14 +471,25 @@ timedot_file: ~/client/acme/time.timedot
 ---
 ```
 
-When `timedot_file:` is set the block fetches content from that file on every render. The `+` button appends to the file rather than editing the note. **The file does not need to exist yet** — the first `+` save creates it. The note's fence content is ignored; write an empty fence as a placeholder:
+When `timedot_file:` is set, the FM barblock fetches from that file on every render. The `+` button (available in this mode) appends new entries to the file rather than editing the note. **The file does not need to exist yet** — the first `+` save creates it. Write an empty fence as a body placeholder:
 
 ````markdown
 ```timedot
 ```
 ````
 
-Set `timedot_file:` on a `.notebook` config note to scope the whole notebook — every note's timedot block reads the same file. See [[#File Scoping|File Scoping]] below.
+**Add-entry form** (FM barblock with `timedot_file:` only):
+
+| Field | Notes |
+|-------|-------|
+| Date | Defaults to today |
+| Time | Any supported format: `....`, `1.5h`, `90m` |
+| Sub-account | Optional `:sub` suffix or full account name; autocomplete from existing accounts |
+| Comment | Appended as `; comment` |
+
+The entry is appended to the file. If the last date in the file is today, no new date heading is written; otherwise a new `YYYY/MM/DD` line is added first.
+
+Set `timedot_file:` on a `.notebook` config note to scope the whole notebook — every note's timedot FM block reads the same file. See [[#File Scoping|File Scoping]] below.
 
 ---
 
