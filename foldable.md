@@ -95,6 +95,20 @@ Fold state is stored in localStorage as `nb-fold:<selector>:<raw-heading>`. It s
 
 ---
 
+## date_headers — auto-insert today's heading on Edit
+
+When `foldable` contains a pattern that matches a date heading (e.g. `'\d{4}-\d{2}-\d{2}'`), nb-web automatically checks for today's `## YYYY-MM-DD` heading whenever you click **Edit**. If it isn't there, it's appended silently before the editor opens.
+
+This means diary-style and project notes with date-foldable never need a manual date heading for today — just click Edit and start typing in the section that's already there.
+
+For notes that want the same behaviour *without* date-foldable, add:
+
+```yaml
+date_headers: true
+```
+
+---
+
 ## Regex in frontmatter
 
 `foldable:` is the first nb-web frontmatter field to interpret its values as RegExp patterns. Plain strings remain valid (they match as literal substrings); quoting is only required when the pattern contains YAML special characters. This convention is available to future FM fields where pattern matching is useful.

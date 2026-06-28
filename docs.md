@@ -1,5 +1,4 @@
 ---
-config: docs
 type: dotfile
 title: not docs notebook config!
 date: 2026-06-19
