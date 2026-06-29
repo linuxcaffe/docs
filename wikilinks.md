@@ -66,6 +66,17 @@ Once a wikilink resolves to a note, nb-web chooses its display label in this ord
 
 The `alias:` field is intended for content whose short identifier changes over time (scene numbers, draft versions) while the filename stays fixed. Change `alias: 4` to `alias: 7` and every `[[filename]]` link in the notebook immediately displays `7` — no link edits needed. Display labels are session-cached; Ctrl+R picks up alias changes.
 
+**Shrinking long titles** — when a note has a lengthy `title:` that eats up tab or wikilink display space, add a short `alias:` to override the display label everywhere it appears:
+
+```yaml
+---
+title: A very long title about Project XYZ that wraps in tabs
+alias: XYZ
+---
+```
+
+The full title remains as the note heading and tooltip; `alias:` is used wherever space is tight — tabs, wikilinks, list badges.
+
 ---
 
 ## Tab strip — `tabs:` frontmatter
