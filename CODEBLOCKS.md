@@ -717,6 +717,43 @@ model:true | Example notes
 ```
 ````
 
+#### fm: list — FM Key Browser
+
+````markdown
+```fm
+list
+```
+````
+
+Shows a scrollable table of every frontmatter key found across the current notebook — sorted by note count. Columns: **Key · # notes · Sample values**. Click any row to drill into that field's note list (the same view as `field:`). A **← list** button returns to the browser.
+
+**Scope tokens** narrow the key set:
+
+| Token | Keys shown |
+|-------|-----------|
+| `list` | All keys in the notebook |
+| `list-core` | Built-in nb-web keys (title, type, status, tags, access…) |
+| `list-cine` | Film production keys (scene, shot, loc, cast, day_night…) |
+| `list-empty` | Keys present in notes but with a null or empty value — useful for finding cruft |
+
+**Row limit** — an integer after the token sets how many rows are visible before scrolling. Default is 8.
+
+````markdown
+```fm
+list 20
+```
+
+```fm
+list-core
+```
+
+```fm
+list-empty 12
+```
+````
+
+FM-mode syntax (`fm: list-core 10` in frontmatter) is also supported — the key browser appears as a collapsible FM strip block.
+
 ---
 
 ### cfg — Config Inheritance Tree
@@ -1109,11 +1146,30 @@ In practice: always write footer formulas with `1` as the upper bound — `=SUM(
 
 | Control | Action |
 |---------|--------|
-| **+** button | Reserved — constrained input dialog (coming) |
+| **CSV** badge (header) | Open the catalog checklist picker (see below) |
 | **↓** button | Save data rows back to the note (header and footer rows excluded) |
 | Right-click | Jspreadsheet context menu for row/column management |
 
 **Creating a template:** write a plain `.csv` file to `~/.nb/.lib/` with the token name. The `contents` sentinel and footer rows are optional — a template with only a header row is valid. Formula syntax is standard spreadsheet style (`=SUM(E1:E6)`, `=E2*D2`); adjust row ranges to match your expected data size.
+
+#### Checklist picker
+
+Click the **CSV** badge on any template block header to open a catalog checklist. It reads the nearest `type: <token>` note (walking up the folder tree) and shows all its items grouped by heading.
+
+Items already present in the spreadsheet are pre-checked. Check or uncheck items, then click **Save** — the selection replaces the spreadsheet's data rows and writes immediately back to the note. The catalog remains untouched.
+
+This is the primary way to populate a template block from a master list: write the catalog once, pick from it per-note.
+
+#### csv in FM-mode — compact catalog view
+
+Declaring `csv: <token>` in frontmatter renders a compact read-only summary in the FM strip instead of a full spreadsheet. This is useful for a quick cost overview without expanding the grid.
+
+```yaml
+csv: materials
+csv: materials 12
+```
+
+The value is the catalog token. An optional integer sets the visible row limit before scrolling (default 8). The FM strip shows **description left, cost right**, grouped by the catalog's headings. Clicking a group heading opens the catalog note.
 
 ---
 
