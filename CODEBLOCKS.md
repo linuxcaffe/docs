@@ -841,7 +841,7 @@ cfg: org access, access:guest, access:office, check, xref
 
 - **Left-to-right tree** — `.nb.md` global root floats above the notebook root; folders fan right.
 - **Left slot** — `⚙️` (or type icon from the config file's own `type:` field); `●`/`○` fallback when no type is set. `○` = no config file yet.
-- **BG tint** — effective access level, inherited root-to-leaf: green=guest · amber=office · red=admin · purple=tech. Shows the *access landscape* at a glance even without filtering.
+- **BG tint** — access level colour on nodes that *explicitly set* `access:`; inherited access is visible in the tooltip but not painted on every node. green=guest · amber=office · red=admin · purple=tech.
 - **Border glow** — appears when a filter is active and this node *explicitly sets* the filtered key.
 - **Right badge** — number of FM keys this config contributes.
 - **Hover tooltip** — `path/filename.ext` on line one; key: value lines with grep-C context around the filtered key (see `-C` below).

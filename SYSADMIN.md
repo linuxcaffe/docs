@@ -30,25 +30,39 @@ The goal: a creator opens the dashboard and gets straight to work. An admin open
 
 ## Dotfile Templates
 
-Dotfile templates are seeded from **Menu → Templates** or automatically when adding a new notebook. The intent is to pre-load them with the admin codeblocks so every new notebook starts with its plumbing already wired.
+The global template `~/.nb/.templates/dotfile.md` is the standard starting point for any new folder or notebook config. Select it from the **Template** picker when adding a note, or from **Menu → Templates**.
 
-**Recommended dotfile FM skeleton:**
+It comes pre-wired with:
+
+- FM skeleton — `theme:`, `access:`, `default_type:`, `check:` and others commented out, ready to uncomment
+- `cfg: org -C 2` — instant org chart on first open, no setup
+- `cfg: tree` — folder structure below a divider
 
 ```yaml
 ---
 type: dotfile
-access: office
-default_type: note
+title: {{title}}
+date: {{date}}
+pinned: true
+# theme: default
+# access: user
+# default_type: note
+# check: |
+#   nb-dirty
+#   note-disk-warn
 ---
+<!-- {{title}} — describe this folder here -->
+
+​```cfg: org -C 2
+​```
+---
+​```cfg: tree
+​```
 ```
 
-**Recommended dotfile codeblock:**
+The template is deliberately lean — delete what you don't need, uncomment what you do. It's designed to be replaced, not curated.
 
-```yaml
-cfg: org -C 2 access, default_type, check, xref
-```
-
-This gives the sysadmin an immediate org chart view of the notebook's config topology every time they open the dotfile — without having to navigate anywhere.
+See [[TEMPLATES]] for the full `typename.md` naming convention.
 
 ---
 
@@ -99,7 +113,7 @@ These blocks are sysadmin tools — place them in dotfiles, not dashboards:
 
 `cfg: org` is the flagship sysadmin tool. It renders the entire notebook's config topology as a left-to-right SVG tree:
 
-- **BG tint** — effective access level at every node (inherited colour shows policy reach)
+- **BG tint** — colour on nodes that *explicitly set* `access:` (inherited access is in the tooltip, not painted everywhere)
 - **Filter chips** — isolate every node that sets a given key, or a specific `key:value`
 - **Freeform input** — type any key ad-hoc; live x-ray vision across all configs
 - **Tooltip** — `path/filename` + grep-C context around the filtered key

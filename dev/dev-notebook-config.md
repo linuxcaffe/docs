@@ -263,14 +263,15 @@ description: "Feature film shot list and production notes"
 
 **`color:`** — accent hex applied to the notebook header, breadcrumb active state, and list selected-item highlight. Each notebook gets a distinct visual lane. Navigate between `docs` (blue) and `work` (amber) and *know* where you are without reading the breadcrumb.
 
-**`theme:`** — a named style preset applied when this notebook is active. Could reference a CSS class on `<body>` or a mini override stylesheet. #decision CSS class on body is lightest — single stylesheet with `.theme-warm`, `.theme-code` etc.; no dynamic load needed. Ideas:
-- `warm` — parchment tones, serif preview font (great for fiction, journals)
-- `code` — high-contrast, wide monospace preview, dense list
-- `shop` — image-forward, grid default, price badges
-- `minimal` — zero chrome, full-bleed preview, no sidebar decoration
-- `dark-hi` — extra high contrast dark, for accessibility
+**`theme:`** — a named colour theme applied when this notebook is active. Themes are defined as YAML FM files in `~/.nb/.themes/{slug}.md`, with separate `dark:` and `light:` colour maps that each key directly to CSS custom property names. Set it in any config file and it propagates via `effective_fm` — notebook, folder, or individual note scope all work.
 
-The theme only activates while this notebook is in scope. Switch notebooks, switch feel.
+```yaml
+theme: groovy   # activates ~/.nb/.themes/groovy.md
+```
+
+The 🎨 button on any dashboard opens the theme picker and saves the selection back to the notebook config automatically. See [[docs:THEMES]] for the full reference.
+
+Built-in themes: `default`, `groovy`. Adding a new theme is just adding a new `~/.nb/.themes/*.md` file.
 
 **`description:`** — one-liner shown in the detail panel and (optionally) as a tooltip on the selector icon. "Lena's vintage finds — inventory and pricing" beats a bare filename every time.
 

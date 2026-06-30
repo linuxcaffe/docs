@@ -39,20 +39,31 @@ Templates use `{{placeholder}}` syntax, substituted at note-creation time.
 
 Templates are processed as Bash strings with `eval` — arbitrary shell expressions are valid. Keep template files trusted; don't use templates from untrusted sources.
 
-### Starter template: `dated-note`
+## Naming convention — `typename.md`
 
-`~/.nb/.templates/dated-note.md` ships as a ready-to-use global template:
+Global templates follow a simple naming rule: **the template filename is the type name it produces.**
 
-```markdown
-# {{title}}
+| File | Creates notes of type |
+|------|-----------------------|
+| `~/.nb/.templates/note.md` | `type: note` |
+| `~/.nb/.templates/dotfile.md` | `type: dotfile` |
+| `~/.nb/.templates/dashboard.md` | `type: dashboard` |
+| `~/.nb/.templates/daily.md` | `type: daily` |
+| `~/.nb/.templates/invoice.md` | `type: invoice` |
 
-**Date:** {{date}}
-**Tags:** {{tags}}
+This means the Template picker label alone tells you what kind of note you'll get. Local (per-notebook) templates can use any name — the convention only applies to globals.
 
 ---
 
-{{content}}
-```
+### Built-in global templates
+
+| Template | Purpose |
+|----------|---------|
+| `note.md` | Generic dated note with title, tags, content placeholders |
+| `dotfile.md` | Folder/notebook config — FM skeleton + `cfg: org` + `cfg: tree` pre-wired |
+| `dashboard.md` | Notebook dashboard with gallery, nav block, and links section |
+| `daily.md` | Daily log starter |
+| `invoice.md` | Timesheet-style invoice header |
 
 ---
 
