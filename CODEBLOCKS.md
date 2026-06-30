@@ -821,6 +821,28 @@ type:dotfile | All config files
 
 ---
 
+**Fenced body mode**
+
+All `cfg` variants work equally in fenced codeblocks — the query goes in the **body**, not the info string. This is the recommended pattern for dotfile admin sections:
+
+````markdown
+```cfg
+org -C 2 access, theme, check
+```
+
+```cfg
+tree
+```
+
+```cfg
+access: .
+```
+````
+
+The FM form (`cfg: org` in frontmatter) propagates the block via the config chain — every note in scope sees it. The fenced form is local to the note body only, which makes it the right choice for the admin tools section of a dotfile: the FM frontmatter propagates policy, the body holds the sysadmin codeblocks. Two clear zones, one file.
+
+---
+
 #### cfg: org — Config Org Chart
 
 The `org` mode renders an interactive SVG org chart of every config file in the current notebook — the fastest way to audit, navigate, and fix your configuration landscape.
