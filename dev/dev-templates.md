@@ -81,6 +81,35 @@ See [[docs:PLUGINS#Templates]] for the seeding mechanic.
 
 ---
 
+## Template preview rendering — `_parseMarkdownStatic`
+
+Template previews (Add-note picker, Templates menu, version-history diff, plugin help panels) must **not** run live codeblock renderers. `marked.use()` in `main.js` patches the global renderer so every `marked.parse()` call produces spinner skeletons for registered langs (`cfg`, `tw`, `hl`, etc.). Calling `marked.parse(body)` directly in a preview therefore spins forever.
+
+**The fix — `_parseMarkdownStatic(body)` (main.js ~line 3245):**
+
+```javascript
+function _parseMarkdownStatic(body) {
+    const r = new marked.Renderer();
+    r.code = ({ text, lang }) => {
+        const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const src = (lang ? `\`\`\`${lang}\n${text}\n\`\`\`` : `\`\`\`\n${text}\n\`\`\``);
+        return `<pre><code>${esc(src)}</code></pre>\n`;
+    };
+    return marked.parse(body, { renderer: r });
+}
+```
+
+Key decisions:
+- **`new marked.Renderer()` not a plain object.** A plain `{ code: fn }` only defines `code` — when the body has paragraphs or headings, marked calls `obj.paragraph()` etc. which are `undefined` → throws → catch block shows "Could not load template". `new marked.Renderer()` has all methods on its prototype; only `code` is overridden on the instance.
+- **Per-call renderer wins over `marked.use()`.** The instance-level method override takes priority over the global extension, so the spinner-producing path is bypassed.
+- **Shows full fence notation.** The `code` renderer emits `` ```lang\ncontent\n``` `` as the `<pre>` body, not just the content. This lets template authors see the language tag without opening the editor.
+
+**#gotcha** `marked.use({ renderer: { code } })` is a **global, permanent patch** — it applies to every `marked.parse()` call in the session. Never call bare `marked.parse(body)` for static display contexts; always use `_parseMarkdownStatic` or pass an explicit `renderer`.
+
+**Call sites:** `_previewTemplate`, `_previewVirtualTemplate`, `_openTemplate.showPreview`, version-history diff view, plugin help panel.
+
+---
+
 ## Frontmatter section in DEVELOPERS.md
 
 The special frontmatter keys recognised by nb-web (`pinned:`, `toc:`, `lock:`, `processed:`, `toolbar:`, `xref:`, `draft:`, `caption:`, `alias:`) are documented in the pending-migration `## Frontmatter` section of [[docs:DEVELOPERS]]. That content will move to [[docs:dev/dev-architecture.md]] during the ODC pass.
