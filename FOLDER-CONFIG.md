@@ -51,7 +51,6 @@ The hidden `.` prefix keeps config files out of the normal note list. Because th
 ```yaml
 ---
 type: dotfile
-config: foldername
 
 default_type: shot       # type applied to new notes created in this folder
 sort: alias              # default sort for the list panel (alias, title, date…)
@@ -128,4 +127,4 @@ Config files are notes — open them in nb-web like any other note.
 - **Changes button** — guided field-by-field form, driven by the constraints defined in the file. Safe for any access level; shows only declared fields.
 - **Edit button** — raw YAML editor. Gated to `admin` level by default.
 
-Navigate to a config file via the `cfg: .` codeblock on any dashboard note (shows the full config chain as a clickable tree), or by searching for `config: foldername` in the fm codeblock.
+Navigate to a config file via the `cfg: .` codeblock on any dashboard note (shows the full config chain as a clickable tree), or by searching for `type: dotfile` in the fm codeblock to find all config files in a notebook.
