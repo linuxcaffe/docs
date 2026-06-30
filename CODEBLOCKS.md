@@ -845,7 +845,7 @@ The FM form (`cfg: org` in frontmatter) propagates the block via the config chai
 
 #### cfg: org — Config Org Chart
 
-The `org` mode renders an interactive SVG org chart of every config file in the current notebook — the fastest way to audit, navigate, and fix your configuration landscape.
+The `org` mode renders an interactive, zoomable SVG org chart of every config file in the current notebook — the fastest way to audit, navigate, and fix your configuration landscape.
 
 ````markdown
 ```cfg
@@ -859,14 +859,34 @@ Or with filter chips pre-loaded in frontmatter:
 cfg: org access, access:guest, access:office, check, xref
 ```
 
+**Global scope**
+
+When the `cfg: org` block lives inside `~/.nb/.nb.md` (the super-notebook config file), it renders the *entire installation* — all notebooks as branches off the `⊕ .nb` global root. Every notebook and its folders appear in one chart. This is the sysadmin bird's-eye view: zoom out to see the whole wiring picture, zoom in to read labels, hover for tooltips, click to open or create any config file.
+
 **What you see**
 
-- **Left-to-right tree** — `.nb.md` global root floats above the notebook root; folders fan right.
-- **Left slot** — `⚙️` (or type icon from the config file's own `type:` field); `●`/`○` fallback when no type is set. `○` = no config file yet.
-- **BG tint** — access level colour on nodes that *explicitly set* `access:`; inherited access is visible in the tooltip but not painted on every node. green=guest · amber=office · red=admin · purple=tech.
-- **Border glow** — appears when a filter is active and this node *explicitly sets* the filtered key.
-- **Right badge** — number of FM keys this config contributes.
-- **Hover tooltip** — `path/filename.ext` on line one; key: value lines with grep-C context around the filtered key (see `-C` below).
+- **Left-to-right tree** — global `⊕ .nb` root (or notebook root for per-notebook charts) on the left; folders fan right.
+- **Left slot** — type icon from the config file's own `type:` field, or `●`/`○` fallback. `○` = no config file exists yet at this level.
+- **BG tint** — appears only on nodes that *explicitly set* `access:`; inherited access shows in the tooltip but is not painted on every node. green=guest · amber=office · red=admin · purple=tech.
+- **Border** — solid stroke = has a config file; dashed stroke = no config file yet.
+- **Border glow** — brightens when a filter is active and this node *explicitly sets* the filtered key.
+- **Right slot** — number of FM keys this config contributes, or `…` if the node's children are suppressed by `cfg_skip:` (see below).
+- **Hover tooltip** — path on line one; key: value lines from the config file with grep-style context around the active filter (see `-C` below).
+
+**Zoom and pan**
+
+The chart is fully interactive at any depth.
+
+| Input | Action |
+|-------|--------|
+| `Ctrl` + scroll wheel | Zoom in / out at cursor |
+| Pinch (touchpad) | Zoom in / out |
+| Click and drag | Pan |
+| `f` (mouse over chart) | Fit the whole tree into view |
+| `+` / `-` | Zoom in / out by fixed step |
+| `0` | Reset to fit |
+
+The initial view centres the root node and scales to show as much of the tree as fits. Large installations may open zoomed in to the root — scroll back or press `f` to see the full picture.
 
 **Filter bar**
 
@@ -874,7 +894,7 @@ Always visible above the chart. Three ways to filter:
 
 | Control | What it does |
 |---------|-------------|
-| Freeform input | Type any `key` or `key:value`; live-filtered at 180ms debounce; Esc resets |
+| Freeform input | Type any `key` or `key:value`; live-filtered at 180 ms debounce; Esc resets |
 | `[all]` chip | Remove filter — show full tree |
 | `[access]` chip | Highlight nodes that *explicitly set* `access` (any value) |
 | `[access:office]` chip | Highlight nodes that *explicitly set* `access: office` |
@@ -885,9 +905,25 @@ Chips are declared in the codeblock query as a comma-separated list after `org`.
 cfg: org access, access:guest, access:user, access:office, access:admin, check, xref
 ```
 
+The chips control *client-side* display only — all nodes are always fetched. Dimmed nodes still exist; they just don't match the active filter.
+
+**Depth limit (`-D N`)**
+
+Cap how many folder levels the walk descends. Useful for large notebooks where you only need to see the top-level folder layer:
+
+```yaml
+cfg: org -D 2 access, check
+```
+
+`-D 0` (the default) is unlimited. `-D 1` shows only the notebook root; `-D 2` adds one folder layer; and so on. Can be combined with `-C`:
+
+```yaml
+cfg: org -D 3 -C 4 access, check
+```
+
 **Tooltip context (`-C N`)**
 
-By default each hover tooltip shows the matched key plus 2 lines of context above and below (grep-style `-C 2`). Tune it per codeblock:
+Each hover tooltip shows the matched key plus N lines of context above and below (grep-style `-C`). Default is 2:
 
 ```yaml
 cfg: org -C 4 access, check
@@ -895,12 +931,28 @@ cfg: org -C 4 access, check
 
 No filter active → first C keys + overflow hint. Filter active → C lines before ▶ matched key, C lines after, with `⋯ N above/below` hints when there's more.
 
+**Pruning noisy branches (`cfg_skip:`)**
+
+Add `cfg_skip: true` to any config file (`.{notebook}.md` or `.{folder}.md`) to suppress that node's children from the org chart. The node itself stays visible with a `…` indicator in the right slot; clicking it still opens or creates the config file.
+
+This is useful for reference notebooks or large folder collections where subfolders have no config files and don't need to appear in the chart. Example — add to `tutorial:.tutorial.md`:
+
+```yaml
+---
+cfg_skip: true
+---
+```
+
+After a chart refresh, the `tutorial` notebook shows as a single leaf node instead of 19 branches.
+
 **Clicking nodes**
 
-- `●` node — opens the config file directly in the editor pane.
-- `○` node — creates the config file and opens it immediately.
+- `●` node (solid border) — opens the config file directly in the preview pane.
+- `○` node (dashed border) — creates the config file from the global template and opens it immediately.
 
-The complete sysadmin loop: spot the gap in the org chart → read the tooltip → click to open or create → fix → refresh.
+**The sysadmin loop**
+
+Zoom out → read the coloured outlines to understand wiring at a glance → hover any node for specifics → zoom in on a gap → click to open or create → fix → refresh. The chart is the live, always-current map of your configuration landscape.
 
 ---
 
