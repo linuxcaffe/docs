@@ -1,0 +1,114 @@
+---
+title: SYSADMIN
+caption: The admin corner — config plumbing, audit tools, and the dotfile/dashboard split
+processed: true
+type: dotfile
+---
+
+# Sysadmin Corner
+
+[[#The Split|The Split]] · [[#Dotfile Templates|Dotfile Templates]] · [[#Dashboard Templates|Dashboard Templates]] · [[#Admin Codeblocks|Admin Codeblocks]] · [[#The Config Org Chart|The Config Org Chart]]
+
+---
+
+nb-web has two audiences living in the same notebook: the **creator** who writes notes, and the **sysadmin** who wires up the plumbing. The sysadmin corner is the set of tools, templates, and conventions aimed squarely at the second role.
+
+---
+
+## The Split
+
+| Layer | File | Audience | What lives there |
+|-------|------|----------|-----------------|
+| Dotfile | `.notebook`, `.folder.md`, `.nb.md` | Sysadmin | `cfg: org`, access gates, checks, plugin config |
+| Dashboard | `{notebook}.md` | Creator | `nav:`, `tw:`, `nb:`, live queries, shortcuts |
+
+The dotfile is the **behind-the-scenes plumbing** — it sets policy, declares access levels, seeds type defaults, and is mostly invisible to everyday users. The dashboard is the **stage** — it surfaces live data and navigation in a way that makes sense for the notebook's purpose.
+
+The goal: a creator opens the dashboard and gets straight to work. An admin opens the dotfile and gets straight to the controls.
+
+---
+
+## Dotfile Templates
+
+Dotfile templates are seeded from **Menu → Templates** or automatically when adding a new notebook. The intent is to pre-load them with the admin codeblocks so every new notebook starts with its plumbing already wired.
+
+**Recommended dotfile FM skeleton:**
+
+```yaml
+---
+type: dotfile
+access: office
+default_type: note
+---
+```
+
+**Recommended dotfile codeblock:**
+
+```yaml
+cfg: org -C 2 access, default_type, check, xref
+```
+
+This gives the sysadmin an immediate org chart view of the notebook's config topology every time they open the dotfile — without having to navigate anywhere.
+
+---
+
+## Dashboard Templates
+
+The dashboard (`{notebook}.md`) is creator-facing. Pre-load it with the blocks that matter for the notebook's purpose:
+
+```yaml
+---
+title: My Notebook
+type: dashboard
+---
+```
+
+```markdown
+`​``nav
+.
+`​``
+
+`​``tw
+project:myproject status:pending
+`​``
+
+`​``nb
+backlinks
+`​``
+```
+
+The dashboard should *not* contain `cfg:` or other admin blocks — those belong in the dotfile.
+
+---
+
+## Admin Codeblocks
+
+These blocks are sysadmin tools — place them in dotfiles, not dashboards:
+
+| Block | What it does |
+|-------|-------------|
+| `cfg: org` | SVG org chart of all config files in the notebook |
+| `cfg: tree` | Folder-tree walk showing config inheritance |
+| `cfg: access: .` | Chain view of access resolution to current location |
+| `fm: type:dotfile` | List all dotfiles in the notebook |
+| `test` | Embedded assertions / checks |
+
+---
+
+## The Config Org Chart
+
+`cfg: org` is the flagship sysadmin tool. It renders the entire notebook's config topology as a left-to-right SVG tree:
+
+- **BG tint** — effective access level at every node (inherited colour shows policy reach)
+- **Filter chips** — isolate every node that sets a given key, or a specific `key:value`
+- **Freeform input** — type any key ad-hoc; live x-ray vision across all configs
+- **Tooltip** — `path/filename` + grep-C context around the filtered key
+- **Click** — opens the config for editing (`●`) or creates it (`○`)
+
+The full admin loop in one view: **spot → read → click → fix**.
+
+See [[CODEBLOCKS#cfg: org — Config Org Chart]] for full syntax reference.
+
+---
+
+*Video screencasts of the org chart and filter workflow are planned for this section.*

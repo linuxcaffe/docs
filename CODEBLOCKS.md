@@ -821,6 +821,67 @@ type:dotfile | All config files
 
 ---
 
+#### cfg: org — Config Org Chart
+
+The `org` mode renders an interactive SVG org chart of every config file in the current notebook — the fastest way to audit, navigate, and fix your configuration landscape.
+
+````markdown
+```cfg
+org
+```
+````
+
+Or with filter chips pre-loaded in frontmatter:
+
+```yaml
+cfg: org access, access:guest, access:office, check, xref
+```
+
+**What you see**
+
+- **Left-to-right tree** — `.nb.md` global root floats above the notebook root; folders fan right.
+- **Left slot** — `⚙️` (or type icon from the config file's own `type:` field); `●`/`○` fallback when no type is set. `○` = no config file yet.
+- **BG tint** — effective access level, inherited root-to-leaf: green=guest · amber=office · red=admin · purple=tech. Shows the *access landscape* at a glance even without filtering.
+- **Border glow** — appears when a filter is active and this node *explicitly sets* the filtered key.
+- **Right badge** — number of FM keys this config contributes.
+- **Hover tooltip** — `path/filename.ext` on line one; key: value lines with grep-C context around the filtered key (see `-C` below).
+
+**Filter bar**
+
+Always visible above the chart. Three ways to filter:
+
+| Control | What it does |
+|---------|-------------|
+| Freeform input | Type any `key` or `key:value`; live-filtered at 180ms debounce; Esc resets |
+| `[all]` chip | Remove filter — show full tree |
+| `[access]` chip | Highlight nodes that *explicitly set* `access` (any value) |
+| `[access:office]` chip | Highlight nodes that *explicitly set* `access: office` |
+
+Chips are declared in the codeblock query as a comma-separated list after `org`. Key-only and `key:value` chips can be mixed freely:
+
+```yaml
+cfg: org access, access:guest, access:user, access:office, access:admin, check, xref
+```
+
+**Tooltip context (`-C N`)**
+
+By default each hover tooltip shows the matched key plus 2 lines of context above and below (grep-style `-C 2`). Tune it per codeblock:
+
+```yaml
+cfg: org -C 4 access, check
+```
+
+No filter active → first C keys + overflow hint. Filter active → C lines before ▶ matched key, C lines after, with `⋯ N above/below` hints when there's more.
+
+**Clicking nodes**
+
+- `●` node — opens the config file directly in the editor pane.
+- `○` node — creates the config file and opens it immediately.
+
+The complete sysadmin loop: spot the gap in the org chart → read the tooltip → click to open or create → fix → refresh.
+
+---
+
 ### toc — Table of Contents
 
 `toc` is FM-mode only — declare `toc: true` in frontmatter; there is no fenced body form.
