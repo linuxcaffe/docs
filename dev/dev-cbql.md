@@ -308,11 +308,28 @@ Which existing block types are natural CBQL participants:
 |------|------|-----------|
 | `timedot` | Producer: time entries scattered in project log | Ready — needs timeframe wiring |
 | `hl` | Consumer: aggregates timedot, shows totals | Ready — needs marker-based timeframe |
-| `tw:` | Both: tasks added in project, completion snapshot in reports | Ready — needs source/filter |
+| `tw` | Both: tasks added in project, completion snapshot in reports | Ready — needs source/filter |
+| `checklist` | Consumer: surfaces unchecked `- [ ]` deliverables from source project | New type needed |
 | `query` | Consumer: already aggregates FM across notes; extend to codeblock content | Close |
 | `timeline` | Consumer: renders markers from source as visual phase history | New type needed |
 
-**Build order within types**: `timedot`/`hl` pair first (Nathan dogfoods it, lowest risk). `tw:` snapshot second. `timeline` third (highest value for reports page opener). `query` extension is the pub/sub on-ramp.
+**Build order within types**: `timedot`/`hl` pair first (Nathan dogfoods it, lowest risk). `tw` snapshot second. `timeline` third (highest value for reports page opener). `checklist` is low-effort once the CBQL read path exists. `query` extension is the pub/sub on-ramp.
+
+### Work item layers
+
+Three systems handle work items in nb-web. They don't conflict — each occupies a different granularity and namespace:
+
+| Layer | Syntax | File | System | Interactivity |
+|-------|--------|------|--------|---------------|
+| Deliverables | `- [ ] framing done` | `type: project` body | Markdown GFM | Static; read by `checklist` CBQL block |
+| Todos | `# [ ] Note title` | `.todo.md` | nb native | Interactive toggles via `/api/todo` |
+| Tasks | — | `~/.task` DB | Taskwarrior | `tw` codeblock; full TW integration future |
+
+The discriminator between deliverables and nb todos is the **leading character**: `- [ ]` vs `# [ ]`. The `.todo.md` extension is the file-level signal; the `# [ ]` H1 is the open/closed state. Inside a `.todo.md`, sub-tasks use `- [ ]` under a `## Tasks` heading, wired to toggles in nb-web.
+
+`- [ ]` in a project body is **not** an nb todo and **not** a TW task. It is a deliverable checkpoint — hand-managed, static, safe to aggregate via the `checklist` CBQL block. The `tw` codeblock reads Taskwarrior directly; markdown checkboxes are invisible to it and there is no conflict.
+
+The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers) is not used here — our layers are already separated by file type and leading character.
 
 ---
 
@@ -322,13 +339,16 @@ Which existing block types are natural CBQL participants:
 |------|------|--------|
 | 1 | Marker coloring — generic `> ALLCAPS:` regex, color by type | ✅ Shipped 2026-07-01 |
 | 2 | `INVOICED` write-back via Invoice button | ✅ Existing (hledger plugin) |
-| 3 | Extract generic `write_marker()` in `app.py` | 📋 Planned |
-| 4 | Timeframe dropdown on `type: reports` specialty bar | 📋 Planned |
-| 5 | CBQL read path — `timedot`/`hl` with marker-based timeframe | 📋 Planned |
-| 6 | `timeline` block type — renders markers from source | 📋 Planned |
-| 7 | `tw:` CBQL source/filter support | 📋 Planned |
-| 8 | Action buttons for `DELIVERED`, `PAUSED`, `CLOSED` markers | 📋 Planned |
-| 9 | Pub/sub multi-source `source:` queries | 📋 Long term |
+| 3 | `project` + `project-reports` global templates; check: wiring | ✅ Shipped 2026-07-01 |
+| 4 | Create-on-demand UX — pair chip pre-flight, popup, source: patch | ✅ Shipped 2026-07-01 |
+| 5 | Extract generic `write_marker()` in `app.py` | 📋 Planned |
+| 6 | Timeframe dropdown on `type: reports` specialty bar | 📋 Planned |
+| 7 | CBQL read path — `timedot`/`hl` with marker-based timeframe | 📋 Planned |
+| 8 | `timeline` block type — renders markers from source | 📋 Planned |
+| 9 | `tw` CBQL source/filter support | 📋 Planned |
+| 10 | `checklist` block type — surfaces `- [ ]` deliverables from source | 📋 Planned |
+| 11 | Action buttons for `DELIVERED`, `PAUSED`, `CLOSED` markers | 📋 Planned |
+| 12 | Pub/sub multi-source `source:` queries | 📋 Long term |
 
 Steps 3 and 4 are independent and can be built in parallel. Step 5 requires 4. Step 6 requires 4. Steps 3 and 8 are a natural pair.
 
@@ -389,7 +409,7 @@ Naming follows existing `.checks/` prefix conventions. Scripts live in `~/.nb/.c
 
 ---
 
-
+## Open Questions
 
 - `filter:` syntax — fenced block info string exact match only, or glob? (`filter: timedot` vs `filter: time*`)
 - `${variable}` resolution scope — note FM only, or also walk up to notebook dotfile config?
