@@ -409,9 +409,9 @@ The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers
 | 6 | Timeframe dropdown on `type: reports` specialty bar | ✅ Shipped 2026-07-01 |
 | 6a | `TODAY` marker + `+ Today` smart insertion (never crosses MILESTONE) | ✅ Shipped 2026-07-01 |
 | 7 | CBQL read path — `timedot`/`hl` with marker-based timeframe | ✅ Shipped 2026-07-01 |
-| 8 | `timeline` block type — renders markers from source | 📋 Planned |
-| 9 | `tw` CBQL source/filter support | 📋 Planned |
-| 10 | `checklist` block type — surfaces `- [ ]` deliverables from source | 📋 Planned |
+| 8 | `timeline` block type — renders markers from source | ✅ Shipped 2026-07-01 |
+| 9 | `tw` CBQL source/filter support | ✅ Shipped 2026-07-01 |
+| 10 | `checklist` block type — surfaces `- [ ]` deliverables from source | ✅ Shipped 2026-07-01 |
 | 11 | Action buttons for `DELIVERED`, `PAUSED`, `CLOSED` markers | 📋 Planned |
 | 12 | Pub/sub multi-source `source:` queries | 📋 Long term |
 
