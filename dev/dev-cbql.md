@@ -74,15 +74,14 @@ Any ALL-CAPS word followed by `:` is a valid marker — the vocabulary above is 
 
 ### TODAY — the insertion cursor
 
-`> TODAY: ref` is a **positional marker**, not a state transition. It marks where daily work entries should accumulate. The `+ Today` button inserts a new `## YYYY-MM-DD` heading immediately above `> TODAY:` rather than appending to end-of-file.
+`> TODAY:` is a **positional marker**, not a state transition. It is a fixed stake planted once at project setup, between the living log and the planned future. It never moves.
 
-This matters when a project note contains planned future milestones: the note's bottom is the *future*, not the present. Appending to end-of-file would cross milestone boundaries that haven't happened yet.
+The `+ Today` button inserts a new `## YYYY-MM-DD` heading immediately above `> TODAY:`, opens the editor, and positions the cursor on the blank line just below the new heading — ready to write. No hunting.
 
 ```
-## 2026-07-01
-(today's timedot / notes)
-
-> TODAY: nb-web
+## 2026-07-02                  ← new heading inserted here by + Today
+                               ← cursor lands here
+> TODAY:                       ← fixed stake — stays put forever
 
 > MILESTONE: internal-rc
 - [ ] register nb-web.ca
@@ -90,13 +89,30 @@ This matters when a project note contains planned future milestones: the note's 
 > MILESTONE: self-hosted
 ```
 
-**Rules:**
-- User places `> TODAY:` once when setting up the project, between the living log and the planned future
-- The marker stays put — it's a cursor, not a timestamp
-- `+ Today` inserts above `> TODAY:` if it exists; falls back to inserting before the first `> MILESTONE:` if no TODAY marker; falls back to end-of-file if neither
-- `+ Today` never inserts below a `> MILESTONE:` line
+**The natural multi-day flow** — the log grows upward toward the marker, the marker never moves:
 
-`TODAY` renders in gold (`#d4ac0d`) — distinct from state-change markers, visually meaning "active zone".
+```
+## 2026-07-01
+notes, timedot              ← day 1 done; CBQL counts this
+## 2026-07-02
+notes, timedot              ← day 2 done; CBQL counts this
+## 2026-07-03
+                            ← working here
+> TODAY:                    ← boundary: above = done, below = future
+milestones
+```
+
+CBQL `current` = everything **before** `> TODAY:` — all logged work is automatically in scope. Markers planned in the future (milestones) are automatically excluded.
+
+**Rules:**
+- Place `> TODAY:` once when setting up the project
+- The marker stays put — it is a cursor, not a timestamp
+- `+ Today` inserts above `> TODAY:` if it exists; falls back to before the first `> MILESTONE:`; falls back to end-of-file
+- `+ Today` is idempotent within a day — today's heading already present means only the editor opens (cursor still positioned at the heading)
+
+`TODAY` renders in gold (`#d4ac0d`) — distinct from state-change markers, visually marking the active zone boundary.
+
+A bare `> TODAY:` (no ref) auto-fills with the current date and time on render — useful as a live "last opened" indicator.
 
 ### Phases
 
