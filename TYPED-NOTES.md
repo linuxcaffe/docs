@@ -88,20 +88,20 @@ See [[docs:FOLDER-CONFIG]] for how to create and edit config dotfiles.
 | Note | Type | Role |
 |------|------|------|
 | `name.md` | `project` | Living document — accumulates freely, date-sectioned |
-| `name-report.md` | `report` | Stable output — curated, shareable, hand-edited |
+| `name-reports.md` | `reports` | Output page — holds one or more curated reports, hand-edited |
 
-The project is the workspace; the report is what you show someone. Both get the specialty header. The naming convention (`-report` suffix) is the only wiring required — no explicit link needed.
+The project is the workspace; the reports page is what you show someone. Both get the specialty header, and each shows a navigation chip linking to the other. The naming convention (`-reports` suffix) is the only wiring required — no explicit link needed.
 
-**Recommended frontmatter for the report:**
+**Recommended frontmatter for the reports note:**
 ```yaml
 ---
-type: report
+type: reports
 source: name.md
 help: report
 ---
 ```
 
-`source:` records which project this report belongs to. `help: report` adds a **?** button explaining the pair relationship — useful in templates to orient first-time users.
+`source:` records which project this reports page belongs to. `help: report` adds a **?** button explaining the pair relationship — useful in templates to orient first-time users.
 
 ---
 
