@@ -24,8 +24,8 @@ as the separator. The namespace path reads left to right from broadest to most s
 ```
 hl-                     all hledger tests
 hl-core-                hledger core validity (hl-core-journal, hl-core-test)
-hl-health-              hledger health sub-group
-hl-health-day.sh        one specific daily health check
+hl-entry-               posting cadence sub-group
+hl-entry-day.sh         one specific daily posting check
 hl-opt-                 optional checks sub-group
 hl-opt-ordereddates.sh  one specific optional check
 nb-                     all nb tests
@@ -38,11 +38,11 @@ A `test` block body ending with `-` fires every script whose name starts with th
 
 ````markdown
 ```check
-hl-health-
+hl-entry-
 ```
 ````
 
-fires `hl-health-day.sh`, `hl-health-week.sh`, `hl-health-month.sh` — the whole subgroup.
+fires `hl-entry-day.sh`, `hl-entry-week.sh` — the whole subgroup.
 
 ```check
 hl-
@@ -55,7 +55,7 @@ fires every hledger test in `.checks/`. This replaces any hand-written bundler s
 The old pattern was a wrapper script that called other scripts. **Don't do this.**
 Grouping is done entirely by naming — no exceptions:
 
-1. **Namespace prefix** — `hl-health-` is a group. The trailing-dash glob covers it.
+1. **Namespace prefix** — `hl-entry-` is a group. The trailing-dash glob covers it.
 2. **Sub-sub-groups are encouraged** — `hl-budget-has-` is a valid group within `hl-budget-`.
 3. **Codeblock cluster** — multiple `check` blocks in one note, each focused on one script.
 
@@ -129,13 +129,13 @@ the note body — the config chain provides them.
 checks: nb-
 
 # In ~/.nb/accts/.accts.md (notebook — fires on every accts: note)
-checks: hl-health-day
+checks: hl-entry-day
 
 # In ~/.nb/accts/guide/.guide.md (folder — fires on every note in guide/)
 checks: hl-
 
 # In any individual note's frontmatter (per-note override)
-checks: hl-health-week
+checks: hl-entry-week
 ```
 
 Resolution: note FM wins, then folder config walk-up (innermost first), then notebook
@@ -146,7 +146,7 @@ config, then global. Same chain as `access:`.
 | Value | Effect |
 |-------|--------|
 | `hl-` | All scripts with prefix `hl-` (trailing-dash glob) |
-| `hl-health-day` | Exact script name |
+| `hl-entry-day` | Exact script name |
 | `[nb-, hl-]` | Multiple prefixes — one Type-1 fence per entry |
 | `checks:` (bare) | `null` — suppresses inherited checks |
 | `checks: ""` | Empty string — suppresses inherited checks |

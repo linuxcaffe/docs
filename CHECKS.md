@@ -53,7 +53,10 @@ Scripts follow a **left-to-right hierarchical namespace** using `-` as separator
 ```
 hl-                       all hledger scripts
 hl-core-                  hledger core validity (journal, binary test)
-hl-health-                hledger health sub-group (day, week, month, year, taxes)
+hl-entry-                 posting cadence (day, week)
+hl-reconcile-             bank reconciliation (month, gap, future)
+hl-close-                 period close (year)
+hl-tax-                   tax preparation
 hl-opt-                   optional hledger checks (ordereddates, tags, payees…)
 hl-budget-                budget integrity sub-group
 nb-                       all nb scripts (dirty, orphan-annotations, sync-unwired…)
@@ -67,11 +70,11 @@ test-                     nb-web self-tests (access, syntax, settings…)
 
 ````markdown
 ```check
-hl-health-
+hl-entry-
 ```
 ````
 
-fires `hl-health-day.sh`, `hl-health-week.sh`, `hl-health-month.sh`, etc.
+fires `hl-entry-day.sh`, `hl-entry-week.sh`, etc.
 
 **No bundler scripts** — grouping is name-driven only. A script that does nothing but call other scripts does not exist.
 
@@ -239,11 +242,11 @@ echo '```'
 | `hl-opt-tags` | 2 | Undeclared tag names (opt-in strict check) |
 | `hl-opt-payees` | 2 | Undeclared payees (opt-in strict check) |
 | `hl-opt-uniqueleafnames` | 2 | Two accounts share a leaf name (opt-in strict check) |
-| `hl-health-day` | 2 | Silent if entries today; coaches when there's a gap |
-| `hl-health-week` | 2 | Silent if entries this week; flags a growing gap |
-| `hl-health-month` | 2 | Silent if past months cleared; flags unreconciled |
-| `hl-health-year` | 2 | Silent if previous year fully cleared |
-| `hl-health-taxes` | 2 | Silent if tax-ready; flags what's missing |
+| `hl-entry-day` | 2 | Silent if entries today; coaches when there's a gap |
+| `hl-entry-week` | 2 | Silent if entries this week; flags a growing gap |
+| `hl-reconcile-month` | 2 | Silent if past months cleared; flags unreconciled |
+| `hl-close-year` | 2 | Silent if previous year fully cleared; guides year-end close |
+| `hl-tax-ready` | 2 | Silent if prior year tax-ready; flags what's missing |
 | `hl-budget-has-periodic` | 2 | Guides setup if no `~ monthly` rules found |
 | `hl-budget-has-actuals` | 2 | Checks that actual transactions exist to compare against budget |
 | `hl-budget-has-income` | 2 | Checks that income postings exist in the budget |
@@ -354,13 +357,13 @@ The `checks:` key in note FM, folder config, or notebook config injects Form 2 f
 checks: nb-
 
 # ~/.nb/accts/.accts.md (notebook — fires on every accts: note)
-checks: hl-health-day
+checks: hl-entry-day
 
 # ~/.nb/accts/guide/.guide.md (folder — fires on every note in guide/)
 checks: hl-
 
 # In any individual note's frontmatter (per-note override)
-checks: hl-health-week
+checks: hl-entry-week
 ```
 
 Resolution: note FM wins → folder config walk-up (innermost first) → notebook config → global.

@@ -65,7 +65,7 @@ conftest.py
         .index            ← test-note.md
         test-note.md
       accts/
-        .accts.md         ← access: office, checks: hl-health-day
+        .accts.md         ← access: office, checks: hl-entry-day
         .index            ← report.md
         report.md         ← type: note
         shots/

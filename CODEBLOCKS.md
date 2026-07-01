@@ -1093,7 +1093,7 @@ Scripts use hyphen-separated names. The prefix is the application domain; sub-fa
 
 | Prefix | App | Example families |
 |--------|-----|-----------------|
-| `hl-` | hledger | `hl-budget-`, `hl-health-` |
+| `hl-` | hledger | `hl-budget-`, `hl-entry-`, `hl-reconcile-`, `hl-close-`, `hl-tax-` |
 | `nb-` | nb / nb-web | `nb-config-`, `nb-schem-`, `nb-ref-` |
 | `tw-` | Taskwarrior | — |
 | `note-` | system/global | — |
