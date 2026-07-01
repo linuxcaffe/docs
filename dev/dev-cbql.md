@@ -392,7 +392,7 @@ The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers
 | 5 | Extract generic `write_marker()` in `app.py` | 📋 Planned |
 | 6 | Timeframe dropdown on `type: reports` specialty bar | ✅ Shipped 2026-07-01 |
 | 6a | `TODAY` marker + `+ Today` smart insertion (never crosses MILESTONE) | ✅ Shipped 2026-07-01 |
-| 7 | CBQL read path — `timedot`/`hl` with marker-based timeframe | 📋 Planned |
+| 7 | CBQL read path — `timedot`/`hl` with marker-based timeframe | ✅ Shipped 2026-07-01 |
 | 8 | `timeline` block type — renders markers from source | 📋 Planned |
 | 9 | `tw` CBQL source/filter support | 📋 Planned |
 | 10 | `checklist` block type — surfaces `- [ ]` deliverables from source | 📋 Planned |
@@ -465,7 +465,7 @@ Naming follows existing `.checks/` prefix conventions. Scripts live in `~/.nb/.c
 - CBQL block caching — hold full dataset in memory after first fetch, or re-fetch when source note is saved?
 - `timeline` block: render markers only, or also surfaced dated section headings as minor events?
 - `write_marker()` position — append to today's dated section, or always end-of-file? (today's section preferred; needs `_ensure_today_section` logic)
-- Multi-marker phases: `current` = since last marker of *any* type, or since last marker of a *specific* type? (any type is simpler and more useful)
+- Multi-marker phases: `current` = since last marker of *any* type, or since last marker of a *specific* type? **Resolved:** `current` = everything before `> TODAY:` (the insertion cursor IS the phase boundary). Fallback: since last `INVOICED`/`CLOSED` marker. Final fallback: full body. MILESTONE markers are goals, not phase boundaries.
 - External write-back authentication — webhook endpoint needs a token; scope for later
 
 ---
