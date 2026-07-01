@@ -412,10 +412,21 @@ The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers
 | 8 | `timeline` block type — renders markers from source | ✅ Shipped 2026-07-01 |
 | 9 | `tw` CBQL source/filter support | ✅ Shipped 2026-07-01 |
 | 10 | `checklist` block type — surfaces `- [ ]` deliverables from source | ✅ Shipped 2026-07-01 |
-| 11 | Action buttons for `DELIVERED`, `PAUSED`, `CLOSED` markers | 📋 Planned |
+| 10a | `group: milestones` mode — deliverables grouped by event-log `> MILESTONE:` markers | ✅ Shipped 2026-07-01 |
+| 11 | Action buttons for `PAUSED`, `CLOSED` markers on timeline rows | 📋 Planned |
 | 12 | Pub/sub multi-source `source:` queries | 📋 Long term |
 
 Steps 3 and 4 are independent and can be built in parallel. Step 5 requires 4. Step 6 requires 4. Steps 3 and 8 are a natural pair.
+
+### Step 11 design notes
+
+Originally planned as DELIVERED / PAUSED / CLOSED buttons. DELIVERED is now handled implicitly — milestone completion is visible from the grouped checklist (`group: milestones`) without needing an explicit marker. Step 11 scope narrowed to:
+
+- **PAUSED** button on the reports specialty bar: prompts for reason → writes `> PAUSED: reason` before `> TODAY:` in the source project note
+- **CLOSED** button: same pattern → writes `> CLOSED:` + optionally drops `.nb-unlock` lock marker
+- Deliver button on individual MILESTONE timeline rows: writes `> DELIVERED: milestone-name` — explicit closure moment with a prompted note
+
+Action buttons warn (not block) if open deliverables exist under that milestone.
 
 ---
 
