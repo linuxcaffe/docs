@@ -150,7 +150,7 @@ hl-budget-include-check
 - Open link: last line, use the actual filename not a generic label
 - No output on exit 0 — causes block to render instead of disappear #gotcha
 
-### `term:` links in output #planned
+### `term:` links in output
 
 Test output goes through the full render pipeline — `term:` links work there exactly as they do in regular notes. A script can embed a one-click fix command alongside the `note:` open link:
 
