@@ -502,10 +502,16 @@ via `/api/lib/block-extras` and stored in `_blockExtras` in the plugin.
 | Pattern | Effect |
 |---------|--------|
 | `help-block-{lang}-{access}.md` | Adds `?` button to that lang's barblock header |
+| `help-type-{topic}.md` | Content served by `help: <topic>` FM key on specialty headers (no access suffix — `.lib` open access applies) |
 | `open-block-{lang}-{access}.sh` | Wires title-click + `⎋` button to run the script |
 
-Access level follows the standard five-point scale; the highest level the current user
-meets wins. Scripts must be executable (`chmod +x`).
+For `help-block-*`: access level follows the standard five-point scale; the highest level
+the current user meets wins. Scripts must be executable (`chmod +x`).
+
+For `help-type-*`: no access suffix — file is served at `.lib` open level. Served by
+`_showTypeHelp()` in `nbweb-specialty.js`, which calls `NbMain.renderMarkdown` +
+`NbMain.enrichRendered(pop, d)` so the help file's own `xref:` FM key and any `note:`
+links in the body are live in the popover.
 
 ### Open protocol — script stdout decides the action
 
