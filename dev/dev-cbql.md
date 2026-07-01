@@ -68,8 +68,35 @@ Markers are plain-text lines recording state transitions. They live in the proje
 | `PAUSED` | amber | human / action | Work suspended |
 | `RESUMED` | teal | human / action | Work restarted after pause |
 | `CLOSED` | grey | human / action | Project terminal, filed |
+| `TODAY` | gold | human (once, at setup) | Insertion cursor — see below |
 
 Any ALL-CAPS word followed by `:` is a valid marker — the vocabulary above is the standard set, not an exhaustive list. Unknown marker types render in a neutral default color.
+
+### TODAY — the insertion cursor
+
+`> TODAY: ref` is a **positional marker**, not a state transition. It marks where daily work entries should accumulate. The `+ Today` button inserts a new `## YYYY-MM-DD` heading immediately above `> TODAY:` rather than appending to end-of-file.
+
+This matters when a project note contains planned future milestones: the note's bottom is the *future*, not the present. Appending to end-of-file would cross milestone boundaries that haven't happened yet.
+
+```
+## 2026-07-01
+(today's timedot / notes)
+
+> TODAY: nb-web
+
+> MILESTONE: internal-rc
+- [ ] register nb-web.ca
+
+> MILESTONE: self-hosted
+```
+
+**Rules:**
+- User places `> TODAY:` once when setting up the project, between the living log and the planned future
+- The marker stays put — it's a cursor, not a timestamp
+- `+ Today` inserts above `> TODAY:` if it exists; falls back to inserting before the first `> MILESTONE:` if no TODAY marker; falls back to end-of-file if neither
+- `+ Today` never inserts below a `> MILESTONE:` line
+
+`TODAY` renders in gold (`#d4ac0d`) — distinct from state-change markers, visually meaning "active zone".
 
 ### Phases
 
@@ -270,6 +297,27 @@ A reports page assembles three kinds of content:
 
 The ratio of generated to hand-written shifts by project type. A billing report is mostly generated; a retrospective is mostly narrative.
 
+### Wikilinks vs Inline: which to use
+
+Two mechanisms bring related content into a note. They serve different purposes:
+
+| Mechanism | Syntax | Role |
+|-----------|--------|------|
+| Wikilink | `[[notebook:filename.md\|label]]` | Reference — navigate to, cite, acknowledge |
+| Inline query | `{{inline: selector}}` | Participate — content is read, aggregated, computed |
+
+**Use `[[wikilinks]]` for:**
+- Plans, spec docs, design docs — things a reader should navigate to
+- Related projects — cross-references without data dependency
+- External references — links that provide context but don't affect numbers
+
+**Use `{{inline:}}` for:**
+- Timesheets that roll up into the current note's totals (e.g. `{{inline: accts:jim-timesheets.md}}`)
+- Deliverable lists from a sub-contractor that feed the `checklist` CBQL block
+- Any content that must be *included in a computation*, not just browsed
+
+A reports page typically has both: wikilinks in the header/resources section (navigation), inline queries in the body (aggregation). The pattern is "link to the document, inline the data."
+
 ### Backwards Compatibility
 
 Existing `hl` blocks querying hledger directly: **unaffected**. They have no `source:` param and no `timeframe:` param — they render exactly as before. The timeframe dropdown appears on the bar regardless but doesn't affect blocks that aren't listening. Opt-in only.
@@ -342,7 +390,8 @@ The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers
 | 3 | `project` + `project-reports` global templates; check: wiring | ✅ Shipped 2026-07-01 |
 | 4 | Create-on-demand UX — pair chip pre-flight, popup, source: patch | ✅ Shipped 2026-07-01 |
 | 5 | Extract generic `write_marker()` in `app.py` | 📋 Planned |
-| 6 | Timeframe dropdown on `type: reports` specialty bar | 📋 Planned |
+| 6 | Timeframe dropdown on `type: reports` specialty bar | ✅ Shipped 2026-07-01 |
+| 6a | `TODAY` marker + `+ Today` smart insertion (never crosses MILESTONE) | ✅ Shipped 2026-07-01 |
 | 7 | CBQL read path — `timedot`/`hl` with marker-based timeframe | 📋 Planned |
 | 8 | `timeline` block type — renders markers from source | 📋 Planned |
 | 9 | `tw` CBQL source/filter support | 📋 Planned |
