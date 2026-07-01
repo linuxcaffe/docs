@@ -25,7 +25,7 @@ Adding a notebook is an admin-only operation. It creates the notebook and seeds 
 
 The new notebook appears immediately in the scope selector. nb-web navigates directly to the new notebook's dashboard note.
 
-> **Admin only.** The Notebook chip is visible to all users but only admins can save. Non-admin attempts return a permission error.
+> **Admin only.** The Notebook chip in the scope selector is not rendered for non-admin users — it simply isn't there.
 
 ---
 

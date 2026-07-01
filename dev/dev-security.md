@@ -320,6 +320,7 @@ If the fetch failed (network error, but not 401), `NbUser` is `{}` — level fal
 | `NbAuth.level()` | string | Current user's level, or `'guest'` if unknown |
 | `NbAuth.is(lvl)` | boolean | True if current user's level ≥ `lvl` |
 | `NbAuth.bust()` | void | Clears the sessionStorage cache |
+| `NbAuth.gate(lvl, html)` | string | Returns `html` if user ≥ `lvl`, else `''` |
 | `NbAuth.applyVisibility()` | void | Shows/hides `[data-min-level]` elements |
 
 `NbAuth.is()` uses index comparison against `['guest', 'user', 'office', 'admin', 'tech']` — same logic as `_level_gte()` on the backend.
@@ -341,6 +342,35 @@ Any HTML element can declare its minimum required access level:
 ```
 
 `NbAuth.applyVisibility()` queries all `[data-min-level]` elements and sets `el.hidden = !NbAuth.is(el.dataset.minLevel)`. Elements are hidden by default in HTML (`hidden` attribute); `applyVisibility()` unhides the ones the current user can see.
+
+### UI gating patterns #invariant
+
+**The rule:** access restriction = element not rendered. Not grayed out, not replaced with an error message, not shown with a lock icon. To a user below the required level, the restricted element simply doesn't exist.
+
+Two patterns depending on whether the HTML is static or dynamically generated:
+
+**Pattern 1 — static HTML** (`data-min-level` + `applyVisibility`):
+```html
+<!-- Element starts hidden; applyVisibility() reveals it if level permits -->
+<button id="btn-user-mgmt" hidden data-min-level="tech">Manage users</button>
+```
+```javascript
+document.addEventListener('nb-auth-ready', () => NbAuth.applyVisibility());
+```
+Use for HTML written directly into page templates or `settings.html`.
+
+**Pattern 2 — dynamic JS render** (`NbAuth.is()` or `NbAuth.gate()`):
+```javascript
+// Conditional inline — element never enters the DOM for lower-level users
+const html = `
+    <div class="nb-plugin-actions">
+        ${NbAuth?.is('admin') ? `<button id="nbplug-toggle">Disable</button>` : ''}
+        ${NbAuth?.gate('tech', `<button id="nbplug-remove" style="color:var(--red)">Remove</button>`)}
+    </div>`;
+```
+Use for UI built with template literals in JS renderers. `NbAuth.gate(lvl, html)` is the one-liner shorthand for `NbAuth.is(lvl) ? html : ''`.
+
+**Never** use `data-min-level` on dynamically injected elements — `applyVisibility()` runs once at page load. Elements injected later are invisible to it. #gotcha
 
 ### Adding auth awareness to a new HTML page
 
@@ -527,7 +557,7 @@ bal expenses --monthly
 ### What's enforced
 
 **Frontend** (via `NbAuth.is()` in `nbweb-codeblocks.js`):
-- **Read gate** — block is replaced with `🔒 hledger — requires office` placeholder. No data fetched.
+- **Read gate** — block removed from DOM entirely. No data fetched.
 - **Write gate** — `+` (add transaction/task) and `✎` (edit journal) buttons hidden entirely.
 
 **Backend** (via `_cb_write_allowed(block_type)` in `app.py`):
