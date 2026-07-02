@@ -141,7 +141,7 @@ first, then make input delightful.
 | 1.6 | Shot template: `shot:` = filename stem, `alias:` = stripboard code; `filename` var in JS | ✅ 2026-07-02 |
 | 2 | Courier Prime `@font-face` + Flask route; WGA margin/spacing CSS pass | ✅ 2026-07-02 |
 | 2.5 | `type: script` specialty header — title page, scene count, export stubs, markdown toggle | ✅ 2026-07-02 |
-| 3 | Assembled screenplay renderer — resolve `{{inline: scene}}` blocks OR auto-concat `script/` scenes in alias order; wire `⬇ .fountain` button to `/api/cine/export-fountain` | next |
+| 3 | `/api/cine/export-fountain` — scenes in alias order → `.fountain` download; `⬇ .fountain` button wired | ✅ 2026-07-02 |
 | 4 | afterwriting PDF — Flask route, `npm install afterwriting`, wire `⬇ PDF` button | feature/fountain |
 | 4.5 | Print CSS — `break-inside: avoid` on speech blocks; `break-before: page` on `===` breaks | with step 4 |
 | 5 | CodeMirror + fountain-mode editor (later sprint) | feature/fountain-editor |
