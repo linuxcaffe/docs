@@ -58,11 +58,23 @@ Standard by John August & Stu Maschwitz. Canonical reference: **fountain.io**. S
 | Page break | `===` | |
 | Emphasis | `*italic*` `**bold**` `_underline_` | |
 
-### `[[shot-id]]` and Fountain notes — happy coincidence
+### `[[shot-alias]]` — triple semantic convergence (intentional, not coincidental)
 
-Fountain's note syntax `[[ ]]` excludes content from final PDF (shown in draft mode only).
-Shot cues are production annotations, not creative script — semantically identical behaviour.
-Keep `[[1c]]` syntax as-is; it's Fountain-valid and does the right thing on export.
+`[[alias]]` in a scene body is simultaneously:
+1. **Fountain note** — draft-only, excluded from final PDF. Shot cues are production
+   annotations, not creative script — exactly what Fountain notes are for.
+2. **nb wikilink** — resolved by main.js `_enrichRendered`, links to the shot note file.
+3. **Screenplay superscript** — rendered inline in `.nb-cine-screenplay` as a small cue marker.
+
+**Ctrl+[ workflow (already implemented):**
+- In scene edit mode, Ctrl+[ opens the Insert Shot dialog
+- Writer enters a shot filename; alias is auto-incremented from existing shots in the scene
+- Dialog inserts `[[alias]]` at cursor position in the scene body
+- On render: `[[alias]]` → superscript shot cue → wikilink to shot note
+- On PDF export: `[[alias]]` is a Fountain note → excluded from final script
+
+This means shot cue syntax requires zero special markup beyond what Fountain already defines.
+The alias (e.g. `1c`) is what appears in the superscript and resolves the wikilink.
 
 ---
 
@@ -109,11 +121,12 @@ first, then make input delightful.
 
 ## Build order
 
-| Step | Work | Branch |
+| Step | Work | Status |
 |------|------|--------|
-| 0 | This doc | — |
-| 0.5 | `feature/fountain` branch off master | done |
-| 1 | Swap `_parseScriptBody` → fountain-js; full spec rendering in-browser | feature/fountain |
+| 0 | This doc | ✅ 2026-07-01 |
+| 0.5 | `feature/fountain` branch off master | ✅ 2026-07-01 |
+| 1 | Full Fountain tokeniser + renderer inline in `nbweb-cine.js` | ✅ 2026-07-01 |
+| 1.5 | Fix `[[alias]]` shot-cue superscript rendering regression | 🐛 known issue |
 | 2 | Courier Prime confirmed loading; margin/CSS pass | feature/fountain |
 | 3 | `/api/cine/export-fountain` — concatenate scenes in alias order → `.fountain` download | feature/fountain |
 | 4 | afterwriting PDF — Flask route, `npm install afterwriting`, download button | feature/fountain |
