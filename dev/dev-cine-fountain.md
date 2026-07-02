@@ -140,10 +140,26 @@ first, then make input delightful.
 | 1.5 | Shot-cue links: `[[filename]]` + `data-autolabel`; fix badly-formed alias links in scene files | ✅ 2026-07-02 |
 | 1.6 | Shot template: `shot:` = filename stem, `alias:` = stripboard code; `filename` var in JS | ✅ 2026-07-02 |
 | 2 | Courier Prime `@font-face` + Flask route; WGA margin/spacing CSS pass | ✅ 2026-07-02 |
-| 3 | `/api/cine/export-fountain` — concatenate scenes in alias order → `.fountain` download | next |
-| 4 | afterwriting PDF — Flask route, `npm install afterwriting`, download button | feature/fountain |
+| 2.5 | `type: script` specialty header — title page, scene count, export stubs, markdown toggle | ✅ 2026-07-02 |
+| 3 | Assembled screenplay renderer — resolve `{{inline: scene}}` blocks OR auto-concat `script/` scenes in alias order; wire `⬇ .fountain` button to `/api/cine/export-fountain` | next |
+| 4 | afterwriting PDF — Flask route, `npm install afterwriting`, wire `⬇ PDF` button | feature/fountain |
 | 4.5 | Print CSS — `break-inside: avoid` on speech blocks; `break-before: page` on `===` breaks | with step 4 |
 | 5 | CodeMirror + fountain-mode editor (later sprint) | feature/fountain-editor |
+
+### `type: script` note — FM fields
+
+| Field | Purpose |
+|-------|---------|
+| `type: script` | triggers title-page renderer |
+| `title:` | film title — shown large on header |
+| `author:` | writer credit |
+| `copyright:` | year |
+| `draft:` | e.g. "First Draft", "Revised Draft" |
+| `wga_reg:` | (future) WGA registration number |
+| `contact:` | (future) writer/agent contact for title page |
+
+Body: `{{inline: Notebook:script/scene.md}}` blocks define scene order for assembled renderer.
+Non-numeric `alias:` values (e.g. `ref`) are skipped in auto-concat and page estimates.
 
 Steps 1–4 are a single feature sprint. Step 5 is the "super easy input" payoff.
 
