@@ -58,23 +58,34 @@ Standard by John August & Stu Maschwitz. Canonical reference: **fountain.io**. S
 | Page break | `===` | |
 | Emphasis | `*italic*` `**bold**` `_underline_` | |
 
-### `[[shot-alias]]` — triple semantic convergence (intentional, not coincidental)
+### `[[filename]]` shot cues — triple semantic convergence (intentional, not coincidental)
 
-`[[alias]]` in a scene body is simultaneously:
+`[[filename-stem]]` in a scene body is simultaneously:
 1. **Fountain note** — draft-only, excluded from final PDF. Shot cues are production
    annotations, not creative script — exactly what Fountain notes are for.
 2. **nb wikilink** — resolved by main.js `_enrichRendered`, links to the shot note file.
-3. **Screenplay superscript** — rendered inline in `.nb-cine-screenplay` as a small cue marker.
+3. **Screenplay superscript** — rendered inline as a small cue marker; displays the shot's
+   `alias:` value via `data-autolabel` (not the filename).
+
+**Three-identifier model — every production note:**
+
+| Identifier | Field | Meaning | Mutable? |
+|-----------|-------|---------|---------|
+| filename stem | file on disk | stable wikilink anchor | never |
+| `alias:` | FM field | compact stripboard code | yes |
+| `title:` | FM field | human description | yes |
+
+Shot: `shot:` FM = filename stem (e.g. `SP-peek`), `alias:` = stripboard code (e.g. `5d`).
+Character: `alias:` = actor filename stem (the casting link — change it to recast).
+Actor: `alias:` = callsheet code. One actor, multiple roles = two character cards, same `alias:`.
 
 **Ctrl+[ workflow (already implemented):**
 - In scene edit mode, Ctrl+[ opens the Insert Shot dialog
-- Writer enters a shot filename; alias is auto-incremented from existing shots in the scene
-- Dialog inserts `[[alias]]` at cursor position in the scene body
-- On render: `[[alias]]` → superscript shot cue → wikilink to shot note
-- On PDF export: `[[alias]]` is a Fountain note → excluded from final script
+- Dialog auto-suggests next alias; writer sets filename and title
+- Inserts `[[filename]]` at cursor; displays as alias via `data-autolabel` on render
+- On PDF export: `[[filename]]` is a Fountain note → excluded from final script
 
 This means shot cue syntax requires zero special markup beyond what Fountain already defines.
-The alias (e.g. `1c`) is what appears in the superscript and resolves the wikilink.
 
 ---
 
@@ -126,7 +137,8 @@ first, then make input delightful.
 | 0 | This doc | ✅ 2026-07-01 |
 | 0.5 | `feature/fountain` branch off master | ✅ 2026-07-01 |
 | 1 | Full Fountain tokeniser + renderer inline in `nbweb-cine.js` | ✅ 2026-07-01 |
-| 1.5 | Fix `[[alias]]` shot-cue superscript rendering regression | 🐛 known issue |
+| 1.5 | Shot-cue links: `[[filename]]` + `data-autolabel`; fix badly-formed alias links in scene files | ✅ 2026-07-02 |
+| 1.6 | Shot template: `shot:` = filename stem, `alias:` = stripboard code; `filename` var in JS | ✅ 2026-07-02 |
 | 2 | Courier Prime confirmed loading; margin/CSS pass | feature/fountain |
 | 3 | `/api/cine/export-fountain` — concatenate scenes in alias order → `.fountain` download | feature/fountain |
 | 4 | afterwriting PDF — Flask route, `npm install afterwriting`, download button | feature/fountain |
