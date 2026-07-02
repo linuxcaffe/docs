@@ -142,8 +142,8 @@ first, then make input delightful.
 | 2 | Courier Prime `@font-face` + Flask route; WGA margin/spacing CSS pass | ✅ 2026-07-02 |
 | 2.5 | `type: script` specialty header — title page, scene count, export stubs, markdown toggle | ✅ 2026-07-02 |
 | 3 | `/api/cine/export-fountain` — scenes in alias order → `.fountain` download; `⬇ .fountain` button wired | ✅ 2026-07-02 |
-| 4 | afterwriting PDF — Flask route, `npm install afterwriting`, wire `⬇ PDF` button | feature/fountain |
-| 4.5 | Print CSS — `break-inside: avoid` on speech blocks; `break-before: page` on `===` breaks | with step 4 |
+| 4 | afterwriting PDF — `/api/cine/export-pdf`, `_build_fountain` helper, wire `⬇ PDF` button | ✅ 2026-07-02 |
+| 4.5 | Print CSS — `break-inside: avoid` on speech blocks; `break-before: page` on `===` breaks | deferred |
 | 5 | CodeMirror + fountain-mode editor (later sprint) | feature/fountain-editor |
 
 ### `type: script` note — FM fields
