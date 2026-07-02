@@ -139,12 +139,25 @@ first, then make input delightful.
 | 1 | Full Fountain tokeniser + renderer inline in `nbweb-cine.js` | ✅ 2026-07-01 |
 | 1.5 | Shot-cue links: `[[filename]]` + `data-autolabel`; fix badly-formed alias links in scene files | ✅ 2026-07-02 |
 | 1.6 | Shot template: `shot:` = filename stem, `alias:` = stripboard code; `filename` var in JS | ✅ 2026-07-02 |
-| 2 | Courier Prime confirmed loading; margin/CSS pass | feature/fountain |
-| 3 | `/api/cine/export-fountain` — concatenate scenes in alias order → `.fountain` download | feature/fountain |
+| 2 | Courier Prime `@font-face` + Flask route; WGA margin/spacing CSS pass | ✅ 2026-07-02 |
+| 3 | `/api/cine/export-fountain` — concatenate scenes in alias order → `.fountain` download | next |
 | 4 | afterwriting PDF — Flask route, `npm install afterwriting`, download button | feature/fountain |
+| 4.5 | Print CSS — `break-inside: avoid` on speech blocks; `break-before: page` on `===` breaks | with step 4 |
 | 5 | CodeMirror + fountain-mode editor (later sprint) | feature/fountain-editor |
 
 Steps 1–4 are a single feature sprint. Step 5 is the "super easy input" payoff.
+
+### Pagination note
+
+On-screen pagination (splitting into multiple page boxes) is not worth it — accurate line-height counting per element is fragile. Screen view scrolls; that's conventional (Highland 2, Slugline do the same). `afterwriting` handles true pagination for PDF export. Print CSS (step 4.5) adds `break-inside: avoid` on dialogue blocks so browser print/PDF doesn't orphan them.
+
+### Courier Prime install
+
+```bash
+sudo apt-get install -y fonts-courier-prime
+```
+
+Served via `/fonts/courier-prime/<face>.otf` Flask route (app.py). Falls back to Courier New until installed.
 
 ---
 
