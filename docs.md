@@ -1,6 +1,6 @@
 ---
 type: project
-title: docs
+title: docs project
 status: active
 client: 
 billing_type: 
