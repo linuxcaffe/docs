@@ -12,6 +12,14 @@ pinned: true
 
 ---
 
+## Users
+
+```sysadmin
+users
+```
+
+---
+
 ## System
 
 ```check
