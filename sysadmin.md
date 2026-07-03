@@ -14,7 +14,7 @@ pinned: true
 
 ## System
 
-```test
+```check
 | System health
 nb-sync-manifest
 nb-sync-unwired
@@ -24,7 +24,7 @@ flask-settings
 flask-plugin-missing
 ```
 
-```test
+```check
 | Content integrity
 nb-orphan-annotations
 nb-orphan-unindexed
@@ -32,7 +32,7 @@ nb-check-front
 nb-timedot-no-date
 ```
 
-```test
+```check
 syntax-
 ```
 
@@ -40,11 +40,11 @@ syntax-
 
 ## Project & report checks
 
-```test
+```check
 project-
 ```
 
-```test
+```check
 report-
 ```
 
@@ -52,10 +52,10 @@ report-
 
 ## Accounting
 
-```test
+```check
 hl-core-
 ```
 
-```test
+```check
 hl-opt-
 ```
