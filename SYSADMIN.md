@@ -7,7 +7,7 @@ type: dotfile
 
 # Sysadmin Corner
 
-[[#The Split|The Split]] · [[#Dotfile Templates|Dotfile Templates]] · [[#Dashboard Templates|Dashboard Templates]] · [[#Admin Codeblocks|Admin Codeblocks]] · [[#The Config Org Chart|The Config Org Chart]]
+[[#The Split|The Split]] · [[#Dotfile Templates|Dotfile Templates]] · [[#Dashboard Templates|Dashboard Templates]] · [[#Admin Codeblocks|Admin Codeblocks]] · [[#The Config Org Chart|The Config Org Chart]] · [[#Code Guards|Code Guards]]
 
 ---
 
@@ -126,3 +126,44 @@ See [[CODEBLOCKS#cfg: org — Config Org Chart]] for full syntax reference.
 ---
 
 *Video screencasts of the org chart and filter workflow are planned for this section.*
+
+---
+
+## Code Guards
+
+The **code guard** system prevents large edits from silently deleting
+load-bearing functions in plugin source files. It's the source-code
+counterpart to the checks system — checks audit note *data*, guards audit
+*code*.
+
+### How it works
+
+Each plugin repo has a `.guards` file at its root. Each line names a file
+and an identifier that must exist there before any commit is accepted:
+
+```
+nbweb-cine.js:_openStorylineOverlay
+nbweb-cine.js:_parseFountain
+main.js:_enrichRendered
+```
+
+A shared runner (`~/.nb/.tools/check-guards.sh`) greps for each identifier
+before every commit. If anything is missing, the commit is blocked with a
+clear message naming the missing function.
+
+### Covered repos
+
+| Repo | What is guarded |
+|------|----------------|
+| `nb-web` | Plugin API (`nbweb.js`), render pipeline (`main.js`), nav, Flask endpoints |
+| `nbweb-cine` | Storylines board, Fountain pipeline, shot/scene renderers |
+| `nbweb-hledger` | Account setup, invoice pipeline, note renderers |
+| `nbweb-specialty` | Specialty/dotfile/dashboard/reports renderers, theme editor |
+
+### Maintenance rule
+
+When you introduce a major new feature section, add its entry-point function
+to `.guards` in the same commit. New plugin repos get a `.guards` file and
+hook wired at creation time.
+
+Full convention and troubleshooting: [[.nb:.rules/guards.md]]
