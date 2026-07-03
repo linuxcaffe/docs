@@ -124,7 +124,7 @@ The skeleton/hydrate pattern keeps markdown parsing fast and lets all blocks loa
 
 ### `previewRenderer`
 
-`(note) => string | null`. Called during note preview rendering, before built-in type detection. Return an HTML string to take over rendering, or `null` to fall through to core.
+`(note) => string | null`. Called during note preview rendering, before built-in type detection. Return an HTML string to take over rendering, or `null` to fall through to the next module or to core.
 
 ```javascript
 previewRenderer: (note) => {
@@ -134,6 +134,21 @@ previewRenderer: (note) => {
 ```
 
 `NbWeb-quartz` uses this to render shop item cards for notes inside `items/` folders.
+
+**Declare `previewRendererDetect` to participate in unified rendering.** `getPreviewRenderers()` collects renderers from all active modules in plugin-load order — both `previewRenderers[]` arrays and single-renderer modules that declare `previewRendererDetect`. The first source to match wins the note; all matched renderers appear in the toolbar toggle when there are multiple.
+
+```javascript
+previewRendererDetect: note => note.type === 'contact',   // cheap predicate
+previewRenderer: note => { ... },                          // the actual render fn
+```
+
+Modules without `previewRendererDetect` are excluded from `getPreviewRenderers` and fall back to a chain walk via `getPreviewRenderer()` instead. **Always return `null` (not `''` or `undefined`) for note types you don't own** — returning a falsy non-null value stops the chain.
+
+### `previewRenderers` (multi-renderer array)
+
+The richer API for plugins that provide multiple view modes for their note types (e.g. cine: screenplay / story view / script view / card view). Each entry is `{ id, icon, label, types, detect, render }`.
+
+When a notebook has a multi-renderer module active, `getPreviewRenderers()` returns the matching renderers and the toolbar shows toggle buttons. The single `previewRenderer` fallback runs *after* the multi-renderer array when no array entry claims the note — this is how specialty headers appear on cine notes whose type isn't scene/shot/storyline.
 
 ### `sortOptions`
 
