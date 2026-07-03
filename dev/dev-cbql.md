@@ -2,7 +2,7 @@
 title: CBQL — Codeblock Query Language
 caption: Project event ledger, marker timeline, and live projections
 toc: true
-status: planned
+status: active
 ---
 
 # CBQL — Codeblock Query Language
@@ -145,14 +145,27 @@ This is a feature. It makes experimentation safe. You can generate an invoice, l
 
 ### writeMarker API
 
-Currently exists as inline code in `app.py:3891` (INVOICED-specific). Needs to be extracted as a reusable function and exposed to all plugins:
+**Shipped 2026-07-03.** `POST /api/project/write-marker` — generic endpoint available to all plugins.
 
-```python
-def write_marker(source_path, marker_type, ref, details=''):
-    """Append > MARKERTYPE: ref - details to today's section in source_path."""
+```
+Body: { selector, marker, ref, position }
+  selector  — note to write into (e.g. "Takeout:nb_web.md")
+  marker    — ALLCAPS name; validated against ^[A-Z]{2,20}$
+  ref       — optional reason/label appended after the colon
+  position  — 'before_today' (default) | 'today_section' | 'end'
 ```
 
-Plugin action buttons call this on success. The marker type is the plugin's to choose — hledger owns `INVOICED`, a delivery plugin would own `DELIVERED`, etc.
+**Position modes:**
+
+| Mode | Behaviour | Fallback |
+|------|-----------|----------|
+| `before_today` | Inserts line immediately before `> TODAY:` | Appends to end |
+| `today_section` | Appends to today's `## YYYY-MM-DD` section; creates it if absent | Falls back to before_today insertion |
+| `end` | Appends at end of file | — |
+
+PAUSED/CLOSED use `before_today` (they belong in the living log, adjacent to the cursor). DELIVERED uses `today_section` (milestone closure is a dated event).
+
+Plugin action buttons call this on success. The marker type is the plugin's to choose — hledger owns `INVOICED`, specialty owns `PAUSED`/`CLOSED`, codeblocks owns `DELIVERED`.
 
 ### External Write-back
 
@@ -405,7 +418,7 @@ The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers
 | 2 | `INVOICED` write-back via Invoice button | ✅ Existing (hledger plugin) |
 | 3 | `project` + `project-reports` global templates; check: wiring | ✅ Shipped 2026-07-01 |
 | 4 | Create-on-demand UX — pair chip pre-flight, popup, source: patch | ✅ Shipped 2026-07-01 |
-| 5 | Extract generic `write_marker()` in `app.py` | 📋 Planned |
+| 5 | `POST /api/project/write-marker` — generic 3-mode write-back endpoint | ✅ Shipped 2026-07-03 |
 | 6 | Timeframe dropdown on `type: reports` specialty bar | ✅ Shipped 2026-07-01 |
 | 6a | `TODAY` marker + `+ Today` smart insertion (never crosses MILESTONE) | ✅ Shipped 2026-07-01 |
 | 7 | CBQL read path — `timedot`/`hl` with marker-based timeframe | ✅ Shipped 2026-07-01 |
@@ -413,20 +426,41 @@ The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers
 | 9 | `tw` CBQL source/filter support | ✅ Shipped 2026-07-01 |
 | 10 | `checklist` block type — surfaces `- [ ]` deliverables from source | ✅ Shipped 2026-07-01 |
 | 10a | `group: milestones` mode — deliverables grouped by event-log `> MILESTONE:` markers | ✅ Shipped 2026-07-01 |
-| 11 | Action buttons for `PAUSED`, `CLOSED` markers on timeline rows | 📋 Planned |
-| 12 | Pub/sub multi-source `source:` queries | 📋 Long term |
+| 11 | PAUSED/CLOSED buttons on reports specialty bar; DELIVERED on timeline milestone rows | ✅ Shipped 2026-07-03 |
+| 12 | `timedot` blocks in project note as additional hledger source for `hl` CBQL blocks | 📋 Planned — PoC |
+| 13 | Pub/sub multi-source `source:` queries | 📋 Long term |
 
 Steps 3 and 4 are independent and can be built in parallel. Step 5 requires 4. Step 6 requires 4. Steps 3 and 8 are a natural pair.
 
-### Step 11 design notes
+### Step 11 design notes — Shipped 2026-07-03
 
-Originally planned as DELIVERED / PAUSED / CLOSED buttons. DELIVERED is now handled implicitly — milestone completion is visible from the grouped checklist (`group: milestones`) without needing an explicit marker. Step 11 scope narrowed to:
+**PAUSED / CLOSED** buttons live on the reports specialty bar (`nbweb-specialty.js`), visible when `status !== 'closed'`. Prompts for reason → POSTs to `/api/project/write-marker` with `position: 'before_today'`. On CLOSED: buttons disappear from the bar.
 
-- **PAUSED** button on the reports specialty bar: prompts for reason → writes `> PAUSED: reason` before `> TODAY:` in the source project note
-- **CLOSED** button: same pattern → writes `> CLOSED:` + optionally drops `.nb-unlock` lock marker
-- Deliver button on individual MILESTONE timeline rows: writes `> DELIVERED: milestone-name` — explicit closure moment with a prompted note
+**DELIVERED** button appears on each MILESTONE row in the `timeline` block (`nbweb-codeblocks.js`). Prompts for a note → writes `> DELIVERED: milestone-ref` via `position: 'today_section'`.
 
-Action buttons warn (not block) if open deliverables exist under that milestone.
+Both use `data-source-sel` threaded down from the block's container `el.dataset.sourceSel` (set in `_loadTimelineCBQLBlock`), so the write target is always the source project note, not the reports page.
+
+Action buttons warn (not block) if open deliverables exist under that milestone — not yet implemented; deferred to a future polish pass.
+
+### Step 12 design notes — timedot-in-project as hledger source
+
+The **project note is the canonical session diary** — timedot blocks live inline under dated headings, not in a separate timelog file. The goal: an `hl` CBQL block in the reports note should aggregate those timedot blocks directly via `source:`, without requiring a separate `.journal` import.
+
+**PoC contract** (to be defined):
+
+```yaml
+# In the hl: block on the reports page
+source: nb_web.md
+filter: timedot
+timeframe: current
+```
+
+The `hl` renderer would: (1) fetch the source note raw, (2) extract all fenced `timedot` blocks in the current timeframe window, (3) concatenate them into a temporary timedot string, (4) pipe that to `hledger` with `-f timeclock:-` (or timedot format flag), (5) render the balance/register output.
+
+**Open questions for Step 12:**
+- hledger timedot input mode: does `hledger -f timedot:-` accept piped concatenated blocks?
+- Timeframe slicing: does the marker-boundary logic run before or after fetching blocks?
+- Interaction with existing `hl` journal config in `.Takeout.md` — additional source should be additive, not replace the primary journal.
 
 ---
 
@@ -466,22 +500,23 @@ Things the marker regex silently ignores rather than errors on:
 - Project note has no define sections (scope, deliverables, etc.) — blank page nudge
 - Reports note missing `source:` FM — CBQL blocks have nowhere to read from
 
-### Planned check scripts
+### Check scripts — ✅ All shipped
 
-```
-project-date-sequence.sh       ← date headings in ascending order, zero-padded
-project-marker-format.sh       ← ALLCAPS: REF convention, colon present
-project-marker-sequence.sh     ← RESUMED after PAUSED; CLOSED is last; no orphaned transitions
-project-status-marker-sync.sh  ← FM status: agrees with most recent marker state
-project-reports-pair.sh        ← -reports.md partner exists in same notebook
+All 9 scripts live in `~/.nb/.checks/` and are wired into `docs:sysadmin.md` via `project-` and `report-` prefix selectors. Each is silent on pass, silent on non-matching note types.
 
-report-source-exists.sh        ← source: FM resolves to a real note
-report-source-is-project.sh    ← source note has type: project
-report-timeframe-refs.sh       ← CBQL timeframe: marker refs exist in source
-report-project-pair.sh         ← project partner exists
-```
+| Script | What it catches |
+|--------|----------------|
+| `project-date-sequence.sh` | `## YYYY-MM-DD` headings out of chronological order or non-zero-padded |
+| `project-marker-format.sh` | Marker lines missing colon or REF — invisible to timeframe dropdown |
+| `project-marker-sequence.sh` | `RESUMED` without prior `PAUSED`; `CLOSED` not last; orphaned transitions |
+| `project-status-marker-sync.sh` | FM `status:` disagrees with most recent marker in body |
+| `project-reports-pair.sh` | `type: project` note missing its `-reports.md` partner |
+| `report-source-exists.sh` | `source:` FM points to a note that doesn't exist (renamed/moved) |
+| `report-source-is-project.sh` | `source:` FM resolves to a non-project note |
+| `report-timeframe-refs.sh` | CBQL `timeframe: MARKER: ref` but that ref doesn't exist in source |
+| `report-project-pair.sh` | Reports note has no corresponding project partner |
 
-Naming follows existing `.checks/` prefix conventions. Scripts live in `~/.nb/.checks/` alongside the existing suite.
+Naming follows existing `.checks/` prefix conventions.
 
 ---
 
@@ -491,10 +526,10 @@ Naming follows existing `.checks/` prefix conventions. Scripts live in `~/.nb/.c
 - `${variable}` resolution scope — note FM only, or also walk up to notebook dotfile config?
 - CBQL block caching — hold full dataset in memory after first fetch, or re-fetch when source note is saved?
 - `timeline` block: render markers only, or also surfaced dated section headings as minor events?
-- `write_marker()` position — append to today's dated section, or always end-of-file? (today's section preferred; needs `_ensure_today_section` logic)
+- `write_marker()` position — **Resolved:** 3 explicit modes (`before_today` / `today_section` / `end`). Callers choose; no implicit logic needed.
 - Multi-marker phases: `current` = since last marker of *any* type, or since last marker of a *specific* type? **Resolved:** `current` = everything before `> TODAY:` (the insertion cursor IS the phase boundary). Fallback: since last `INVOICED`/`CLOSED` marker. Final fallback: full body. MILESTONE markers are goals, not phase boundaries.
 - External write-back authentication — webhook endpoint needs a token; scope for later
 
 ---
 
-#planned #wip
+#wip
