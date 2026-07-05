@@ -427,7 +427,7 @@ The `* [ ]` discriminator (used in taskwiki to namespace TW tasks in vim buffers
 | 10 | `checklist` block type — surfaces `- [ ]` deliverables from source | ✅ Shipped 2026-07-01 |
 | 10a | `group: milestones` mode — deliverables grouped by event-log `> MILESTONE:` markers | ✅ Shipped 2026-07-01 |
 | 11 | PAUSED/CLOSED buttons on reports specialty bar; DELIVERED on timeline milestone rows | ✅ Shipped 2026-07-03 |
-| 12 | `timedot` blocks in project note as additional hledger source for `hl` CBQL blocks | 📋 Planned — PoC |
+| 12 | `timedot` blocks in project note as additional hledger source for `hl` CBQL blocks | ✅ Shipped 2026-07-03 — see [[dev-project-diary]] |
 | 13 | Pub/sub multi-source `source:` queries | 📋 Long term |
 
 Steps 3 and 4 are independent and can be built in parallel. Step 5 requires 4. Step 6 requires 4. Steps 3 and 8 are a natural pair.
@@ -442,7 +442,11 @@ Both use `data-source-sel` threaded down from the block's container `el.dataset.
 
 Action buttons warn (not block) if open deliverables exist under that milestone — not yet implemented; deferred to a future polish pass.
 
-### Step 12 design notes — timedot-in-project as hledger source
+### Step 12 design notes — timedot-in-project as hledger source ✅ Shipped 2026-07-03
+
+See [[dev-project-diary]] for the full implementation reference: file layout, sync mechanism, CBQL date range extraction, caveats, and unfinished business.
+
+
 
 The **project note is the canonical session diary** — timedot blocks live inline under dated headings, not in a separate timelog file. The goal: an `hl` CBQL block in the reports note should aggregate those timedot blocks directly via `source:`, without requiring a separate `.journal` import.
 
