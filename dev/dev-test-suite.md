@@ -1,6 +1,6 @@
 ---
 title: test suite
-caption: "nb-web automated test strategy: hybrid pytest + .checks/ scripts, synthetic fixtures, isolated repo"
+caption: "nb-web automated test strategy: pytest + .checks/ scripts + Playwright, synthetic fixtures, isolated repos"
 toc: true
 processed: true
 ---
@@ -8,23 +8,24 @@ processed: true
 # NB-WEB TEST SUITE — STRATEGY
 
 > Developer documentation for nb-web. See [[docs:DEVELOPERS.md]] for the full index.
-> Status: #planned — strategy approved, implementation pending
+> Status: #wip — Layers 1/2 original scope complete (138 pytest tests), Layer 4 (Playwright) started 2026-07-06 with its first smoke test. Remaining work is growth (new areas as they're added, on both the pytest and Playwright sides) and the "Eventually"/"Multi-user" phases below, not a fixed P0–P2 list anymore.
 
 ---
 
 ## Philosophy
 
 The test suite extends the existing `.checks/` script philosophy into a formal
-automated layer, rather than replacing or duplicating it. Three layers, each with
+automated layer, rather than replacing or duplicating it. Four layers, each with
 a distinct job:
 
 ```
+Layer 4 — Playwright browser smoke tests        real JS behaviour (live server, disposable fixture)
 Layer 3 — .checks/ blocks in dashboard notes    production monitoring (live data)
 Layer 2 — pytest invoking .checks/ scripts      script contract verification (synthetic data)
 Layer 1 — pytest + Flask test client          backend logic (no server, no real data)
 ```
 
-Layer 3 already exists and works. The suite adds Layers 1 and 2.
+Layer 3 already existed and works. The suite added Layers 1 and 2 first (2026-07-05/06), then Layer 4 (2026-07-06) once the `main.js` split raised the cost of *not* having real JS coverage — see Layer 4 below for why the earlier "no headless browser" exclusion changed.
 
 **Key principle:** tests are executable specifications. The dev docs describe what
 `_can_access` promises and what `nb-check-front.sh` contracts. The test suite
@@ -99,18 +100,24 @@ or security-critical.** Everything else waits.
 | P0 | Shell scripts as black boxes (`.checks/*.sh` via subprocess) | Hybrid layer; validates the script contract with synthetic fixtures |
 | P1 | Constraints (`_load_constraints`, `_normalize_constraint`) | Drives Changes panel; two input formats; dot-notation skipping |
 | P1 | Settings migration (`_effective_setting`) | Just implemented; `.nb.md` wins, no fallback — must stay true |
+| P1 | CBQL (`api_hledger_cbql_query`) | Command allowlist + server-side path read of notebook data; destination-access boundary case — see [[.rules/access.md]] |
 | P1 | `/api/list` — pinning, tag_color, prepend_date, access filtering | Core list behaviour; several new fields just added |
-| P2 | `/api/note` — effective_access, effective_tests fields | Authoritative fields that frontend trusts |
+| P2 | `/api/note` — effective_access, effective_tests, effective_fm fields | Authoritative fields that frontend trusts |
 | P2 | Note creation — filename generation, template resolution | prepend_date logic, slug generation |
 
 ## What's Out of Scope (for now)
 
-- **JS / frontend** — no headless browser; too much setup for the value
 - **Rendering pipeline** — changes frequently, fragile to test at unit level
 - **Git operations** — slow, stateful, integration-only
 - **Plugin renderers** — belong in each plugin's own repo
 - **PTY / WebSocket** — separate concern, separate testing strategy
 - **hledger / cine plugin logic** — plugin repos own those tests
+
+**JS / frontend is no longer categorically out of scope** (was, until
+2026-07-06). "No headless browser, too much setup for the value" stopped
+being true the moment `main.js`'s upcoming split raised the stakes on
+knowing JS behavior actually works, not just that it parses. See Layer 4
+below — the value calculation flipped, not the difficulty.
 
 ---
 
@@ -118,20 +125,25 @@ or security-critical.** Everything else waits.
 
 ```
 ~/dev/nb-web-tests/
-  conftest.py                 ← NB_DIR patch, Flask client, tmp_nb fixture, user helpers
-  fixtures/
-    nb_md.py                  ← factory: build synthetic .nb.md content
-    notes.py                  ← factory: build note content with frontmatter
-    configs.py                ← factory: build folder/notebook config content
-  test_config_chain.py        ← _folder_config walk-up, _notebook_config, _merge_configs
-  test_access.py              ← _can_access, _effective_access, username, tech bypass
-  test_constraints.py         ← _load_constraints, _normalize_constraint, dot-notation
-  test_settings.py            ← _effective_setting: .nb.md wins, correct defaults
-  test_api_list.py            ← /api/list: pinning, tag_color, access filter, type filter
-  test_api_note.py            ← /api/note: effective_access, effective_tests in response
-  test_note_creation.py       ← prepend_date, slug, explicit filename, template vars
-  test_shell_scripts.py       ← nb-check-front.sh, nb-dirty.sh via subprocess + env
+  conftest.py                 ← NB_DIR patch, Flask client, tmp_nb fixture, user helpers  ✅
+  test_config_chain.py        ← _folder_config walk-up, _notebook_config, _merge_configs  ✅
+  test_access.py              ← _can_access, _effective_access, username, tech bypass     ✅
+  test_constraints.py         ← _load_constraints, _normalize_constraint                  ✅
+  test_settings.py            ← _effective_setting: .nb.md wins, correct defaults         ✅
+  test_cbql.py                ← api_hledger_cbql_query: allowlist, NB_DIR boundary,
+                                 destination-notebook access check                        ✅
+  test_shell_scripts.py       ← nb-check-front.sh, nb-dirty.sh, note-approved.sh,
+                                 note-context.sh via subprocess + env                      ✅
+  test_api_list.py            ← _list_notes: pinning, tag_color, access filter, ids        ✅
+  test_api_note.py            ← /api/note: effective_access, effective_checks,
+                                 effective_check_add, effective_xref, effective_fm         ✅
+  test_note_creation.py       ← prepend_date, slug, explicit filename, template vars,
+                                 dotfile creation, notebook ("dotfolder") creation         ✅
 ```
+
+(The `fixtures/` factory-module split sketched in an earlier draft of this doc
+never happened — fixture content lives directly in `conftest.py` and inline in
+each test file instead, which has worked fine at this scale.)
 
 ---
 
@@ -227,6 +239,72 @@ def test_check_front_no_default_type(tmp_nb):
     assert r.returncode == 0
 ```
 
+---
+
+## Layer 4: Playwright Browser Smoke Tests
+
+Lives in `~/dev/nb-web-tests/e2e/` (Node/Playwright, sibling to the Python
+suite in the same repo — same "test infra travels separately from the app"
+philosophy, different language runtime). Added 2026-07-06.
+
+**Why this layer exists when it explicitly didn't before:** Layers 1–3
+verify backend logic and script contracts; none of them can tell you
+whether `main.js` actually does the right thing in a real browser —
+`node --check` proves syntax, not behaviour. That gap was accepted as a
+reasonable tradeoff ("too much setup for the value") until the `main.js`
+split raised the stakes: refactoring an 8850-line file with zero behavioural
+safety net for the language it's written in is a different risk profile
+than refactoring around a well-tested backend. The setup cost didn't drop —
+the cost of *not* paying it went up.
+
+**How it stays isolated from real data:** `app.py` already reads `NB_DIR`
+and `NB_WEB_PORT` from the environment (`os.environ.get(...)`, no code
+changes needed). `playwright.config.js`'s `webServer` option builds a
+disposable synthetic `.nb/` fixture (`e2e/fixtures/build_fixture.py`, same
+shape as `conftest.py`'s but with a real `werkzeug` `password_hash` — e2e
+tests log in through the actual `/login` HTML form, not a session-injection
+shortcut, so the test user needs a real checkable password) in `/tmp`,
+launches `app.py` against it on a dedicated test port, and tears both down
+after the run. Zero contact with a real `~/.nb/` or a real dev server
+running on the default port.
+
+```javascript
+// playwright.config.js (sketch)
+webServer: {
+    command: [
+        `rm -rf ${NB_TEST_DIR}`,
+        `python3 fixtures/build_fixture.py ${NB_TEST_DIR}`,
+        `NB_DIR=${NB_TEST_DIR} NB_WEB_PORT=${NB_TEST_PORT} python3 ${NB_WEB_APP}/app.py`,
+    ].join(' && '),
+    url: `http://127.0.0.1:${NB_TEST_PORT}/login`,
+},
+```
+
+```javascript
+// tests/check-skip.spec.js (first real test, not a sketch)
+test('check_skip subtracts sys- while nb- survives', async ({ page }) => {
+    await login(page);
+    await openNote(page, 'home:check-skip-demo.md');
+    await expect(page.locator('.nb-test-block[data-query="nb-"]')).toHaveCount(1);
+    await expect(page.locator('.nb-test-block[data-query="sys-"]')).toHaveCount(0);
+});
+```
+
+Deliberately targeted at `_virtualTestPrefix`'s `check`/`check_add`/
+`check_skip` resolution — the exact piece of JS logic added the same day
+this layer was, with zero prior coverage. Verified real behaviour, not
+just DOM shape: the server log during a passing run shows exactly one
+`/api/check/glob?prefix=nb-` request and none for the skipped `sys-`
+family, confirming the browser genuinely only resolved the surviving
+family rather than the test happening to pass by coincidence.
+
+**Run:** `cd ~/dev/nb-web-tests/e2e && npm test`
+
+**Growth path:** one smoke test today, proving the harness end-to-end.
+Grows the same incremental way Layers 1/2 did — next candidates are
+whatever JS logic is about to be touched by the `main.js` split (see
+`claude:nb-web_mainjs-split-plan.md`), not a comprehensive up-front sweep.
+
 This is the bridge: the script's documented contract becomes an assertion.
 When `nb-check-front.sh` changes, the test catches regressions. When a new
 `.checks/` script is added, a corresponding test block is added here.
@@ -260,26 +338,33 @@ def test_can_access(user_level, note_access, nb_access, expected, ...):
 
 ```bash
 cd ~/dev/nb-web-tests
-pytest                          # all tests
+pytest                          # all tests (Layers 1-2)
 pytest test_config_chain.py     # one file
 pytest -k 'access'              # keyword filter
 pytest -v --tb=short            # verbose, short tracebacks
 pytest test_shell_scripts.py    # hybrid layer only
+
+cd e2e && npm test              # Layer 4 — Playwright, starts + tears down its own server
 ```
 
-No server running. No real `~/.nb/` data touched. Clean run every time.
+No server running (Layers 1-2). Layer 4 starts and tears down its own isolated
+server on a dedicated test port. No real `~/.nb/` data touched by any layer.
+Clean run every time.
 
 ---
 
 ## Growth Path
 
-| Phase | What gets added |
-|-------|----------------|
-| Now | conftest.py + test_config_chain + test_access + test_shell_scripts |
-| Soon | test_constraints + test_settings + test_api_list |
-| Later | test_api_note + test_note_creation |
-| Eventually | CI via Codeberg Actions on push to nb-web main |
-| Multi-user | Session/auth tests, per-user fixture variants |
+| Phase | What gets added | Status |
+|-------|----------------|--------|
+| Done | conftest.py + test_config_chain + test_access + test_shell_scripts | ✅ 2026-06-20ish |
+| Done | test_constraints + test_settings + test_cbql | ✅ 2026-07-05 (91 tests passing) |
+| Done | test_api_list + test_api_note | ✅ 2026-07-06 (123 tests passing) |
+| Done | test_note_creation (+ dotfile/notebook creation) | ✅ 2026-07-06 (138 tests passing — original scope complete) |
+| Done | Layer 4 — Playwright e2e harness + first smoke test (check_skip resolution) | ✅ 2026-07-06 |
+| Eventually | CI via Codeberg Actions on push to nb-web main (now needs to run both pytest AND Playwright) | 📋 |
+| Multi-user | Session/auth tests, per-user fixture variants | 📋 |
+| Growing | More Layer 4 smoke tests, prioritised by what the `main.js` split touches next | 📋 ongoing, not a fixed list |
 
 The suite grows with the project. P0 tests land first — the riskiest logic gets
 coverage before the easy paths. The hybrid layer grows in step with `.checks/`: every

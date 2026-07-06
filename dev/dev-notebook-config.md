@@ -38,6 +38,36 @@ deep merge — child dicts win over parent dicts key-by-key.
 | `_load_constraints(note_path)` | Returns merged constraint dict for a note path |
 | `_normalize_constraint(val)` | Converts rich dict or legacy string to JS widget string |
 
+### Two different resolution systems — don't conflate them
+
+There are actually **two separate mechanisms**, with different scope, and it's easy to assume a key goes through the full chain when it doesn't:
+
+| System | Reads | Scope | Used for |
+|--------|-------|-------|----------|
+| `_effective_setting(key)` | `~/.nb/.nb.md` **only** | Global, no notebook/folder cascade at all | Portable, machine-independent settings — `lang`, `codeblock_access` (as read by `_cb_write_allowed`) |
+| `_folder_config()` / `_notebook_config()` | global → notebook → folder, walked from the note up to notebook root | Full chain | Everything else below |
+
+A key that "should" cascade per-notebook but is actually read via `_effective_setting` won't — check which system a given `_effective_*`/`_collect_*` function actually calls before assuming a key cascades.
+
+### Cascade behaviour per key
+
+Within the full chain, keys don't all resolve the same way. Four distinct behaviours exist:
+
+| Behaviour | What happens | Example keys |
+|-----------|--------------|---------------|
+| **Override** (replace) | Deepest level that sets the key wins outright; shallower values are discarded for that key | `access:`, `check:`/`checks:`, `prepend_date:`, `default_type:`, `xref:` |
+| **Dict merge** | `_merge_configs` recurses into the dict — a deeper level adds/overrides individual entries without wiping the whole inherited dict | `constraints:`, `codeblock_access:` (global↔notebook↔folder, all recursively merged) |
+| **Cascading accumulate** (bespoke, not `_merge_configs`) | Every level's value is unioned together — never replaces, always adds. `check_add:` unions in; `check_skip:` unions in and is then subtracted from the resolved `(check ∪ check_add)` set at render time (`main.js` `_virtualTestPrefix`) | `check_add:`, `check_skip:` |
+| **Single-directory read** (no ancestor walk) | Read only from the current folder/notebook's own dotfile — never walks further up | `pinned:` (`_list_notes`'s `folder_pinned`), `cfg_skip:` (config-tree pruning only — unrelated to note rendering; see [[.rules/checks.md]] for why `check_add`/`cfg_skip` aren't the same pattern despite similar naming) |
+
+**`tag_color:` is a mixed case** — global↔notebook levels dict-merge via `_notebook_config()`'s `_merge_configs`, but a *note's own* `tag_color:` is a plain override of the whole dict (`_list_notes`: `meta.get('tag_color') or nb_tag_color` — not merged with the inherited notebook dict).
+
+**`access:` has extra resolution beyond plain override** — a note's `user: <username>` FM field inherits that user card's level (`_effective_access`), and non-level values (e.g. `access: djp`) become username locks (`_can_access`), bypassable only by `tech` level.
+
+**`_FM_BLOCK_KEYS` members** (`nav`, `toc`, `toc_min`, `fm`, `tw`, `hl`, `git`, `gallery`, `cfg`, `t`, `nb`, `tabs`, `journal`, `timedot`, `timelog_file`, `timedot_file`, `csv`, `theme`) resolve via the ordinary override chain, but are additionally exposed as `effective_fm` in `/api/note` — populated only for keys the note doesn't already declare itself, since the note's own value already wins in `meta`. This is override semantics plus a "don't restate what's already resolved" filter, not a distinct behaviour of its own.
+
+See [[.rules/checks.md]] § Conventions for the full `check:`/`check_add:`/`check_skip:` writeup, including why the accumulate pattern isn't generalised to every cascading key — it only earns its keep for list/set-valued override keys; dict-valued keys already merge for free, and scalars have no meaningful "add" or "skip."
+
 ### File convention
 
 Config files are **dotfiles named after what they configure**, living **inside** the
