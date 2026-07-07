@@ -115,7 +115,7 @@ within one round trip instead of N.
 perceived time is dramatically better. The user reads chapter 1 while chapter 2
 fetches.
 
-**Implementation target:** `_resolveInlineQueries` (line ~839 in main.js):
+**Implementation target:** `_resolveInlineQueries` (line ~1045 in main.js as of the 2026-07-06 modularization — line numbers drift with every extraction tier; grep for the function name rather than trusting this citation):
 
 ```javascript
 // Current — fires all at once:
