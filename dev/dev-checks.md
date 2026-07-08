@@ -249,6 +249,36 @@ The script is unaware of snooze state — the renderer handles it entirely.
 
 ---
 
+## Rendering behaviour — pending state and grouped display #pattern
+
+**No pending spinner.** Placeholder `.nb-test-block` divs (one per resolved `check:` token)
+start empty and are hidden via `.nb-test-block:empty { display: none; }` — nothing is shown
+while a check's fetch is in flight. A silent pass never becomes visible at all; a failure's
+output pops into place, once, at the block's existing position (top of the note body, where
+`_virtualTestPrefix` spliced the fences in). This replaced an earlier version that set a
+`⟳` spinner synchronously before the fetch — harmless for a real button, but for the common
+silent-auto-run case it meant every check flashed a line+spinner and then collapsed, even
+checks that were skipped for that note. (`plugins/nbweb-codeblocks.js` `_loadTestBlock`)
+
+**Grouped failures start collapsed.** A multi-script `check` block (dangling-dash glob or
+an explicit multi-line group) that produces failures renders a header row
+(`.nb-group-headrow`) — fold arrow, optional domain icon, "N of M checks failed", dismiss
+`×` pinned to the row's right edge via flex layout (not absolute positioning, which used to
+drift out of alignment against the bordered/padded group box). The list of individual
+failing scripts (`.nb-group-body`) starts **hidden** — click the header to expand it. This
+keeps a note with many independent check families from stacking a wall of expanded failures
+above the fold; each family collapses to one line until the user asks to see more.
+(`_runGroupTest`)
+
+**Domain icon hoisting.** `_checkDomainIcon(script)` is computed for every failing script in
+the group. If every failure shares the same icon (e.g. an `hl-` glob where several hledger
+checks fail), it's hoisted once onto the header line instead of repeated on every subtest
+row — a "12 of 23 failed" group doesn't need the same logo 12 times. Mixed-domain groups
+(explicit multi-script blocks combining prefixes) keep the per-row icons, since there the
+icon is the only thing distinguishing one failing script's family from another's.
+
+---
+
 ## nb-web automated test suite #planned
 
 Unit tests, integration tests, and CI pipeline documentation will live here when the
