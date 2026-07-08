@@ -10,7 +10,7 @@ toc: true
 
 ## Overview
 
-nb-web is a single Flask process (`app.py`) serving a single-page app (`index.html` + `main.js` + `nav.js`). The backend shells out to nb and git for all note operations — it keeps no database of its own. Notes live in `~/.nb/` as plain files, indexed by nb's `.index` files. A service worker caches the frontend for offline use; the cache key is the git commit hash, so deploying new code automatically invalidates old caches. Per-notebook preferences and app settings are stored in `~/.nb/nb-settings.json`.
+nb-web is a single Flask process (`app.py`) serving a single-page app. The frontend is a classic multi-`<script>` bundle, no build step: `main.js` holds the render-pipeline kernel (still being incrementally thinned via an ongoing extraction project, see `claude:nb-web_mainjs-split-plan.md`), alongside `nav.js`, `theme.js`, `nbweb.js` (plugin registry), and a growing set of extracted satellite modules (`terminal.js`, `dialog.js`, `drag-handles.js`, `note-actions.js`, `search.js`, `sync.js`, `plugins-page.js`, `notebooks-page.js`, `templates.js` as of 2026-07-07) — see `nb-web/CLAUDE.md`'s "Key files" table for the current authoritative list, since it changes as the extraction progresses. The backend shells out to nb and git for all note operations — it keeps no database of its own. Notes live in `~/.nb/` as plain files, indexed by nb's `.index` files. A service worker caches the frontend for offline use; the cache key is the git commit hash, so deploying new code automatically invalidates old caches. Per-notebook preferences and app settings are stored in `~/.nb/nb-settings.json`.
 
 ---
 

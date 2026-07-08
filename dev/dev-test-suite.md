@@ -8,7 +8,7 @@ processed: true
 # NB-WEB TEST SUITE — STRATEGY
 
 > Developer documentation for nb-web. See [[docs:DEVELOPERS.md]] for the full index.
-> Status: #wip — Layers 1/2 original scope complete (138 pytest tests), Layer 4 (Playwright) started 2026-07-06 with its first smoke test. Remaining work is growth (new areas as they're added, on both the pytest and Playwright sides) and the "Eventually"/"Multi-user" phases below, not a fixed P0–P2 list anymore.
+> Status: #wip — Layers 1/2 original scope complete (140 pytest tests), Layer 4 (Playwright) grown from its first smoke test (2026-07-06) to 19 tests across 11 spec files (2026-07-07), tracking the `main.js` satellite extractions and a couple of standalone kernel bug fixes. Remaining work is growth (new areas as they're added, on both the pytest and Playwright sides) and the "Eventually"/"Multi-user" phases below, not a fixed P0–P2 list anymore.
 
 ---
 
@@ -300,10 +300,45 @@ family rather than the test happening to pass by coincidence.
 
 **Run:** `cd ~/dev/nb-web-tests/e2e && npm test`
 
-**Growth path:** one smoke test today, proving the harness end-to-end.
-Grows the same incremental way Layers 1/2 did — next candidates are
-whatever JS logic is about to be touched by the `main.js` split (see
-`claude:nb-web_mainjs-split-plan.md`), not a comprehensive up-front sweep.
+**Growth, 2026-07-06/07:** grew from the one `check-skip.spec.js` smoke test
+to 11 spec files / 19 tests, one per `main.js` satellite extraction as the
+modularization split landed (`drag-handles`, `note-actions`, `search`,
+`sync`, `plugins-page`, `notebooks-page`, `templates`), plus
+`check-cascade.spec.js` for a standalone kernel bug fix (see
+`claude:mainjs-check-cascade-fix.md`) — proof the harness generalizes past
+its original single-purpose motivation. Each new spec drives the exact
+piece of JS wiring the paired commit touched, asserting on real rendered
+output (not just DOM presence), per the established rule: a test meant to
+catch "this cross-module wiring broke" must assert on the wiring's actual
+effect.
+
+**Critical fixture-isolation gotcha, found 2026-07-07:** the *pytest*
+side's `tmp_nb` fixture (`conftest.py`) only patches `app.NB_DIR` and
+derivatives — a Python-level `monkeypatch.setattr` that redirects the
+Flask app's own direct filesystem reads. It does **not** touch
+`os.environ`. Any code path that shells out to the real `nb` CLI binary
+(`run_nb()`, used for every write — add-note, notebook creation,
+filename-collision handling) inherits `os.environ` unchanged, and the real
+`nb` binary defaults `NB_DIR` to `$HOME/.nb` when the env var isn't set.
+Result: `test_note_creation.py`'s write-path tests were silently appending
+to files in the real `~/.nb/home` on every single pytest run, for as long
+as those tests existed — confirmed via ~50 accumulated stray files
+(`my_note.md` with dozens of repeated headings, etc.) in a real user's
+notebook. Fixed with one line: `monkeypatch.setenv('NB_DIR', str(nb))` in
+the same fixture. **Lesson for any future fixture that redirects state for
+code wrapping an external subprocess: patching Python globals is not
+sufficient in itself — the subprocess only sees `os.environ`, so the
+isolation variable needs an explicit `monkeypatch.setenv` too, verified by
+checking file counts in the real target before/after a test run, not
+assumed from the Python-level patch alone.** The Playwright/Layer-4 side
+was never affected — `playwright.config.js`'s `webServer` sets `NB_DIR` as
+a real OS-level environment variable before `app.py` even starts, so it
+correctly reaches every subprocess `app.py` spawns.
+
+**Growth path going forward:** same incremental model — next candidates
+are whatever JS logic is about to be touched (tier-3/tier-4 of the
+`main.js` split, see `claude:nb-web_mainjs-split-plan.md`), not a
+comprehensive up-front sweep.
 
 This is the bridge: the script's documented contract becomes an assertion.
 When `nb-check-front.sh` changes, the test catches regressions. When a new
@@ -362,9 +397,11 @@ Clean run every time.
 | Done | test_api_list + test_api_note | ✅ 2026-07-06 (123 tests passing) |
 | Done | test_note_creation (+ dotfile/notebook creation) | ✅ 2026-07-06 (138 tests passing — original scope complete) |
 | Done | Layer 4 — Playwright e2e harness + first smoke test (check_skip resolution) | ✅ 2026-07-06 |
+| Done | Layer 4 grows to 11 spec files / 19 tests — one per `main.js` satellite extraction + `check-cascade.spec.js` | ✅ 2026-07-07 |
+| Done | Critical fix: `tmp_nb` fixture wasn't isolating subprocess writes from the real `~/.nb` (see Layer 4 gotcha above) | ✅ 2026-07-07 |
 | Eventually | CI via Codeberg Actions on push to nb-web main (now needs to run both pytest AND Playwright) | 📋 |
 | Multi-user | Session/auth tests, per-user fixture variants | 📋 |
-| Growing | More Layer 4 smoke tests, prioritised by what the `main.js` split touches next | 📋 ongoing, not a fixed list |
+| Growing | More Layer 4 smoke tests, prioritised by what the `main.js` split touches next (tier-3/tier-4) | 📋 ongoing, not a fixed list |
 
 The suite grows with the project. P0 tests land first — the riskiest logic gets
 coverage before the easy paths. The hybrid layer grows in step with `.checks/`: every
