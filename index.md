@@ -246,6 +246,7 @@ The full documentation lives in the `docs` notebook — importable as `docs.nbz`
 | [[docs:import-export]] | .nbz archive format, import workflow |
 | [[docs:PLUGINS]] | Plugin architecture and development |
 | [[docs:KEYBOARD]] | All keyboard shortcuts |
+| [[docs:ASK-CLAUDE]] | The 💬 badge — AI documentation/reference help inside a note |
 
 ---
 

@@ -50,6 +50,7 @@ These plugins have their own repositories and installation steps:
 |--------|------|-------------|
 | NbWeb-hledger | `~/dev/nbweb-hledger` | Plain-text accounting — Canadian tax domain packs, Chart of Accounts wizard, inline journal entry |
 | NbWeb-cine | `~/dev/nbweb-cine` | Film production scheduling — stripboard, call sheets, storylines board |
+| NbWeb-claude | `~/dev/nbweb-claude` | Ask Claude — a 💬 badge for documentation/reference help, right inside a note. See [[docs:ASK-CLAUDE]] |
 | nb-quartz | `~/dev/nb-quartz` | CLI tool to turn any nb notebook into a Quartz static site (separate from the `nbweb-quartz` plugin) |
 
 ---
