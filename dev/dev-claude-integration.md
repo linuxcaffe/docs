@@ -77,18 +77,24 @@ Collapse behavior uses the plain `.nb-collapsed` CSS convention (`styles.css`: `
 Three things happen in the same `api_claude_ask` request, right after the `claude -p` JSON response is parsed — one combined operation, not three independent ones:
 
 ```python
-tokens, cost, hours = _extract_usage(payload)          # duration_ms, usage.*_tokens, total_cost_usd
-_log_agent_session(model, notebook, selector, session_id, tokens, cost, hours)
-_update_note_ai_stats(selector, tokens, session_id)     # if selector
+_ensure_note_ai_stats_baseline(selector)                          # before the subprocess call
+...
+tokens, cost, hours, context_pct = _extract_usage(payload, model) # duration_ms, usage.*_tokens, total_cost_usd, context window fill
+_log_agent_session(model, notebook, selector, session_id, tokens, cost, hours, context_pct)
+_update_note_ai_stats(selector, context_pct, session_id)          # if selector
 ```
 
-`_extract_usage` is the single source both writers read from — the ledger entry and the note's own cumulative total can never disagree, because they're computed once.
+`_extract_usage` is the single source every writer reads from — the ledger entry and the note's own snapshot can never disagree, because they're computed once. `context_pct` is input-side tokens only (`input + cache_creation + cache_read`, not output) against the model's context window (`_MODEL_CONTEXT_WINDOWS`) — that's "how full was the window for this turn," a different question from `tokens` (total cost of this call).
 
-**`_log_agent_session`** appends one `​```timedot` entry to `claude:accounting/agent_sessions.md` (machine-authored — contrast with the hand-curated `claude:accounting/dev_timelog.md`, which is the *interactive CLI session* log, not this plugin's). Pure append, own scoped git commit per call. Account `claude-modal:<model>`; comment carries `session:`/`notebook:`/`selector:`/`tokens:`/`cost:` as plain `;`-comments (not real timedot quantities — hledger's own parsing stays clean, a future reader/aggregator greps the comment text).
+**Two FM keys, deliberately namespaced `claude_status`/`claude_context`, not the generic `status`/`context`** — `status` is already a core nb-web FM key with its own meaning (a note's own lifecycle, e.g. `status: active`/`draft`); writing the bare key would silently clobber that on any note already using it (a real risk, caught before it caused damage).
 
-**`_update_note_ai_stats`** does one read → `_patch_fm_fields` → write → scoped commit on the note the call actually concerned: `tokens:` (cumulative — reads the note's current value, adds this call's delta), `status: initiated` (a deliberately minimal floor marker, not a lifecycle state), and `claude_ask: <session_id>` (when known). `_patch_fm_fields` is the same in-place FM-field-patcher used elsewhere in `app.py` (e.g. the `lock:` toggle) — updates named keys, preserves everything else, no `--overwrite`-shaped corruption risk.
+**`_ensure_note_ai_stats_baseline(selector)`** — called *before* the `claude -p` subprocess even runs. Writes `claude_status: initiated` unconditionally (a floor marker: "some claude interaction happened here," not a claim of progress). Nothing else, since neither `context_pct` nor `session_id` is known yet — this exists so an abandoned tab or a timeout still leaves a real trace instead of nothing.
 
-**List display**: `_list_notes` includes `tokens` in a note's list-item dict only when nonzero (`int(meta.get('tokens', 0) or 0)`). `main.js`'s list renderer shows it in place of the numeric ID badge when present (`note.tokens` truthy → tokens; else → `note.id`, unchanged).
+**`_log_agent_session`** appends one `​```timedot` entry to `claude:accounting/agent_sessions.md` (machine-authored — contrast with the hand-curated `claude:accounting/dev_timelog.md`, which is the *interactive CLI session* log, not this plugin's). Pure append, own scoped git commit per call. Account `claude-modal:<model>`; comment carries `session:`/`notebook:`/`selector:`/`tokens:`/`cost:`/`context:` as plain `;`-comments (not real timedot quantities — hledger's own parsing stays clean). This ledger is the **only** place token/cost totals live — deliberately no cumulative counter duplicated onto the note itself; querying the ledger is how you get a real total for a note, not a second bookkeeping system tracking the same fact. `context_pct` is logged per entry so a future richer view (a segmented history bar, one color per turn, reconstructed from these entries) doesn't need a schema change to exist.
+
+**`_update_note_ai_stats(selector, context_pct, session_id)`** does one read → `_patch_fm_fields` → write → scoped commit on the note the call actually concerned: `claude_context:` (a current-snapshot percentage, *overwritten* each call, not accumulated — there's nothing to sum, it's "how full is the window right now") and `claude_ask: <session_id>` (when known). `_patch_fm_fields` is the same in-place FM-field-patcher used elsewhere in `app.py` (e.g. the `lock:` toggle) — updates named keys, preserves everything else, no `--overwrite`-shaped corruption risk, and now creates a frontmatter block from scratch if the note has none at all (every plain `nb todo add` note is exactly this shape — confirmed real, this silently no-op'd before the fix).
+
+**List row**: `_list_notes` includes `claude_status`/`claude_context` in a note's list-item dict when present. `main.js`'s list renderer draws a thin colored bar along the item's top edge — length = `claude_context`%, color = `claude_status` (`working`→orange, `waiting`→red, `done`→green; anything else, including the `initiated` floor marker or free text a human types manually, stays grey — deliberate, richer colors need a real agent lifecycle behind them, not just a word in frontmatter).
 
 ---
 
