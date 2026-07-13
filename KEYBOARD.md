@@ -57,6 +57,16 @@ These work any time focus is not inside a text field.
 | `,` | Open Settings |
 | `.` | Toggle **extras** (frontmatter table + annotation foot) |
 
+**Setting a default instead of toggling every time:** a note or folder can declare its own preferred extras state with `ui_hide:` in frontmatter, instead of relying on `.`/the ◉ button each time you open it:
+
+```yaml
+ui_hide: fm              # hide just the frontmatter table
+ui_hide: annotation      # hide just the annotation foot
+ui_hide: fm,annotation   # hide both — the note opens exactly as if you'd pressed `.`
+```
+
+Set it directly on a note, or in a `.{folder}.md`/`.{notebook}.md` config file to cascade it to every note in that scope (see [[FOLDER-CONFIG]]) — handy for something like a screenplay folder where you always want a clean, chrome-free read. `.`/the button still works as a one-off override for the current note; it just won't stick past the next time you open a note, since the frontmatter setting is the actual default now.
+
 ---
 
 ## Adding Notes

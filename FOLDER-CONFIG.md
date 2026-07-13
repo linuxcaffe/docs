@@ -67,6 +67,8 @@ pinned: items.md         # note to open when navigating into this folder
 
 **`pinned:`** — filename of the note to open automatically when navigating into this folder (the "dashboard" note).
 
+**`ui_hide:`** — comma-separated list of extras to hide by default: `fm` (the frontmatter table), `annotation` (the annotation foot), or both (`fm,annotation`). Same cascade as everything else on this page — set it on one folder to apply it to every note underneath. The `.` key/◉ button in the preview toolbar still works as a one-off override for whatever note is currently open. See [[KEYBOARD#Global Shortcuts|Keyboard § Global Shortcuts]] for the full extras-toggle behavior.
+
 ---
 
 ## Constraints
