@@ -1,6 +1,6 @@
 ---
 title: frontmatter editor
-caption: Changes button + front codeblock — guided frontmatter editing with .constraints.md
+caption: FM button + front codeblock — guided frontmatter editing with .constraints.md
 processed: true
 toc: true
 ---
@@ -17,9 +17,11 @@ Three components work together:
 
 | Component | File | Role |
 |-----------|------|------|
-| `.constraints.md` | per-folder or notebook root | field → widget type mapping |
-| `GET /api/note/constraints` | `app.py` | walks up, merges, returns JSON |
-| Changes button + panel | `main.js` | toolbar button → form → save |
+| `.constraints.md` | per-folder or notebook root | field → widget type mapping (legacy source) |
+| `constraints:` in `.{foldername}.md` | folder config | same mapping, higher priority (migration path) — see below |
+| `GET /api/note/constraints` | `app.py` | merges both sources, normalizes to widget-type strings, returns JSON |
+| `GET /api/note/constraints-full` | `app.py` | folder-config `constraints:` only, keeps `required:` instead of dropping it — see "Required fields" below |
+| FM button + panel (`#nb-changes-btn`, labeled "FM") | `main.js` | toolbar button → form → save |
 | `front changes` codeblock | `nbweb-codeblocks.js` | inline alternative, same helpers |
 | `NbWeb.fmUtils` | `nbweb-codeblocks.js` | shared parseFields/patch/widget |
 
@@ -60,6 +62,33 @@ Flask walks from the note's directory up to the notebook root, merging files (fo
 
 ---
 
+## Folder-config `constraints:` — the current preferred path
+
+`.constraints.md` above is the **legacy** source. `_load_constraints` (`app.py`) merges it with a `constraints:` section inside the folder's own config dotfile (`.{foldername}.md` — the same file that already carries `type: dotfile`, and for a notebook root, whatever else that root config holds), and **folder config always wins** over `.constraints.md` for the same key — this is the migration path, not a competing convention. New schemas should be written here, not as a separate `.constraints.md` file:
+
+```yaml
+# preciousfinds.ca:items/.items.md
+---
+type: dotfile
+constraints:
+  status:
+    widget: select
+    values: [available, sold]
+    required: true
+  price:
+    widget: text
+    required: true
+  category:
+    widget: text
+---
+```
+
+**`values:` must be a real YAML list, not a bare comma-string.** `_normalize_constraint` does `','.join(str(v) for v in values)` — if `values` is written as `available,sold` (a plain YAML scalar string) rather than `[available, sold]`, that join iterates the string *character by character*, silently producing a garbled dropdown (`select a,v,a,i,l,a,b,l,e,...`). Caught live 2026-07-14 in exactly this shape — `_load_constraints` doesn't validate the type, it just iterates whatever it's given.
+
+**`required:`** is the one sub-key `/api/note/constraints` cannot round-trip — see next section.
+
+---
+
 ## API endpoint
 
 ```
@@ -78,6 +107,52 @@ Returns a flat JSON object:
 ```
 
 **Backend helper:** `_load_constraints(note_path: Path) → dict` in `app.py`. Called by `api_note_constraints()`. Processes root-first so deeper entries win.
+
+### `/api/note/constraints-full` — the `required:`-preserving sibling
+
+`_normalize_constraint` flattens every rich dict shape down to a bare widget-type string — `required:` (and anything else beyond `widget`/`type`/`values`) is simply dropped. That's correct for `/api/note/constraints`'s one consumer (the FM panel only needs to know *how* to render a field it's already showing), but it means nothing can ask "which fields does this schema require?" through that endpoint.
+
+`api_note_constraints_full()` answers that question — same `_normalize_constraint` widget-string values (can't drift from the FM panel's own rendering), paired with `required: bool` alongside each one:
+
+```
+GET /api/note/constraints-full?selector=preciousfinds.ca:items/gxx102.md
+```
+```json
+{
+  "status":   {"widget": "select available,sold", "required": true},
+  "price":    {"widget": "text", "required": true},
+  "category": {"widget": "text", "required": false}
+}
+```
+
+**Deliberately reads only the note's own immediate folder's `.{foldername}.md`** — not the full `_folder_config` cascade `_load_constraints` uses. `constraints:` is dict-valued, and dict-valued keys merge key-by-key across every config level (`_merge_configs` recurses into dicts rather than replacing wholesale — see the "Cascading config" pattern doc if one exists, or `.rules/checks.md`'s note on why `_add`/`_skip` semantics aren't needed for dict keys). Tried against the full cascade, an unrelated notebook-or-global-level `constraints:` entry for a completely different schema (e.g. a service-pack `client:`/`billing_type:` block) leaked into an `items/` folder's result — both incorrectly marked `required: true` for every item note, regardless of type. A folder-specific schema should show exactly what that folder declares, nothing inherited. If a future consumer genuinely needs the cascading/legacy-`.constraints.md`-merged behavior with `required:` preserved, that's new work, not something this endpoint currently does.
+
+Also carries the same absolute-path selector bypass `api_note()` has (`elif selector.startswith('/')`) — the original `/api/note/constraints` doesn't have this, which matters for testing: hitting it with a `notebook:path` selector shells out through `run_nb` to nb's own index, which won't know about files a test fixture wrote directly to a synthetic `tmp_nb`. Tests for this endpoint live in `nb-web-tests/test_constraints.py`.
+
+---
+
+## Three ways to fill in a note's fields
+
+As of 2026-07-14 there are three, not two, and they cover genuinely different gaps:
+
+1. **Direct Edit** — raw markdown/frontmatter editing. Always available, no schema needed.
+2. **FM button / `front changes` codeblock** (this doc, above) — schema-typed widgets, but only for fields **already present** in the note. `NbWeb.fmUtils.parseFields(raw)` iterates the note's own current frontmatter lines; a schema field the note never had isn't in that list, so it never gets a row.
+3. **A type-specific "fill in everything" modal** — shows every field a schema declares, required or optional, present or not, using `/api/note/constraints-full` to know what to show and which fields are required. First (and so far only) example: the item fields modal, `_itemFieldsModal` in `nbweb-hledger.js` — the "📝 Fields" button on the item specialty header (see `docs:dev/plugins/hledger/CLAUDE.md`). Reuses the exact same `NbWeb.fmUtils.widget`/`patch` helpers as the FM panel, so widget rendering and the save mechanism can't drift between the two UIs.
+
+**(3) only works because of a `fmUtils.patch()` fix, not a new save path.** `patch()`'s original behavior only ever matched and updated a field that already existed in the frontmatter — a missing key's regex simply never matched anything, so the update for that key silently no-op'd. That's *why* (2) can't fill in blanks: even if you built a form row for a genuinely-missing field, saving it would go nowhere. Fixed by falling through to append the key when the regex doesn't match (existing-key update path unchanged):
+
+```javascript
+for (const [key, val] of Object.entries(updates)) {
+    const re = new RegExp(`^([ \\t]*${escaped(key)}):[ \\t]*.*$`, 'm');
+    if (re.test(head)) {
+        head = head.replace(re, `$1: ${val}`);
+    } else {
+        head += `\n${key}: ${val}`;   // key didn't exist yet — append, don't drop
+    }
+}
+```
+
+This fixed the bug for **both** UIs — the FM panel could in principle now add a missing field too, if a future change ever built rows for schema fields it doesn't currently show.
 
 ---
 
@@ -149,7 +224,7 @@ Added to `#nb-preview-actions` in `index.html` — sits left of Edit in the grey
 
 **Flow:**
 
-1. Click **Changes** → `_toggleFmChangesPanel(note, btn)`
+1. Click **FM** → `_toggleFmChangesPanel(note, btn)`
 2. Parallel fetch: `GET /api/note` (for `raw` content) + `GET /api/note/constraints`
 3. `NbWeb.fmUtils.parseFields(raw)` extracts ordered field list (skips block scalars)
 4. `NbWeb.fmUtils.widget(key, value, constraint)` builds each input
@@ -173,7 +248,7 @@ NbWeb.fmUtils = {
 
 **`parseFields`** — uses `indexOf('\n---', 3)` (not regex) to locate the FM boundary, so the body is never ambiguous. Skips lines whose value is `|` or `>` (block scalar headers).
 
-**`patch`** — slices raw into `head` (opening `---` through FM content) and `tail` (`\n---` onward including body). Only patches `head`; concatenates `head + tail`. The body survives unchanged even if it contains `---` lines.
+**`patch`** — slices raw into `head` (opening `---` through FM content) and `tail` (`\n---` onward including body). Only patches `head`; concatenates `head + tail`. The body survives unchanged even if it contains `---` lines. Per-key: regex-replaces the line if the key already exists; **appends a new `key: value` line to `head` if it doesn't** (fixed 2026-07-14 — see "Three ways to fill in a note's fields" above; previously silently no-op'd for missing keys).
 
 **`widget`** — returns a DOM element with `data-fm-key` set for Save to collect. Checkbox returns `String(checked)` (`'true'`/`'false'`).
 
@@ -191,7 +266,7 @@ changes |Edit Resource
 
 The `front` codeblock dispatches to `_loadFrontChanges(el)` when the body starts with `changes`. Uses the same `NbWeb.fmUtils` helpers. Renders a collapsed button that expands to the same form inline.
 
-The toolbar Changes button covers the universal case; the codeblock is optional.
+The toolbar FM button covers the universal case; the codeblock is optional.
 
 ---
 
@@ -211,9 +286,16 @@ The toolbar Changes button covers the universal case; the codeblock is optional.
 
 ## Adding constraints to a new notebook
 
+**Preferred (folder config, current convention):**
+1. Add a `constraints:` section to the folder's own `.{foldername}.md` (or the notebook root's `.{notebook}.md` for notebook-wide fields)
+2. Mark genuinely required fields with `required: true` if you also want `/api/note/constraints-full` consumers (a fill-in-blanks modal, a check script) to know about them — see "Three ways to fill in a note's fields" above
+3. `values:` must be a YAML list (`[a, b, c]`), not a bare comma-string — see the gotcha above
+4. No restart needed — constraints are fetched live per note
+
+**Legacy (still supported, lower priority):**
 1. Create `~/.nb/<notebook>/.constraints.md` with relevant fields
 2. Optionally add folder-scoped `.constraints.md` for subfolder-specific dropdowns
-3. No restart needed — constraints are fetched live per note
+3. Folder-config `constraints:` for the same key will override this if both exist
 
 ## Access control
 

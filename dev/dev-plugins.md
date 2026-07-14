@@ -150,6 +150,56 @@ The richer API for plugins that provide multiple view modes for their note types
 
 When a notebook has a multi-renderer module active, `getPreviewRenderers()` returns the matching renderers and the toolbar shows toggle buttons. The single `previewRenderer` fallback runs *after* the multi-renderer array when no array entry claims the note — this is how specialty headers appear on cine notes whose type isn't scene/shot/storyline.
 
+### `window.NbSpecialty` — embedding a specialty header instead of competing for the note
+
+`nbweb-specialty.js` (core) owns typed-note headers (icon, pills, nav popup, per-type action bar) for any `type:` registered in its internal `_cfg`. It exposes a small public API other plugins call directly, **not** through `registerModule()`:
+
+```javascript
+window.NbSpecialty = {
+    cfg: {...},                          // type -> {icon, label}, read-only in practice
+    register(type, config) { ... },      // add a type: register('item', {icon: '🏷️', label: 'Item'})
+    getActions: (note) => '',            // overridable: fn(note) => HTML string for the action bar
+    renderHeader: (note) => '...',       // fn(note) => header HTML string only (no body)
+};
+```
+
+**`register(type, config)`** adds an icon/label to `_cfg`. This alone makes the type show up in the specialty nav popup and get the generic status/billing_type/client/platform pills — but by default it *also* makes `nbweb-specialty.js`'s own `previewRenderer` claim any note of that type (via `previewRendererDetect: note => !!_cfg[note.type]`), competing with any other plugin's `previewRenderer` for the same note through the ordinary multi-renderer toggle described above.
+
+**`getActions`** is a single global slot, not additive — whichever plugin sets it last wins for every type. There's no per-type registration for it. By convention, one plugin ends up owning it for a related cluster of types (`nbweb-hledger.js` owns `invoice`/`quote`/`reports`/`item` — money-tracking actions — even though `item`'s type registration itself lives in `nbweb-quartz.js`, the shop-domain plugin). If you need actions for a new type, either extend the existing `getActions` function (add another `if (note.type === 'yourtype') return ...` branch) or, if nothing has claimed it yet, set it fresh — but be aware you may be overwriting another plugin's actions if load order runs after yours.
+
+**`renderHeader(note)`** returns *only* the header HTML — no pills-plus-body concatenation, no competing `previewRenderer`. This is for a plugin that already has its own body renderer (an existing `previewRenderer`/`previewRenderers` entry) and wants the specialty header's pills/actions/nav-popup embedded into its own output, instead of losing the note to a second, separately-toggled specialty view.
+
+```javascript
+// nbweb-quartz.js's item card renderer
+function _renderQuartzNote(note) {
+    const isItem = note.selector && /:items\//.test(note.selector);
+    const specialtyHeader = isItem ? (window.NbSpecialty?.renderHeader?.(note) ?? '') : '';
+    return specialtyHeader + `<div class="nb-item-card">...</div>`;
+}
+```
+
+**Registration timing matters.** `register()` mutates a shared object that must already exist — if your plugin calls it at script top level (not inside a function), and your script happens to load before `nbweb-specialty.js` (both are `@type core`, loaded in roughly alphabetical file order — a plugin whose name sorts earlier loads first), `window.NbSpecialty` won't exist yet and the call silently no-ops. Register lazily instead, the first time a note of that type actually renders:
+
+```javascript
+let _registered = false;
+function _ensureRegistered() {
+    if (_registered || !window.NbSpecialty) return;
+    window.NbSpecialty.register('item', { icon: '🏷️', label: 'Item' });
+    _registered = true;
+}
+// ... call _ensureRegistered() from inside the render function, not at script top level
+```
+
+**Worked example — how `item` actually uses all three pieces** (2026-07-14, the preciousfinds.ca Sales pack): `nbweb-quartz.js` registers the `item` type lazily (timing fix above) and calls `renderHeader()` from inside its own card renderer (embedding, not competing) — but *excludes* `item` from `nbweb-specialty.js`'s own `previewRendererDetect`/`previewTypes`, since a second full-page specialty view of the same note would just be a redundant toggle option nobody needs once the header is embedded:
+
+```javascript
+// nbweb-specialty.js
+previewRendererDetect: note => !!_cfg[note.type] && note.type !== 'item',
+previewTypes: Object.keys(_cfg).filter(t => t !== 'item'),
+```
+
+`item` stays a real `_cfg` entry (pills/getActions/nav-popup all still need it) — it just doesn't also compete for the note as a second top-level renderer. `nbweb-hledger.js` separately extends `getActions` with an `item` branch (Sold/Summary/Fields buttons) and its own `_extractLedgerTransactions`/`_itemFieldsModal` logic — none of which nbweb-quartz.js or nbweb-specialty.js need to know about; the whole thing composes through the two-function `NbSpecialty` surface above. Full design context: `claude:nbweb-hledger_plugin_design.md` and `docs:dev/plugins/hledger/CLAUDE.md`.
+
 ### `sortOptions`
 
 Adds custom entries to the sort dropdown (⇅) when the plugin's notebook is active.
