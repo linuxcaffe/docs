@@ -84,7 +84,7 @@ hl-budget-has-periodic          ← must pass before ## Periodic transactions ma
 hl-budget-runs                  ← must pass before the bal --budget block is useful
 ```
 
-```hledger
+```hl
 bal --budget -p thismonth
 ```
 ```
