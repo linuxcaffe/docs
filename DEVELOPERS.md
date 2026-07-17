@@ -27,6 +27,7 @@ nb-web is a Flask + vanilla JS web interface for [nb](https://github.com/xwmx/nb
 | [[docs:dev/dev-sync.md]] | Pull-then-push flow, `git-wire` internals, status API |
 | [[docs:dev/dev-storage.md]] | Git topology: undercarriage repo, branch-per-notebook, restore sequence |
 | [[docs:dev/dev-checks.md]] | Writing and running nb-web check scripts via the `check` codeblock |
+| [[docs:dev/dev-check-sweep.md]] | `check-sweep.py` — bulk check triage across notebooks, cron-driven ambient sweeping, execution dedup |
 | [[docs:dev/dev-test-suite.md]] | Automated test suite strategy: hybrid pytest + `.checks/` scripts, synthetic fixtures, isolated repo |
 | [[docs:dev/dev-contributing.md]] | Reporting issues, submitting changes, running from source |
 | [[docs:dev/dev-xref.md]] | Stemming algorithm, prefix matching, `/api/xref` reference, `forceAll()` book behavior |
