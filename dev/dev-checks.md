@@ -117,7 +117,14 @@ exit 1
 
 ---
 
-## Virtual checks — `checks:` config key #implemented #pattern
+## Virtual checks — `check:`/`check_add:`/`check_skip:` config keys #implemented #pattern
+
+> #gotcha This section previously documented a `checks:` (plural) config key throughout. That
+> field name is legacy — still read as a fallback if `check:` (singular) is entirely absent
+> (`nb_meta.get('check') if nb_meta.get('check') is not None else nb_meta.get('checks')`,
+> `app.py`), but `check:` is what every current example, script, and the `check_add:`/
+> `check_skip:` fields below actually use. Corrected 2026-07-17 while documenting
+> `check-sweep.py` — see [[docs:dev/dev-check-sweep.md]].
 
 Virtual checks inject Type-1 check fences automatically at render time. No fence needed in
 the note body — the config chain provides them.
@@ -126,20 +133,37 @@ the note body — the config chain provides them.
 
 ```yaml
 # In ~/.nb/.nb.md (global — fires on every note everywhere)
-checks: nb-
+check: nb-
 
 # In ~/.nb/accts/.accts.md (notebook — fires on every accts: note)
-checks: hl-entry-day
+check: hl-entry-day
 
 # In ~/.nb/accts/guide/.guide.md (folder — fires on every note in guide/)
-checks: hl-
+check: hl-
 
 # In any individual note's frontmatter (per-note override)
-checks: hl-entry-week
+check: hl-entry-week
 ```
 
 Resolution: note FM wins, then folder config walk-up (innermost first), then notebook
 config, then global. Same chain as `access:`.
+
+### `check_add:` and `check_skip:` — union and subtract, never override
+
+`check:` at any level in the chain **replaces** whatever came before it — the note FM's own
+`check:` wins outright over the notebook's, with no way to add to it. `check_add:` and
+`check_skip:` exist for exactly that case: both **union across every level of the chain**
+(global + notebook + folder + note), rather than the innermost value replacing outer ones.
+
+```yaml
+# notebook dotfile
+check: [hl-, syntax-]
+check_skip: [hl-]   # union from any level; a note in this notebook can ALSO add its own check_skip:
+```
+
+`check_skip:` supports the same trailing-dash family-prefix matching as `check:` itself — a
+skip entry ending in `-` matches any token that equals it or starts with it, not just an exact
+name.
 
 ### Values
 
@@ -148,47 +172,50 @@ config, then global. Same chain as `access:`.
 | `hl-` | All scripts with prefix `hl-` (trailing-dash glob) |
 | `hl-entry-day` | Exact script name |
 | `[nb-, hl-]` | Multiple prefixes — one Type-1 fence per entry |
-| `checks:` (bare) | `null` — suppresses inherited checks |
-| `checks: ""` | Empty string — suppresses inherited checks |
+| `check:` (bare) | `null` — suppresses inherited checks |
+| `check: ""` | Empty string — suppresses inherited checks |
 
 ### Suppression
 
-A child config or note can silence inherited checks by setting `checks:` to null or empty:
+A child config or note can silence inherited checks by setting `check:` to null or empty:
 
 ```yaml
 # In a folder config — suppresses notebook-level checks for this folder only
-checks:
+check:
 # or equivalently (see gotcha below):
-checks: ""
+check: ""
 ```
 
-> #gotcha **Prefer `checks:` (bare) over `checks: ""`** — the manual YAML fallback parser
-> (used when pyyaml is unavailable) reads `checks: ""` as the literal string `'""'`, which
+> #gotcha **Prefer `check:` (bare) over `check: ""`** — the manual YAML fallback parser
+> (used when pyyaml is unavailable) reads `check: ""` as the literal string `'""'`, which
 > is not empty and not null. The suppression check misses it and tries to run `""` as a
-> script name. `checks:` (bare null) parses to `''` in both paths and suppresses reliably.
+> script name. `check:` (bare null) parses to `''` in both paths and suppresses reliably.
 
 ### How it works (frontend)
 
 `_virtualTestPrefix(note)` in `main.js`:
-1. Skips if `note.meta.type === 'dotfile'` — config files are the source, not consumers
-2. Reads `note.meta.checks` (per-note FM) if present; else `note.effective_checks` (from backend)
-3. Normalises to array of prefix strings; empty/null → returns `''`
-4. Returns `` ```check\n{prefix}\n``` `` fences joined by newline, prepended to `note.body`
+1. Reads `note.meta.check` (per-note FM) if present; else `note.effective_checks` (from backend)
+2. Unions in `note.meta.check_add`/`note.effective_check_add` from every level of the chain
+3. Subtracts `note.meta.check_skip`/`note.effective_check_skip` (trailing-dash family matching)
+4. Normalises to array of prefix strings; empty/null → returns `''`
+5. Returns `` ```check\n{prefix}\n``` `` fences joined by newline, prepended to `note.body`
 
 The fences are prepended to `note.body` before `_renderMarkdown`. The codeblock renderer
 hydrates them as Type-1 blocks (auto-run, silent on pass).
 
 ### How it works (backend)
 
-`GET /api/note` returns `effective_checks: nb_meta.get('checks')` where `nb_meta` is the
-full `_folder_config(notebook, fpath)` result — the same merged chain used for
-`effective_access`. Both fields travel together in the note response.
+`GET /api/note` returns `effective_checks` (`nb_meta.get('check')`, falling back to the legacy
+`nb_meta.get('checks')` only if `check` is entirely absent), `effective_check_add`, and
+`effective_check_skip`, where `nb_meta` is the full `_folder_config(notebook, fpath)` result —
+the same merged chain used for `effective_access`. All three fields travel together in the note
+response.
 
 ### Type 1 vs Type 2
 
 Virtual checks are always **Type 1** (auto-run, no label, silent on pass). They are
 invisible when passing — they only surface on failure. This is deliberate: a dashboard
-with `checks: hl-` should look clean 99% of the time and only shout when something breaks.
+with `check: hl-` should look clean 99% of the time and only shout when something breaks.
 
 If you need a labeled button (Type 2), put the block explicitly in the note body.
 
