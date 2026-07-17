@@ -1,6 +1,6 @@
 ---
 title: wikilinks
-caption: Wikilink resolution algorithm, _wikilinkCache, term: link implementation
+caption: "Wikilink resolution algorithm, _wikilinkCache, term: link implementation"
 toc: true
 ---
 
