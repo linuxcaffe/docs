@@ -242,7 +242,7 @@ Combined with the `config:` field convention, an admin dashboard note can list
 every config file across all notebooks:
 
 ````
-```front
+```fm
 read: admin
 config: | Config files
 ```

@@ -547,7 +547,7 @@ Live codeblocks support per-type `read` and `write` level gates. Defaults live i
 Add `read:` or `write:` lines anywhere in the fence body — they're stripped before the query reaches the renderer:
 
 ````markdown
-```hledger
+```hl
 read: office
 write: tech
 bal expenses --monthly

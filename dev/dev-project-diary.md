@@ -65,7 +65,7 @@ This file is written once and never rewritten by the system. It holds:
 1. The `P` price directive (commodity conversion rate)
 2. `include` directives for all `-gen` sub-journals
 
-```hledger
+```hl
 ; nathan.journal — master project ledger
 ; All sub-journals are auto-synced from note blocks on save. Edit source blocks, not these files.
 
@@ -128,7 +128,7 @@ _ensure_journal_stubs(td.parent / f'{master_stem}.journal')
 2. Groups entries by date
 3. Emits one double-entry hledger transaction per day:
 
-```hledger
+```hl
 2026-06-29 work
     Assets:AR:gbct:nathan        105.00 CAD
     Income:Services:Hourly:gbct:nathan

@@ -259,7 +259,7 @@ NbWeb.fmUtils = {
 An alternative entry point — places the editor at a specific point in the note body, useful in long notes:
 
 ````markdown
-```front
+```fm
 changes |Edit Resource
 ```
 ````
