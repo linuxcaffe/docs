@@ -1339,6 +1339,12 @@ csv: materials 12
 
 The value is the catalog token. An optional integer sets the visible row limit before scrolling (default 8). The FM strip shows **description left, cost right**, grouped by the catalog's headings. Clicking a group heading opens the catalog note.
 
+#### Opening a `.csv` file directly
+
+This is a different, simpler path than the codeblock above — any `.csv` file anywhere in a notebook opens as a full-pane spreadsheet editor automatically, no fence needed. Column widths are set from actual content (same as the codeblock form), and the grid fills the whole preview pane.
+
+**Header row** is a manual toggle (**First row is header**, in the toolbar next to Save/Cancel) — off by default, every time you open the file. It's not remembered between sessions and never auto-detected: a raw export file (bank statement, etc.) often has no header row at all, and guessing wrong would risk quietly turning a real data row into a column title. Check it to pin row 1 as column headers and pull it out of the data grid; uncheck to put it back. Toggling preserves any edits you've already made — it doesn't reload the file.
+
 ---
 
 Developer internals and script authoring: [[docs:dev/dev-codeblocks.md]]

@@ -573,6 +573,83 @@ if (key === 'check') continue;
 
 ---
 
+## csv block + sheet-file editor internals
+
+Two genuinely separate code paths render a jspreadsheet grid — don't conflate them:
+
+| | Fenced ` ```csv ` block | Standalone `.csv` **file** |
+|---|---|---|
+| Trigger | A note body contains a `csv` fence | `classify()` maps `.csv` extension → `type: sheet` (`app.py`) |
+| Renderer | `_renderCsvBlocks` / `_renderCsvTmplBlock` (`main.js`) | `_renderSheet` / `_sheetInitGrid` (`main.js`) |
+| Header row | Always row 1, unconditionally (the template form's `contents` sentinel splits header/footer — see `#csv — Spreadsheet Table` above) | Manual toggle only, see below — never assumed |
+| Host element | `.nb-csv-block` inline in `#nb-preview-content` | `#nb-sheet-host`, the note's *entire* preview content |
+
+**Column width — `_csvColumnWidths(rows, headerRow = [])`** (shared by both paths): width
+per column is the longest cell in that column (header included when present), clamped to
+`[_CSV_MIN_PX=60, _CSV_MAX_PX=400]`, plus `wordWrap: true` on every column. Fixed 2026-07-21 —
+previously every column was hardcoded to `width: 120` regardless of content, and the sheet-file
+editor set no `columns` option at all (library default). `_csvAutoColumns(headerRow, dataRows)`
+is the header-bearing wrapper around the same helper for the fenced-block path.
+
+**Height — `.nb-toolbar-only` on `#nb-editor-wrap`.** The sheet-file editor reuses
+`#nb-editor-wrap` (normally the *full* inline markdown editor — toolbar + textarea, `flex: 1`
+sibling of `#nb-preview-content`) purely to show its Save/Cancel buttons, while leaving
+`#nb-preview-content` visible too (unlike real edit mode, which hides it outright — see
+`_setMode`-equivalent around `main.js:3752`). Two visible `flex: 1` siblings split the pane
+50/50 regardless of content — this silently capped the grid at half the preview pane's height
+for any file, no matter its row count, until fixed 2026-07-21. `_renderSheet` now adds
+`nb-toolbar-only` when opening (CSS: `flex: 0 0 auto`, hides `#nb-editor-area`); the
+navigate-away cleanup block in `renderPreview` (`note.type !== 'sheet' && _sheetInstance`)
+removes it again.
+
+**`minDimensions: [6, 8]` — empty-fallback only, never for real data.** Originally applied
+unconditionally, padding *every* save with trailing empty cells for any file narrower than 6
+columns or shorter than 8 rows — hit on every single save of a real 5-column bank-export file.
+Now only passed when `dataRows.length` is 0 (a genuinely blank new `.csv`, where the padding
+gives a workable empty grid to type into); real data gets no artificial minimum.
+
+**"First row is header" toggle — manual, off by default, never persisted.** `.csv` files have
+no frontmatter, so there's nowhere in the file itself to record "this file has a header" —
+`_sheetHeaderMode` always starts `false` on every open, regardless of what a previous session
+chose for that same file. Deliberately *not* auto-detected: the motivating real file
+(`djp:accounting/csv/accountactivity.csv`, a raw bank export) has no header row at all, and a
+wrong auto-guess would silently pull a real transaction row out of the data grid — worse,
+`_saveSheet` would then write it back that way too, permanently losing that row's data on the
+next save. Toggling reconstructs the full row set from the *live* grid via `ws.getData()` (not
+by re-reading the original note content), so in-progress edits survive a toggle in either
+direction; `_sheetHeaderRow` holds the header cell values while active so unchecking can
+restore them as a normal data row rather than discarding them.
+
+**Noted for later, not built:** a sidecar (same idea as annotation `.md` sidecars, or a
+per-folder dotfile entry) recording `header_row: true` per `.csv` file, consulted on open to
+pre-check the toggle — would remove the "re-check it every time" friction for files that
+consistently do have a header, without reintroducing the auto-detect risk above (still an
+explicit, stored choice, just persisted instead of re-made every open).
+
+### jspreadsheet-ce feature inventory (v5.0.4, `vendor/jspreadsheet.min.js`)
+
+None of the below are currently wired up anywhere in nb-web — confirmed present in this exact
+vendored build (`grep`'d the minified source directly, not just documented upstream) while
+investigating the width/height fixes above, 2026-07-21. Reference for future spreadsheet-control
+work rather than an implementation:
+
+| Option | What it does |
+|---|---|
+| `wordWrap` | Per-column: wrap instead of clip. Now used by both csv paths above. |
+| `columnResize` | User drag-to-resize column boundaries. Likely already on by default (library default, not explicitly set either way here) — verify in-browser before assuming it needs wiring. |
+| `columnDrag` | User drag-to-reorder columns. |
+| `columnSorting` | Click header to sort. |
+| `tableOverflow` / `tableWidth` | Constrain the grid to a fixed width with its own horizontal scroll, instead of growing to fit all columns. |
+| `freezeColumns` | Pin N leftmost columns while scrolling horizontally. |
+| `filters` | Per-column filter dropdowns in the header row. |
+| `search` | Built-in search box above the grid. |
+| `pagination` | Row count per page, with page controls — relevant for something like the 787-row `accountactivity.csv`. |
+| `toolbar` | A formatting/action toolbar above the grid (bold, colors, etc. depending on config). |
+| `contextMenu` | Customize the right-click menu (currently library default — insert/delete row/col, copy/paste). |
+| `allowExport` | Export-to-file button. |
+
+---
+
 ## mkd-codeblocks
 
 `NbWeb-codeblocks` is nb-web's implementation of the [mkd-codeblocks](https://github.com/linuxcaffe/mkd-codeblocks) project — a collection of independently distributable live-query widgets designed as self-contained drop-ins for any markdown note app.
