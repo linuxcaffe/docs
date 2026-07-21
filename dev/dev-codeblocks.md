@@ -407,6 +407,54 @@ The `note` level (appended last, highest priority) is the currently open note's 
 
 ---
 
+## sysadmin block internals
+
+User-facing syntax: [[docs:CODEBLOCKS#sysadmin — Admin Dashboard]].
+
+Three modes, dispatched by `_dispatchSysadminBlock(el)` on `el.dataset.mode`
+(`'users'` → `_loadSysadminUsersBlock`, `'crontab'` → `_loadSysadminCrontabBlock`,
+else → `_loadSysadminBlock`) — three separate loader functions, not one
+parameterized call, since the three modes render structurally different UIs
+(read-only dashboard vs. an editable table vs. a crontab listing).
+
+**Bare mode — `GET /api/sysadmin`:** builds notebook inventory by iterating
+`NB_DIR` directly (dotfile presence, `git remote get-url origin` /
+`git rev-parse --abbrev-ref HEAD` for wired/remote/branch, `.checks/`
+presence, `*.md` count via `rglob`), reads `nb-settings.json` for the plugin
+list, and checks existence of a fixed set of key config file paths. All
+filesystem/subprocess work, no caching — expect this to be slower than other
+dashboard blocks on a large notebook tree.
+
+**`users` mode — `GET /api/users` (not `/api/sysadmin`)**: a genuinely
+different endpoint from the other two modes, and a write-capable one — level
+change (`PUT /api/users/<username>`), delete (`DELETE /api/users/<username>`),
+create (`POST /api/users`, requires username+password). `_SA_LEVELS` (JS) is
+the fixed `['guest', 'user', 'office', 'admin', 'tech']` ladder used for the
+level `<select>`.
+
+**`crontab` mode — `GET /api/sysadmin/crontab`**: shells to `crontab -l` and
+parses schedule/command/description (a contiguous run of `#`-comment lines
+immediately above an entry becomes its description — same convention
+`check-sweep`'s own crontab entry already follows). No crontab at all
+(`crontab -l` exits 1) is treated as a normal empty state, not an error.
+
+**Access — all three backend-enforced independently, not just note-level:**
+`api_sysadmin()` and `api_sysadmin_crontab()` both do
+`if not _level_gte(user.get('level', ''), 'tech'): return jsonify(error='forbidden'), 403`
+directly; `/api/users`'s own endpoints enforce `admin`. **`sysadmin` is not
+currently in `codeblock_access`** (the `_cbAccess` schema documented under
+"Access gates — implementation" below) — so there's no frontend-level
+early-deny/silent-removal for it the way `hl`/`chart`/etc. get; a sub-`tech`
+user hitting the block gets the loader's own inline "requires X level"
+message (or, for bare mode, whatever `/api/sysadmin`'s 403 renders as) rather
+than `_cbDenyRead`'s silent `el.remove()`. Not a security gap (the backend
+check is the real lock either way, and every current instance of this block
+lives on a note already gated `access: tech`) — just a UX inconsistency with
+every other gated block type, worth an entry in `codeblock_access` if this
+block ever ships on a page a non-tech user can otherwise reach.
+
+---
+
 ## test glob internals
 
 User-facing syntax: [[docs:CODEBLOCKS#test — Embedded Assertions]] § Form 4.
