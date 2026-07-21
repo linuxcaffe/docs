@@ -620,11 +620,15 @@ by re-reading the original note content), so in-progress edits survive a toggle 
 direction; `_sheetHeaderRow` holds the header cell values while active so unchecking can
 restore them as a normal data row rather than discarding them.
 
-**Noted for later, not built:** a sidecar (same idea as annotation `.md` sidecars, or a
-per-folder dotfile entry) recording `header_row: true` per `.csv` file, consulted on open to
-pre-check the toggle — would remove the "re-check it every time" friction for files that
-consistently do have a header, without reintroducing the auto-detect risk above (still an
-explicit, stored choice, just persisted instead of re-made every open).
+**Planned, not built:** persist `header_row` via the file's own annotation sidecar
+(`.{filename}.annotations.md`) — not a new mechanism, this is the *existing* one:
+`_merged_meta()` already treats a frontmatter-incapable file's (which `.csv` is) annotation
+sidecar as its effective `meta`, already returned by `GET /api/note`. Scoped up into a
+bigger idea 2026-07-21 (djp, thinking about the hledger CSV-import workflow `tutorial:`'s own
+bundled lessons teach): the same sidecar could carry real import context — source, date
+range, target journal, `.rules` file path, last-imported timestamp — not just the header
+toggle. Full field convention and phased build plan:
+`claude:csv_import_sidecar_hledger_plan_2026-07-21.md`.
 
 ### jspreadsheet-ce feature inventory (v5.0.4, `vendor/jspreadsheet.min.js`)
 
