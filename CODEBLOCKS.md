@@ -956,6 +956,39 @@ Zoom out → read the coloured outlines to understand wiring at a glance → hov
 
 ---
 
+### sysadmin — Admin Dashboard
+
+````markdown
+```sysadmin
+```
+````
+
+A dashboard block for installation-wide admin tasks — notebook inventory, plugin list, key config file checklist, and (via its two modes below) user management and the live crontab. **Requires `tech` level** — every mode's own backend endpoint checks this independently of any page the block happens to sit on, so it's a real access lock, not just a note-level convention. `djp:sysadmin.md` is the reference installation of this block; copy its structure for a second admin dashboard rather than starting from scratch.
+
+**Bare form** (no argument) — notebook inventory (dotfile presence, wired/remote/branch, active plugins, has `.checks/`, note count), the installed plugin list, and a checklist of key config files (global dotfile, manifest, checks index, guards rule, tools index, `nb-settings.json`) with existence ticks. Click a notebook name to open its dotfile.
+
+**`users` mode** — a full user-management panel, not just a read-only list:
+
+````markdown
+```sysadmin
+users
+```
+````
+
+Lists every account (username, access level, display name, notebook scoping). Change a user's level inline via the dropdown; delete a user (except yourself) via 🗑; **+ Add user** creates a new account with username/name/level/password. Backend (`/api/users`) enforces `admin` level independently — one level below the `tech` this block type itself defaults to, so in practice anyone who can see this block can also use it.
+
+**`crontab` mode** — the real, current output of `crontab -l` for the user running nb-web, parsed into schedule / command / description (a leading `#`-comment line above an entry is taken as its description — the same convention `check-sweep`'s own cron entry uses):
+
+````markdown
+```sysadmin
+crontab
+```
+````
+
+**Known gap**: `djp:sysadmin.md`'s own page carries a `(#TODO break it up and fix config links)` note — some of the "Key config files" links in the bare-form checklist are stale. Worth fixing before building a second admin dashboard from it as a template.
+
+---
+
 ### toc — Table of Contents
 
 `toc` is FM-mode only — declare `toc: true` in frontmatter; there is no fenced body form.
