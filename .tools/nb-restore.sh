@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
 # nb-restore.sh — Bootstrap the nb ecosystem on a new machine.
-# Idempotent: each phase checks "already done?" before acting — safe to re-run.
+# DANGEROUS: full-machine bootstrap. Code of last resort — only for a
+# genuinely bare machine with nothing on it yet. NOT a repair tool: if
+# ~/.nb or ~/dev/nb-web already exist, something more targeted is almost
+# certainly the right fix, not this script.
+#
+# Idempotent: each phase checks "already done?" before acting — safe to
+# re-run. But "individually safe" isn't the same as "safe to run without
+# looking" — this script should never execute unattended or with a single
+# unconfirmed click (nbweb-tui's Tools pane gates it on typed confirmation,
+# added 2026-07-20; a leaked-config incident that day couldn't be pinned
+# on this script specifically, since every phase already skip-guards, but
+# the standing rule is: this class of tool is never one click away).
+#
+# **If Docker/Podman is available at all, rebuilding the nb-web container
+# (see nb-web/Containerfile) is the preferred recovery path, not this
+# script** — it reconstructs the running app from a known-good image in
+# minutes, doesn't touch ~/.nb's git history, and is the path this
+# ecosystem has actually been maintained through since Phase 2
+# containerization (2026-07-19). This script remains for the one case that
+# doesn't cover: a machine with no container runtime at all.
 #
 # Bootstrap on a fresh machine (before undercarriage is cloned):
 #   curl -fsSL "https://codeberg.org/linuxcaffe/nb-notes/raw/branch/master/.tools/nb-restore.sh" | bash
@@ -21,6 +40,27 @@ set -uo pipefail  # no -e: accumulate failures and report at end
 
 NB_REMOTE="git@codeberg.org:linuxcaffe/nb-notes.git"
 NB_DIR="$HOME/.nb"
+
+# ── Pre-flight abort: refuse to march through quietly on an intact machine ──
+# Every phase below already skip-guards its own piece, so this isn't fixing
+# an unsafe re-run — it's making the "nothing to do" case loud and stopping
+# BEFORE touching anything, rather than silently walking all 7 phases'
+# individual no-ops. Explicit --force required to proceed anyway.
+if [[ -d "$NB_DIR/.git" ]] && [[ -d "$HOME/dev/nb-web/.git" ]]; then
+  if [[ "${1:-}" != "--force" ]]; then
+    echo "nb-restore.sh: this machine already looks fully bootstrapped" >&2
+    echo "  (~/.nb and ~/dev/nb-web both exist with real git history)." >&2
+    echo "" >&2
+    echo "This is a full-machine bootstrap script, not a repair tool. If" >&2
+    echo "something specific is broken, fix that directly instead. If" >&2
+    echo "Docker/Podman is available, rebuilding the nb-web container is" >&2
+    echo "also almost certainly what you actually want (see" >&2
+    echo "nb-web/Containerfile) rather than re-running this." >&2
+    echo "" >&2
+    echo "If a full re-bootstrap is genuinely intended, re-run with --force." >&2
+    exit 1
+  fi
+fi
 
 # local-path|remote-url (pipe-delimited for bash 3 compat, no associative arrays)
 DEV_REPOS=(
