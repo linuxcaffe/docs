@@ -245,24 +245,37 @@ A 403 from a destination endpoint is caught in the load function and becomes `_c
 
 ### Settings
 
-`codeblock_access` in `nb-settings.json` — a passthrough dict in `_SETTINGS_SCHEMA`. Returned by `GET /api/nb-settings`. Current defaults:
+**Corrected 2026-07-21** — this section previously (and wrongly) documented `codeblock_access`
+as living in `nb-settings.json`/`_SETTINGS_SCHEMA`. It does not. It lives in `~/.nb/.nb.md`'s
+frontmatter — the root of the global config walk-up chain (see the `nb-web` skill's "Config
+resolution" section) — resolved server-side via `_effective_setting('codeblock_access')` →
+`_global_config()`. It is **not** a key in `_SETTINGS_SCHEMA` (confirmed by reading it: no such
+entry exists), so a `PATCH /api/nb-settings` naming it 400s as an unknown setting.
 
-```json
-"codeblock_access": {
-  "hl":    {"read": "office", "write": "admin"},
-  "chart": {"read": "office", "write": null},
-  "tw":    {"read": "user",   "write": "user"},
-  "git":   {"read": "user",   "write": null},
-  "t":     {"read": "user",   "write": null},
-  "test":  {"read": "user",   "write": null},
-  "tui":   {"read": "user",   "write": null},
-  "fm":    {"read": "admin",  "write": null},
-  "nav":   {"read": null,     "write": null},
-  "nb":    {"read": null,     "write": null}
-}
+`GET /api/nb-settings` merges it into the response read-only, sourced from `.nb.md` (fixed
+2026-07-21 — before this fix, `codeblock_access` never appeared in the response at all, which
+meant `_cbAccess` in `nbweb-codeblocks.js` was always `{}` and the frontend read-gate silently
+never fired for *any* block type since this mechanism shipped — see "Access gates —
+implementation" below for the consequence). Current values, straight from `~/.nb/.nb.md` —
+edit that file directly, not this doc, if they change:
+
+```yaml
+codeblock_access:
+  fm:       {read: admin}
+  cfg:      {read: admin}
+  hl:       {read: office, write: admin}
+  chart:    {read: office}
+  tw:       {read: user, write: user}
+  git:      {read: user}
+  check:    {read: user}
+  t:        {read: user}
+  tui:      {read: user}
+  nb:       {}
+  nav:      {}
+  sysadmin: {read: tech}
 ```
 
-`null` read = destination-gated (no codeblock-level check). `null` write = no write controls exist.
+`{}`/absent `read` = destination-gated (no codeblock-level check). Absent `write` = no write controls exist.
 
 ### Frontend utilities (`nbweb-codeblocks.js`)
 
@@ -346,7 +359,9 @@ The form detection happens *before* the gate check in `_loadTestBlock` — parse
 
 ### Backend enforcement
 
-**Write endpoints** — `_cb_write_allowed(block_type)` in `app.py` reads `_settings.codeblock_access[type].write` and compares via `_level_gte()`:
+**Write endpoints** — `_cb_write_allowed(block_type)` in `app.py` reads `codeblock_access[type].write`
+via `_effective_setting('codeblock_access')` (i.e. from `~/.nb/.nb.md`, **not** `_settings`/
+`nb-settings.json` — see "Settings" above) and compares via `_level_gte()`:
 
 - `api_hledger_add()` → 403 if insufficient
 - `api_task_add()` → 403 if insufficient
@@ -356,7 +371,23 @@ The form detection happens *before* the gate check in `_loadTestBlock` — parse
 - Dotfolder not in `_DOT_OPEN` → admin+
 - Regular notebook dir → `_notebook_config(name).get('access', 'user')`
 
-Frontend codeblock gate is UX; backend is the actual lock. #invariant
+**Read side has no equivalent `_cb_read_allowed()`.** There is no backend function that checks
+a `codeblock_access[type].read` level anywhere — confirmed by grep, 2026-07-21. For block types
+with a `read:` level but no independent per-endpoint check of their own (e.g. `hl`'s data source,
+`/api/hledger-query`, has no level gate at all beyond "logged in"), the *only* enforcement was
+ever the frontend `_cbAccess` gate — which, per the "Settings" section above, was silently
+non-functional (`_cbAccess` always `{}`) from when this mechanism shipped until 2026-07-21. In
+practice this meant any authenticated user, any level, could read `hl`/`chart`-gated data by
+calling the underlying endpoint directly, regardless of the `office`-level intent — a real
+backend gap the frontend fix does not close (the frontend gate is UX, not a lock; see the
+invariant below). `sysadmin`, by contrast, is safe because `api_sysadmin()` and
+`api_sysadmin_crontab()` each do their own explicit `tech`-level check independent of
+`codeblock_access` entirely (see "sysadmin block internals" below).
+
+Frontend codeblock gate is UX; backend is the actual lock. #invariant — **not yet true for
+`read:`-gated block types that lack their own endpoint-level check** (see above); true today
+only for `write:` (via `_cb_write_allowed`) and for the small set of blocks whose destination
+endpoint enforces its own level check regardless of `codeblock_access`.
 
 ### 403 → silent removal #pattern
 
@@ -425,6 +456,17 @@ list, and checks existence of a fixed set of key config file paths. All
 filesystem/subprocess work, no caching — expect this to be slower than other
 dashboard blocks on a large notebook tree.
 
+**`config_files` selectors are absolute paths, not `notebook:file` selectors**
+(fixed 2026-07-21 — they used to read `.nb:.manifest.md` etc., which never
+resolved: no notebook is ever named `.nb`, and `/api/note`'s dotfolder-selector
+handling rejects any filename containing `/` regardless, which ruled out
+`.checks/check-index.md`-shaped paths outright even for a valid prefix). Now
+`str(NB_DIR / '.manifest.md')` and friends, handled by `/api/note`'s
+`elif selector.startswith('/')` branch. The one exception: **"Global dotfile"
+keeps the literal `.nb:.nb.md` selector** — that exact string is special-cased
+in `api_note()` with its own `admin`-level check, which the plain-absolute-path
+branch doesn't have at all (no read-level gate on that branch, for any path).
+
 **`users` mode — `GET /api/users` (not `/api/sysadmin`)**: a genuinely
 different endpoint from the other two modes, and a write-capable one — level
 change (`PUT /api/users/<username>`), delete (`DELETE /api/users/<username>`),
@@ -441,17 +483,16 @@ immediately above an entry becomes its description — same convention
 **Access — all three backend-enforced independently, not just note-level:**
 `api_sysadmin()` and `api_sysadmin_crontab()` both do
 `if not _level_gte(user.get('level', ''), 'tech'): return jsonify(error='forbidden'), 403`
-directly; `/api/users`'s own endpoints enforce `admin`. **`sysadmin` is not
-currently in `codeblock_access`** (the `_cbAccess` schema documented under
-"Access gates — implementation" below) — so there's no frontend-level
-early-deny/silent-removal for it the way `hl`/`chart`/etc. get; a sub-`tech`
-user hitting the block gets the loader's own inline "requires X level"
-message (or, for bare mode, whatever `/api/sysadmin`'s 403 renders as) rather
-than `_cbDenyRead`'s silent `el.remove()`. Not a security gap (the backend
-check is the real lock either way, and every current instance of this block
-lives on a note already gated `access: tech`) — just a UX inconsistency with
-every other gated block type, worth an entry in `codeblock_access` if this
-block ever ships on a page a non-tech user can otherwise reach.
+directly; `/api/users`'s own endpoints enforce `admin`. **`sysadmin` is now in
+`codeblock_access`** (`{read: tech}`, added 2026-07-21 to `~/.nb/.nb.md`) — so
+it now gets the same frontend early-deny/silent-removal as `hl`/`chart`/etc.,
+once the frontend gate itself is actually live (see "Settings" above — it
+requires the `GET /api/nb-settings` fix from the same date). Before this,
+a sub-`tech` user hitting the block would have gotten the loader's own inline
+"requires X level" message instead of `_cbDenyRead`'s silent `el.remove()` —
+never a real security gap, since `api_sysadmin()`'s own backend check was
+always the actual lock, and every current instance of this block lives on a
+note already gated `access: tech` regardless.
 
 ---
 
