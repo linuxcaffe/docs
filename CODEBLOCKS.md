@@ -985,7 +985,7 @@ crontab
 ```
 ````
 
-**Known gap**: `djp:sysadmin.md`'s own page carries a `(#TODO break it up and fix config links)` note — some of the "Key config files" links in the bare-form checklist are stale. Worth fixing before building a second admin dashboard from it as a template.
+**Access note**: this block type is also gated in `codeblock_access` (`{read: tech}`, added 2026-07-21) — belt-and-suspenders on top of each mode's own independent backend check above, so the block silently disappears from the page for a sub-`tech` viewer instead of showing an inline denial.
 
 ---
 
