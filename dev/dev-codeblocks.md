@@ -620,6 +620,21 @@ by re-reading the original note content), so in-progress edits survive a toggle 
 direction; `_sheetHeaderRow` holds the header cell values while active so unchecking can
 restore them as a normal data row rather than discarding them.
 
+**Unsaved-edit navigation guard — `_sheetDirty`.** Sheet edits only ever live in the browser's
+in-memory grid until Save is clicked; nothing auto-saves. `_sheetDirty` (set by real edits via
+jspreadsheet's `onchange`/`oninsertrow`/`ondeleterow`/`onundo`/`onredo` callbacks) is checked by
+`openNote()`'s existing navigation guard alongside `_editing`, so navigating away with unsaved
+changes now prompts `confirm("Discard unsaved changes?")` the same way the markdown editor
+already does. Cleared on a fresh note load and on successful save.
+
+**Gotcha: these callbacks must be top-level siblings of `worksheets` in the `jspreadsheet()`
+init call, not nested inside the worksheet config object.** Confirmed empirically 2026-07-21:
+identical callbacks placed inside `worksheets[0]` show up fine if you inspect
+`ws.options.onchange` afterward (it's genuinely set to your function) — but jspreadsheet-ce
+only ever dispatches them from the top-level init object, so a worksheet-nested one is silently
+never called, no error either way. Cost real debugging time (a wrapped-callback probe with a
+call counter was what finally proved it) before landing on the top-level placement.
+
 **Planned, not built:** persist `header_row` via the file's own annotation sidecar
 (`.{filename}.annotations.md`) — not a new mechanism, this is the *existing* one:
 `_merged_meta()` already treats a frontmatter-incapable file's (which `.csv` is) annotation
