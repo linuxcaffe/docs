@@ -1,0 +1,86 @@
+{
+  "hledger_web_url": "",
+  "tw_web_url": "http://localhost:5000",
+  "pty_height": 200,
+  "pty_cwd": "~/.nb",
+  "pty_init": "tree -d",
+  "git_repos": {
+    "nb-web": "~/dev/nb-web",
+    "tw-web": "~/dev/tw-web"
+  },
+  "notebook_prefs": {
+    "nb": {
+      "default_sort": "newest"
+    },
+    "docs": {
+      "default_sort": "az",
+      "default_list_type": "all"
+    },
+    "home": {
+      "default_sort": "newest",
+      "default_list_type": "all"
+    },
+    "accts": {
+      "default_sort": "az",
+      "default_list_type": "all"
+    }
+  },
+  "hledger_web_cmd": "__SET_ME: e.g. vi ~/.hledger.journal or hledger-web__",
+  "hledger_terminal": true,
+  "tw_web_cmd": "__SET_ME: e.g. ~/.task/scripts/tw-tui or task next__",
+  "tw_terminal": true,
+  "plugins": [
+    {
+      "url": "/plugins/nbweb-codeblocks.js",
+      "name": "NbWeb Codeblocks",
+      "enabled": true,
+      "type": "core",
+      "homepage": ""
+    },
+    {
+      "url": "/plugins/nbweb-quartz.js",
+      "name": "NbWeb Quartz",
+      "enabled": true,
+      "type": "core",
+      "homepage": ""
+    },
+    {
+      "url": "/plugins/nbweb-contacts.js",
+      "name": "NbWeb Contacts",
+      "enabled": true,
+      "type": "bundled",
+      "homepage": ""
+    },
+    {
+      "url": "/plugins/nbweb-archive.js",
+      "name": "NbWeb Archive",
+      "enabled": true,
+      "type": "bundled",
+      "homepage": ""
+    },
+    {
+      "url": "/plugins/nbweb-cine.js",
+      "name": "NbWeb Cine",
+      "enabled": false,
+      "type": "ecosystem",
+      "homepage": "https://opencinema.ca"
+    },
+    {
+      "url": "/plugins/nbweb-hledger.js",
+      "name": "NbWeb hledger",
+      "enabled": false,
+      "type": "ecosystem",
+      "homepage": ""
+    }
+  ],
+  "plugin_prefs": {
+    "quartz": {
+      "listType": "all",
+      "sortOrder": "az"
+    },
+    "contacts": {
+      "sortOrder": "az",
+      "listType": "contact"
+    }
+  }
+}
