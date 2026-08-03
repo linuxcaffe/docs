@@ -276,33 +276,57 @@ The script is unaware of snooze state — the renderer handles it entirely.
 
 ---
 
-## Rendering behaviour — pending state and grouped display #pattern
+## Rendering behaviour — timing, consolidation, and display #pattern
 
-**No pending spinner.** Placeholder `.nb-test-block` divs (one per resolved `check:` token)
-start empty and are hidden via `.nb-test-block:empty { display: none; }` — nothing is shown
-while a check's fetch is in flight. A silent pass never becomes visible at all; a failure's
-output pops into place, once, at the block's existing position (top of the note body, where
-`_virtualTestPrefix` spliced the fences in). This replaced an earlier version that set a
-`⟳` spinner synchronously before the fetch — harmless for a real button, but for the common
-silent-auto-run case it meant every check flashed a line+spinner and then collapsed, even
-checks that were skipped for that note. (`plugins/nbweb-codeblocks.js` `_loadTestBlock`)
+**Rewritten 2026-08-02** — check used to share `NbWeb.renderCodeblocks`'s serial loop with
+every other plugin's codeblocks and fire one `/api/check/run` per resolved script, adding up to
+25-30s to a note's first paint and blocking everything else on the page behind it. The section
+below describes the current architecture; see `nb-web/CLAUDE.md` invariant 20 and its "Render
+pipeline" Stage 3 for the terser version.
 
-**Grouped failures start collapsed.** A multi-script `check` block (dangling-dash glob or
-an explicit multi-line group) that produces failures renders a header row
-(`.nb-group-headrow`) — fold arrow, optional domain icon, "N of M checks failed", dismiss
-`×` pinned to the row's right edge via flex layout (not absolute positioning, which used to
-drift out of alignment against the bordered/padded group box). The list of individual
-failing scripts (`.nb-group-body`) starts **hidden** — click the header to expand it. This
-keeps a note with many independent check families from stacking a wall of expanded failures
-above the fold; each family collapses to one line until the user asks to see more.
-(`_runGroupTest`)
+**Check runs strictly last, deferred off the shared render loop.** The `check` codeblock's
+`lang` entry carries no `render:` key at all — `NbWeb.renderCodeblocks` simply skips it. Instead
+`_deferCheckBlocks` (`main.js`, invoked from `_fetchContainer`) waits on
+`_StatusPill.whenIdle()` plus a bounded structural retry (up to 5×150ms, re-checking for any
+`.nb-inline-query`/`.nb-spin` still present) before firing `NbWeb.renderCheckBlocks`, so every
+other plugin's codeblocks on the note finish rendering first, unblocked.
 
-**Domain icon hoisting.** `_checkDomainIcon(script)` is computed for every failing script in
-the group. If every failure shares the same icon (e.g. an `hl-` glob where several hledger
-checks fail), it's hoisted once onto the header line instead of repeated on every subtest
-row — a "12 of 23 failed" group doesn't need the same logo 12 times. Mixed-domain groups
-(explicit multi-script blocks combining prefixes) keep the per-row icons, since there the
-icon is the only thing distinguishing one failing script's family from another's.
+**Form-2 (ambient, auto-run) sources are batched, not fired one at a time.** Every glob token
+(dangling-dash prefix) across every Form-2 block is resolved in parallel
+(`/api/check/glob`), the resulting script names are unioned across all families, and exactly
+one `/api/check/batch` call fetches all of them — not N sequential `/api/check/run` calls.
+Form-1 (labeled, click-to-run) blocks are untouched by any of this; they still resolve inline
+during the normal render pass, same as always.
+
+**Every Form-2 source consolidates into one reserved anchor**, not one line per source. The
+first `.nb-test-block` in document order becomes the permanent anchor (`_renderCheckAggregate`);
+every other Form-2 block is removed outright. Zero failures → anchor stays empty (existing
+`.nb-test-block:empty{display:none}` collapses it). Exactly one failing source → its own compact
+summary (a group's "N of M checks failed", or a lone check's domain-icon-plus-name via
+`_buildCollapsedSingleDOM`) goes straight into the anchor, collapsed by default — no generic
+wrapper around a single source, that was tried and found to be pure noise. More than one failing
+source → a generic "N notifications" toggle (`_buildNotifyAggregate`) holding one nested detail
+node per source.
+
+**The anchor sits sticky in the note's own top margin, not a normal-flow line.**
+`.nb-check-notify-anchor` (`styles.css`) keeps the anchor's own box at zero height regardless of
+failing-source count — a negative-margin pull lands its (bare-text, no card chrome) collapsed
+content inside `#nb-preview-content`'s existing top padding, clear of the note's first
+heading/card. Nothing below it ever shifts while collapsed. Clicking the toggle adds
+`.nb-check-notify-open`, which switches the anchor back to normal block flow (and restores the
+plain left-border/padding look every other check result uses) — content only gets pushed down as
+a direct result of that click, never passively during load.
+
+**No visible pending spinner.** Every `.nb-test-block` (Form-1 or Form-2, anchor or not) carries
+a `<span class="nb-spin">⟳</span>` placeholder while pending — but `.nb-test-block:has(.nb-spin)
+{ display: none; }` (`styles.css`) keeps it fully invisible and zero-footprint until content
+actually replaces that placeholder. Content pops in once, fully-formed; there's no visible
+spinner-then-content flash for either form.
+
+**Domain icon hoisting** (unchanged): `_checkDomainIcon(script)` is computed for every failing
+script in a group. If every failure shares the same icon (e.g. an `hl-` glob where several
+hledger checks fail), it's hoisted once onto the header line instead of repeated on every
+subtest row. Mixed-domain groups keep the per-row icons.
 
 ---
 
