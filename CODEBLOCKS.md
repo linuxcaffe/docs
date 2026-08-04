@@ -691,6 +691,8 @@ Renders a collapsible list of notes matching frontmatter field conditions. Resul
 
 **Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks. **`.`** resolves to the current note's notebook.
 
+**Folder scope** — a scope token can also carry a folder path: `notebook:folder/path/` (trailing slash required). Recursive — matches notes in nested subfolders too, not just the folder's immediate contents. A colon-bearing token only counts as folder scope when it ends in `/`; without the trailing slash it's parsed as the first filter instead, not a folder.
+
 **Filter conditions** (AND logic):
 
 | Syntax | Meaning |
@@ -710,6 +712,10 @@ shot: | All shots
 
 ```fm
 Takeout type:shot loc:LG | Lee Gardens shots
+```
+
+```fm
+Takeout:storylines/film-school/ type:story | Film School story cards
 ```
 
 ```fm
