@@ -180,6 +180,7 @@ Terminal links work anywhere Markdown renders — note bodies, templates, requir
 ```
 Current cash: {{hledger: bal Assets:Cash --no-total}}
 Pending tasks: {{tw: count status:pending +work}}
+Story cards: {{fm: count Takeout:storylines/film-school/ type:story}}
 Today: {{date: %A, %B %d}}
 ```
 
@@ -187,9 +188,12 @@ Today: {{date: %A, %B %d}}
 |----------|-------------|---------|
 | `hledger` | hledger query against the notebook's journal | `{{hledger: bal Assets:Cash --depth 1}}` |
 | `tw` | Taskwarrior filter (returns count by default) | `{{tw: count due:today}}` |
-| `nb` | nb count/list | `{{nb: count home:}}` |
+| `nb` | nb count/list — bare-metal `nb` CLI, no custom `type:` awareness | `{{nb: count home:}}` |
+| `fm` | Frontmatter-filtered count, folder-scoped, understands custom `type:` values — same query grammar as the [[docs:CODEBLOCKS\|fm codeblock]], `count`-only for now | `{{fm: count Takeout:storylines/film-school/ type:story}}` |
 | `date` | strftime format | `{{date: %Y-%m-%d}}` / `{{date: %A}}` |
 | `inline` | Render another note's body in-place (see [[#Inline Note Includes]]) | `{{inline: ../notes/shared.md}}` |
+
+**`fm` vs `nb`** — reach for `fm` whenever the count needs to respect a custom frontmatter `type:` (`story`, `plotline`, `shot`, or any other notebook/plugin convention) or needs to be scoped to a specific folder; `nb`'s own `--type` flag only understands its built-in file categories (note, bookmark, image, etc.) and has no folder-recursion story beyond `nb count`'s flat first-level count. `fm`'s folder scope is **recursive** — a match in a nested subfolder still counts.
 
 Results appear as plain text inline. While loading, a `⋯` placeholder is shown. On error, the raw `{{...}}` is shown dimmed with the error in a tooltip.
 
@@ -204,6 +208,7 @@ Inline queries work best when the output is a **single value or a short flat lis
 | `bal Assets --depth 1 --no-total` | `bs`, `is`, `activity` (report format) |
 | `bal Income -p thismonth --no-total` | `bal` without `--depth` on a deep tree |
 | `tw: count status:pending` | `bal Assets Liabilities` (two rows) |
+| `fm: count notebook:folder/ type:x` | a browsable/clickable list of matches (use the `fm` codeblock instead) |
 | `date: %A, %B %d` | any query where rows = insight |
 | `files`, `stats` (single-line output) | multi-commodity balances |
 
