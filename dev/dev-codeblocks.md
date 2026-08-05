@@ -209,13 +209,91 @@ Key reads before writing new scripts:
 
 ## fm block — implementation notes
 
-Key lessons from the `fm` codeblock (frontmatter filter/query block):
+Key lessons from the `fm` codeblock (frontmatter filter/query block) and its sibling, the
+`{{fm: count ...}}` inline-query provider. Full query-language design history and the day it
+was all built: `claude:fm_query_language_extension_plan_2026-08-04.md` (all 5 phases shipped
+same-day). User-facing reference: [[docs:CODEBLOCKS#fm — Frontmatter Filter]],
+[[docs:WIKILINKS#Inline Live Queries]].
 
-**Scope prefix parsing** — leading bare words (no colon) are notebook names; the first token containing `:` ends the notebook list and begins field:value filters. `Takeout shot:` → Takeout notebook, field `shot`. Parser: consume tokens from start until a `:` token is hit; remainder is filters.
+**Scope prefix parsing** (`_frontParseQuery` in `nbweb-codeblocks.js`, `_parse_fm_scope` in
+`app.py` — kept in sync by hand, no shared source, since one runs in the browser and the other
+server-side for the inline provider) — leading tokens are consumed as scope until one both
+contains `:` *and* doesn't end in `/`. A colon-bearing token IS still scope if its tail ends in
+`/`: `notebook:folder/path/` (2026-08-04, Phase 1) — the trailing slash is load-bearing, it's
+the only thing distinguishing a folder scope token from the first `field:value` filter; don't
+try to make it optional/auto-appended without also solving that ambiguity (a filter like
+`type:story` would misparse as `notebook="type", folder="story/"` otherwise — considered and
+rejected in the original plan's open questions).
+
+**Filter token shape** — `(-)?(\w[\w.-]*):"([^"]*)"|(-)?(\w[\w.-]*):(\S*)` (quoted / unquoted).
+Within the unquoted branch, the parsed `value` is inspected before deciding the op: leading
+`-` on the whole token → `neg: true` (inverts the result, including the missing-field case —
+see `_fm_eval_one` in `app.py`); `>`/`<` prefix on value → comparison (`_fm_compare`: numeric
+first, string fallback — correct for both `seq` and `mtime`'s `YYYY-MM-DD`); comma in value →
+`anyof` (value becomes a list); `sort`/`limit` field names are directives, extracted and
+**never added to `filters`** — see below. Everything else is bare `eq`/`exists`/`empty`.
+
+**Pseudo-fields** (`_scan_file` in `app.py`, 2026-08-04 Phase 2) — `mtime`/`wordcount`/
+`linecount` are computed once per file (already being read for `parse_frontmatter` anyway, no
+second read) and merged into the same `meta` dict real frontmatter lives in, always winning
+over a same-named real field. This is what makes `group:`/`sort:`/filters treat them identically
+to real frontmatter with zero special-casing anywhere downstream — the one-namespace design is
+load-bearing, don't special-case a pseudo-field name anywhere except where it's computed.
+
+**Recursive scan, and a real dotfile-leak bug found 2026-08-04** — `os.walk(walk_root)`
+(`walk_root` is `nb_dir` or `nb_dir / folder`, per Phase 1's folder-scoping) walks the whole
+subtree; `dirnames[:] = sorted(d for d in dirnames if not d.startswith('.'))` already excluded
+hidden *directories*, but **filenames were never filtered the same way** until 2026-08-04 —
+`.index` and `.<notebook>.md` have no `type:` field, so any filter permissive of a missing
+field (concretely: `neg`, or no filters at all) silently counted them as real results. Every
+positive `eq`/`>`/`<` filter happened to exclude them by coincidence (dotfiles don't share a
+real note's field values), which is exactly why this sat invisible through three phases of this
+same feature before negation's "missing field still matches" semantics exposed it. Fixed by
+filtering `filenames` the same way `dirnames` already was
+(`nb-web/CLAUDE.md` invariant 24) — **any new `os.walk`-based notebook scan needs this same
+filename filter, it is not automatic.**
+
+**`sort:`/`limit:` directives** (Phase 5) — extracted during the same token pass as filters but
+carried out-of-band (`sort`/`limit` return values, not filter dicts), applied as a
+*post-processing* step on the already-fetched result list — orthogonal to `_run_front_query`'s
+own `limit` param, which is a scan-safety cap (200 default/500 max) applied *while walking*,
+not a display truncation. Client-side equivalent is `_fmSortLimit`/`_fmNum` in
+`nbweb-codeblocks.js`. **`_fmNum` exists specifically because `parseFloat` silently partial-
+parses** — `parseFloat("2026-08-01")` returns `2026` (stops at the first non-numeric char)
+instead of failing, unlike Python's `float()` which requires the whole string and raises. Every
+date in the same year would sort as equal, useless keys with plain `parseFloat`. `_fmNum` does
+`Number(s.trim())` with an explicit empty-string guard (`Number('')` is `0`, not `NaN`) —
+whole-string strict, matching `_fm_compare`'s Python-side behaviour. **Any new client-side
+numeric-vs-string field comparison should reuse `_fmNum`, not reach for `parseFloat` directly.**
+
+**Access control** (`_run_front_query`, 2026-08-04) — per-note `_can_access(user, meta,
+notebook_config)` check, same floor `/api/note` already enforces; admin floor on the
+root-dotfiles scan (`.nb.md` etc., only reachable with `notebooks` omitted), matching the
+existing `.nb:.nb.md` special case in `api_note`. **This didn't exist at all before 2026-08-04**
+— found while writing Phase 1's own tests, unrelated to folder-scoping itself but fixed in the
+same commit (`nb-web/CLAUDE.md` invariants 17/19 already documented this exact recurring shape
+for other endpoints; this one just hadn't been audited).
+
+**Shared scan logic, two callers** — `_run_front_query(user, nb_list, folder_list, filters,
+limit)` backs both `/api/front-query` (the codeblock) and the `fm` provider inside
+`api_inline_query` (`{{fm: count ...}}`, `count`-only, via `_parse_fm_scope` to turn the raw
+query string into the same args). One implementation, one set of access-control guarantees —
+don't reimplement the scan for a future inline-provider-only feature; extend
+`_run_front_query`/`_fm_sort_limit` and add a thin caller instead.
+
+**Aggregation verbs** (`group:field`, `count`, `sum:field` — codeblock only, reserved-prefix
+convention matching `list`/`list-core`) — all three are *alternative render modes*, not
+composable with the flat list (a block renders either a list or an aggregate, never both — the
+plan's own open-question call). `group`/`count`/`sum` are entirely client-side aggregation over
+the same `/api/front-query` response the flat list already fetches — no backend awareness of
+"grouping" or "summing" exists at all. `sum:` skips notes missing the field or holding a
+non-numeric value rather than treating them as `0` or excluding the note from the underlying
+match (djp's explicit call) — header shows `(counted/total)` so the gap stays visible rather
+than silently implying completeness. A dedicated `wordcount` verb was considered and dropped:
+once `wordcount` is a pseudo-field and `sum:field` is generic, `sum:wordcount` already covers
+it — building both would just be two ways to write the same query.
 
 **Pipe label parsing** — use `indexOf(' |')` (space + pipe), not `' | '` (which requires space after the pipe too). `raw.slice(pipeIdx + 2).trim()` gets the label regardless of spacing after the pipe.
-
-**Recursive scan** — `read_index(notebook, folder)` only reads root `.index` — misses subfolders. For frontmatter queries across all notes, use `os.walk(nb_dir)` with `dirnames[:] = sorted(...)` to skip hidden dirs.
 
 **CSS tooltips** — native `title=` attribute is ugly and browser-controlled. Use `data-tip` + CSS `::after { content: attr(data-tip); white-space: pre }` instead: instant, styled, no JS, matches theme. Standard pattern for all blocks going forward.
 

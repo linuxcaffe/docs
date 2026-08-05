@@ -124,10 +124,10 @@ Use `urllib.parse.quote` (Python) or `encodeURIComponent` (JS) when generating t
 
 Inline `{{...}}` patterns are detected in `_resolveInlineQueries` during `_enrichRendered`. Each span gets:
 
-- `data-provider` — the provider name (`hledger`, `tw`, `nb`, `date`, `inline`)
+- `data-provider` — the provider name (`hledger`, `tw`, `nb`, `fm`, `date`, `inline`)
 - `data-query` — the query string
 
-Non-inline providers (`hledger`, `tw`, `nb`, `date`) fire in parallel — they're cheap single-value lookups. `inline` includes are sequential (see [[docs:RENDER_PIPELINE#1a]]).
+Non-inline providers (`hledger`, `tw`, `nb`, `fm`, `date`) fire in parallel — they're cheap single-value lookups. `inline` includes are sequential (see [[docs:RENDER_PIPELINE#1a]]). `fm` (2026-08-04) is a thin wrapper — `count`-only, reuses the exact same `_run_front_query`/`_parse_fm_scope` the `fm` codeblock itself is built on; implementation details live with the codeblock's own notes: [[docs:dev/dev-codeblocks.md#fm-block-implementation-notes]].
 
 `_iq_strip` — strips hledger report formatting (separators, commodity padding, column headers) down to a plain value suitable for inline text. Multiple result rows are joined with ` · `. This is why multi-row queries collapse into unreadable strings — use codeblocks for reports with more than one or two rows.
 
