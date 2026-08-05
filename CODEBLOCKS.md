@@ -693,6 +693,14 @@ Renders a collapsible list of notes matching frontmatter field conditions. Resul
 
 **Folder scope** — a scope token can also carry a folder path: `notebook:folder/path/` (trailing slash required). Recursive — matches notes in nested subfolders too, not just the folder's immediate contents. A colon-bearing token only counts as folder scope when it ends in `/`; without the trailing slash it's parsed as the first filter instead, not a folder.
 
+**Pseudo-fields** — `mtime` (last-modified date, `YYYY-MM-DD`), `wordcount`, and `linecount` (both counted from the note's body, frontmatter excluded) are computed per note, not stored in YAML, and filterable with the exact same `field:value` syntax as real frontmatter:
+
+```fm
+mtime:2026-08-04 | Touched today
+```
+
+Currently exact-match only (`eq`/`exists`/`empty`) — `mtime:>2026-07-28`-style comparison isn't supported yet. A pseudo-field always overrides a real frontmatter field of the same name if a note happens to have one.
+
 **Filter conditions** (AND logic):
 
 | Syntax | Meaning |
