@@ -195,6 +195,19 @@ Today: {{date: %A, %B %d}}
 
 **`fm` vs `nb`** — reach for `fm` whenever the count needs to respect a custom frontmatter `type:` (`story`, `plotline`, `shot`, or any other notebook/plugin convention) or needs to be scoped to a specific folder; `nb`'s own `--type` flag only understands its built-in file categories (note, bookmark, image, etc.) and has no folder-recursion story beyond `nb count`'s flat first-level count. `fm`'s folder scope is **recursive** — a match in a nested subfolder still counts.
 
+**`{{fm: count ...}}` examples** — the full [[docs:CODEBLOCKS|fm codeblock]] filter grammar works here too, since it's the exact same query engine, just rendering a bare number instead of a list:
+
+```
+Story cards: {{fm: count Takeout:storylines/film-school/ type:story}}
+Not yet locked: {{fm: count Takeout:script/ -status:locked}}
+Story or plotline: {{fm: count Takeout:storylines/ type:story,plotline}}
+Touched this week: {{fm: count Takeout:storylines/ mtime:>2026-07-28}}
+Budget still unset: {{fm: count Takeout:storylines/ type:story budget:""}}
+Top 5 by recency: {{fm: count Takeout:storylines/ type:story sort:-mtime limit:5}}
+```
+
+Only `count` renders inline — `sum:`/`group:` return more than a single value and need the codeblock form (see the "What works inline vs what needs a codeblock" table below).
+
 Results appear as plain text inline. While loading, a `⋯` placeholder is shown. On error, the raw `{{...}}` is shown dimmed with the error in a tooltip.
 
 Patterns inside `` `code` `` or fenced blocks are never evaluated.
