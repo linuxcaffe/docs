@@ -761,22 +761,21 @@ Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently
 ```fm
 shot: | All shots
 ```
-
-Takeout type:shot loc:LG | Lee Gardens shots
-```fm
-Takeout type:shot loc:LG | Lee Gardens shots
-```
-
-Takeout:storylines/film-school/ type:story | Film School story cards
-```fm
-Takeout:storylines/film-school/ type:story | Film School story cards
-```
-
-model:true | Example notes
-```fm
-model:true | Example notes
-```
 ````
+Takeout type:shot loc:LG | Lee Gardens shots
+```fm
+Takeout type:shot loc:LG | Lee Gardens shots
+```
+
+Takeout:storylines/film-school/ type:story | Film School story cards
+```fm
+Takeout:storylines/film-school/ type:story | Film School story cards
+```
+
+model:true | Example notes
+```fm
+model:true | Example notes
+```
 
 #### fm: group — Grouped Counts
 
