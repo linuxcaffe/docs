@@ -729,6 +729,22 @@ type:story,plotline | Story or plotline cards
 -type:cut | Everything except cut material
 ```
 
+**`sort:`/`limit:`** — directives, not match conditions; can appear anywhere among the filters, not just at the end:
+
+| Syntax | Meaning |
+|--------|---------|
+| `sort:field` | Order ascending by field's value |
+| `sort:-field` | Order descending (leading `-` on the field name) |
+| `limit:N` | Keep only the first N results, after sorting |
+
+Applied after the fact to whatever the scan already matched — a display-level cap, separate from the query's own internal safety limit (500 matches max, regardless of `limit:`). Same numeric-first-then-string comparison as `>`/`<`, so `sort:-mtime` correctly orders by real date and `sort:-seq` correctly orders `10` after `6`, not lexicographically:
+
+```fm
+Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
+```
+
+`limit:` composes with `count`/`sum:` too — `count type:story limit:5` (count capped at 5) and `sum:budget sort:-mtime limit:5` (total spend across the 5 most recent) are both valid, if less common, shapes.
+
 **`\| Label`** — optional label shown in the header bar.
 
 **Examples:**
