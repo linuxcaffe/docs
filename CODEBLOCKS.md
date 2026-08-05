@@ -721,15 +721,17 @@ mtime:>2026-07-28 | Touched this week
 
 A note missing the field entirely never matches a `>`/`<`, `eq`, or any-of filter (same as `eq` always has) — **except under negation**, where a missing field counts as a pass: `-type:cut` matches a note with no `type:` at all just as readily as one with `type: something-else`, since it certainly isn't `type: cut`.
 
-```yaml
+type:story,plotline | Story or plotline cards
 ```fm
 type:story,plotline | Story or plotline cards
 ```
-```
+---
+type:story,plotline | Story or plotline cards
 ```fm
 type:story,plotline | Story or plotline cards
 ```
 
+-type:cut | Everything except cut material
 ```fm
 -type:cut | Everything except cut material
 ```
@@ -744,6 +746,7 @@ type:story,plotline | Story or plotline cards
 
 Applied after the fact to whatever the scan already matched — a display-level cap, separate from the query's own internal safety limit (500 matches max, regardless of `limit:`). Same numeric-first-then-string comparison as `>`/`<`, so `sort:-mtime` correctly orders by real date and `sort:-seq` correctly orders `10` after `6`, not lexicographically:
 
+Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
 ```fm
 Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
 ```
@@ -759,14 +762,17 @@ Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently
 shot: | All shots
 ```
 
+Takeout type:shot loc:LG | Lee Gardens shots
 ```fm
 Takeout type:shot loc:LG | Lee Gardens shots
 ```
 
+Takeout:storylines/film-school/ type:story | Film School story cards
 ```fm
 Takeout:storylines/film-school/ type:story | Film School story cards
 ```
 
+model:true | Example notes
 ```fm
 model:true | Example notes
 ```
