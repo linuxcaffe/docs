@@ -721,6 +721,11 @@ mtime:>2026-07-28 | Touched this week
 
 A note missing the field entirely never matches a `>`/`<`, `eq`, or any-of filter (same as `eq` always has) — **except under negation**, where a missing field counts as a pass: `-type:cut` matches a note with no `type:` at all just as readily as one with `type: something-else`, since it certainly isn't `type: cut`.
 
+```yaml
+```fm
+type:story,plotline | Story or plotline cards
+```
+```
 ```fm
 type:story,plotline | Story or plotline cards
 ```
