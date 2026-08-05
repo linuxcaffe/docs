@@ -723,6 +723,24 @@ model:true | Example notes
 ```
 ````
 
+#### fm: group — Grouped Counts
+
+````markdown
+```fm
+group:plotline Takeout:storylines/ type:story | Story cards per plotline
+```
+````
+
+A leading `group:<field>` verb (same reserved-prefix convention `list` uses — must be the very first token) buckets matches by that field's value instead of rendering one flat list. Each bucket shows as its own labeled sub-list, largest group first. Notes missing the field land in a `(none)` bucket rather than being dropped — a completeness scan wants those surfaced, not hidden.
+
+Scope and filters after the `group:` token work exactly like the plain form — folder scope, multiple filters, and the `| Label` suffix all compose normally:
+
+````markdown
+```fm
+group:type Takeout:storylines/film-school/
+```
+````
+
 #### fm: list — FM Key Browser
 
 ````markdown
