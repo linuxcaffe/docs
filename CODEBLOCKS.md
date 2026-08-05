@@ -802,11 +802,11 @@ group:type Takeout:storylines/film-school/
 ```fm
 count Takeout:storylines/film-school/ type:story
 ```
+````
 
 ```fm
 sum:budget Takeout:storylines/ type:story
 ```
-````
 
 Two more leading verbs, same reserved-prefix convention as `group`/`list`. Neither renders a list — just the header, with the number. `count` shows the match count; `sum:<field>` totals that field's numeric value across every match. For counting inline in prose instead of as a standalone block, see `{{fm: count ...}}` in [[docs:WIKILINKS#Inline Live Queries]] — same underlying query, different rendering surface.
 
