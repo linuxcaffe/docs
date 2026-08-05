@@ -699,7 +699,7 @@ Renders a collapsible list of notes matching frontmatter field conditions. Resul
 mtime:2026-08-04 | Touched today
 ```
 
-Currently exact-match only (`eq`/`exists`/`empty`) — `mtime:>2026-07-28`-style comparison isn't supported yet. A pseudo-field always overrides a real frontmatter field of the same name if a note happens to have one.
+A pseudo-field always overrides a real frontmatter field of the same name if a note happens to have one.
 
 **Filter conditions** (AND logic):
 
@@ -708,6 +708,16 @@ Currently exact-match only (`eq`/`exists`/`empty`) — `mtime:>2026-07-28`-style
 | `field:value` | Field equals value (case-insensitive) |
 | `field:` | Field exists (any value) |
 | `field:""` | Field absent or empty |
+| `field:>value` | Field greater than value |
+| `field:<value` | Field less than value |
+
+`>`/`<` try numeric comparison first (so `seq:>6` correctly treats `10 > 6`, not a lexicographic `"10" < "6"`), falling back to string comparison — which is exactly right for `mtime` and any other `YYYY-MM-DD` field, since lexicographic order matches chronological order for that format:
+
+```fm
+mtime:>2026-07-28 | Touched this week
+```
+
+A note missing the field entirely never matches a `>`/`<` filter (same as it never matches `eq`).
 
 **`\| Label`** — optional label shown in the header bar.
 
