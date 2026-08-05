@@ -710,6 +710,8 @@ A pseudo-field always overrides a real frontmatter field of the same name if a n
 | `field:""` | Field absent or empty |
 | `field:>value` | Field greater than value |
 | `field:<value` | Field less than value |
+| `field:value1,value2` | Field equals any of the listed values |
+| `-field:value` | Negates any of the above — field does *not* match |
 
 `>`/`<` try numeric comparison first (so `seq:>6` correctly treats `10 > 6`, not a lexicographic `"10" < "6"`), falling back to string comparison — which is exactly right for `mtime` and any other `YYYY-MM-DD` field, since lexicographic order matches chronological order for that format:
 
@@ -717,7 +719,15 @@ A pseudo-field always overrides a real frontmatter field of the same name if a n
 mtime:>2026-07-28 | Touched this week
 ```
 
-A note missing the field entirely never matches a `>`/`<` filter (same as it never matches `eq`).
+A note missing the field entirely never matches a `>`/`<`, `eq`, or any-of filter (same as `eq` always has) — **except under negation**, where a missing field counts as a pass: `-type:cut` matches a note with no `type:` at all just as readily as one with `type: something-else`, since it certainly isn't `type: cut`.
+
+```fm
+type:story,plotline | Story or plotline cards
+```
+
+```fm
+-type:cut | Everything except cut material
+```
 
 **`\| Label`** — optional label shown in the header bar.
 
@@ -758,6 +768,22 @@ Scope and filters after the `group:` token work exactly like the plain form — 
 group:type Takeout:storylines/film-school/
 ```
 ````
+
+#### fm: count / sum — Header-Only Aggregates
+
+````markdown
+```fm
+count Takeout:storylines/film-school/ type:story
+```
+
+```fm
+sum:budget Takeout:storylines/ type:story
+```
+````
+
+Two more leading verbs, same reserved-prefix convention as `group`/`list`. Neither renders a list — just the header, with the number. `count` shows the match count; `sum:<field>` totals that field's numeric value across every match. For counting inline in prose instead of as a standalone block, see `{{fm: count ...}}` in [[docs:WIKILINKS#Inline Live Queries]] — same underlying query, different rendering surface.
+
+`sum:` silently skips any matching note that lacks the field or holds a non-numeric value for it — the header shows `(counted/total)` so that's visible rather than hidden, and a missing/bad value is never treated as `0` (which would understate nothing but silently implies every match contributes, which usually isn't true — a budget field genuinely unset on 3 of 10 cards is very different from those 3 being budgeted at zero). Works for pseudo-fields too: `sum:wordcount` totals word count across every match, e.g. total words written across all scenes in a folder — no separate `wordcount` verb needed since it's exactly this with a fixed field name.
 
 #### fm: list — FM Key Browser
 
