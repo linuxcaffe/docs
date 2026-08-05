@@ -767,9 +767,9 @@ Takeout type:shot loc:LG | Lee Gardens shots
 Takeout type:shot loc:LG | Lee Gardens shots
 ```
 
-Takeout:storylines/film-school/ type:story | Film School story cards
+Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
 ```fm
-Takeout:storylines/film-school/ type:story | Film School story cards
+Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
 ```
 
 model:true | Example notes
