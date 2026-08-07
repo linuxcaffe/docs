@@ -5,7 +5,7 @@ toc: true
 processed: true
 ---
 
-# Account
+# Account Wikilinks
 
 [[#Your Profile|Your Profile]] · [[#Access Level|Access Level]] · [[#Edit Name|Edit Name]] · [[#Change Password|Change Password]] · [[#Exclusive Notes|Exclusive Notes]]
 
