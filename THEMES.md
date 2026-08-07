@@ -92,6 +92,8 @@ The **☀/☾** button in the top navigation bar (always visible) switches betwe
 
 Each theme defines its own light and dark palettes independently — switching mode within Groovy gives you warm amber on a parchment background; switching within Default gives you the original dark/light pair.
 
+Switching mode also sets the browser's native `color-scheme` to match, so scrollbars, `<select>` dropdown popups, and date pickers follow along too — not just the page's own colours. You don't need to (and can't) set this per theme file; it's derived automatically from whichever mode is active.
+
 ---
 
 ## Auto-switching between notebooks
