@@ -10,7 +10,7 @@ gallery: thunb .
 
 {{nb: count docs:}} notes · {{date: %A %B %d}}
 ```nav
-"."
+.
 ```
 
 ---
