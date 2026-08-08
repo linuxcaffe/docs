@@ -3,6 +3,7 @@ draft: true
 toc_min: 1
 toc: true
 xref: [docs:, docs:dev/]
+xref_ignore: nb-web
 processed: true
 ---
 
