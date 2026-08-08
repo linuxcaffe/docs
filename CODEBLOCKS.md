@@ -1001,6 +1001,22 @@ cfg: org access, access:guest, access:user, access:office, access:admin, check, 
 
 The chips control *client-side* display only — all nodes are always fetched. Dimmed nodes still exist; they just don't match the active filter.
 
+**Extending the chip list without restating it (`cfg_attr_add:`/`cfg_attr_skip:`)**
+
+The chip list above is set once, wherever the FM `cfg: org ...` block lives (usually the notebook root or global `.nb.md`) — every note in scope inherits that exact list. A deeper folder wanting one extra chip had to copy the whole comma-separated list into its own `.{folder}.md` just to add one token. `cfg_attr_add:`/`cfg_attr_skip:` avoid that: set on any config file in the walk-up chain (global → notebook → folder), they union additional chips in / remove chips from the inherited list, same accumulate pattern as `check_add:`/`check_skip:`:
+
+```yaml
+# home/.home.md — add a `hledger` chip on top of whatever .nb.md already declares
+cfg_attr_add: hledger
+```
+
+```yaml
+# accts/.accts.md — this notebook doesn't want the xref chip cluttering its chart
+cfg_attr_skip: xref
+```
+
+Only affects `cfg: org`/`cfg: tree` values (the only `cfg:` shapes with a chip list) — plain `cfg: access:` target-form queries are untouched. Not the same key as `cfg_skip:` below, which is unrelated (per-node chart pruning, not a chip-list edit).
+
 **Depth limit (`-D N`)**
 
 Cap how many folder levels the walk descends. Useful for large notebooks where you only need to see the top-level folder layer:
