@@ -9,7 +9,7 @@ processed: true
 - Project: https://github.com/linuxcaffe/nb-web
 - Issues:  https://github.com/linuxcaffe/nb-web/issues
 
-# nb-web
+# nb-web README
 
 A browser-based interface for [nb](https://github.com/xwmx/nb) — the plain-text, git-backed, CLI note-taking tool.
 
