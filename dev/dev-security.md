@@ -498,14 +498,17 @@ The suffix convention also works for markdown files — useful when the filename
 
 `~/.nb/.lib/` holds three kinds of files — all access-gated by filename suffix:
 
-**Inline HTML components** (`.html`) — designed for `{{inline: .lib:…}}` inclusion.
+**Inline components** (`.html` or `.md`) — designed for `{{inline: .lib:…}}` inclusion.
 Additive tier pattern:
 
 ```markdown
 {{inline: .lib:user-mgmt-user.html}}
 {{inline: .lib:user-mgmt-office.html}}
-{{inline: .lib:user-mgmt-admin.html}}
+{{inline: .lib:user-mgmt-admin.md}}
 ```
+
+(`user-mgmt-admin.md` is markdown now — a `nav` codeblock listing `~/.nb/.users` — not the
+original static HTML button; the other two tiers are still plain `.html`.)
 
 One note, all users, each sees exactly their tier's content accumulated. No conditionals
 in the note, no JS level-checking — the server handles it all.

@@ -44,7 +44,7 @@ is opened and that don't belong inside any one notebook.
     users.md          ← dotfolder dashboard (pinned, admin-only)
   .rules/             ← domain convention files (hledger.md, docs.md, preview.md …)
     rules.md          ← dotfolder dashboard
-  .test/              ← check scripts (nb-*, hl-*, tw-*); named .test/ not .checks/
+  .checks/            ← check scripts (nb-*, hl-*, tw-*, sys-*, syntax-*, test-*)
     checks.md         ← dotfolder dashboard
   .tools/             ← utility scripts (nb-restore.sh, nb-daily-init.sh …)
     tools.md          ← dotfolder dashboard
