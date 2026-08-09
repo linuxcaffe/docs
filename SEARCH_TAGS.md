@@ -7,8 +7,7 @@ processed: true
 
 # Search and Tags
 
-[[#Search|Search]] · [[#Tag Filter|Tag Filter]] · [[#Combining Filters|Combining Filters]] · [[#Cross-Notebook Search|Cross-Notebook Search]]
-
+[[#Search|Search]] · [[#Tag Filter|Tag Filter]] · [[#Combining Filters|Combining Filters]] · [[#Cross-Notebook Search|Cross-Notebook Search]] [[##Search Within Document|Search Within Document]]
 ---
 
 ## Search
@@ -63,3 +62,11 @@ Select **all** from the notebook scope selector to search across all notebooks a
 The `--all` scope is also available as a token in the command bar — click it or change the scope selector to return to a single notebook.
 
 > **Tip:** `/` then a search term is the fastest way to find any note regardless of which notebook you're in — switch scope to `all` first if you're not sure where it lives.
+
+## Search Within Document
+
+Use the browser's search function to find text within a document
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+F` | Involke browser search (works in most browsers, y.m.m.v.) |
