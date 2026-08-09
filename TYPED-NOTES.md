@@ -97,11 +97,10 @@ The project is the workspace; the reports page is what you show someone. Both ge
 ---
 type: reports
 source: name.md
-help: report
 ---
 ```
 
-`source:` records which project this reports page belongs to. `help: report` adds a **?** button explaining the pair relationship — useful in templates to orient first-time users.
+`source:` records which project this reports page belongs to. No `help:` key needed — `type: reports` alone gets the **?** button explaining the pair relationship automatically (see "Type Help Popovers" below).
 
 ---
 
@@ -115,37 +114,28 @@ The same behaviour is also available via `date_headers: true` frontmatter on any
 
 ## Type Help Popovers
 
-Any typed note can show a **?** button in its specialty header by adding a `help:` key to frontmatter:
+Click the **?** at the far right of the preview toolbar to open a short, topic-specific popover — plain markdown, `xref:` for depth, live `note:` links. Dismiss by clicking **?** again or anywhere outside the popover.
 
-```yaml
----
-type: report
-help: report
----
-```
-
-Clicking **?** opens a small popover fetched from `.lib/help-type-<topic>.md`. The content is plain markdown — prose, links, whatever is useful. Dismiss by clicking **?** again or anywhere outside the popover.
-
-**Creating help content** — add a file to `~/.nb/.lib/`:
+**Two file-naming conventions, depending on whether a topic is tied to a real note type:**
 
 ```
-~/.nb/.lib/help-type-report.md     ← loaded when help: report
-~/.nb/.lib/help-type-project.md    ← loaded when help: project
-~/.nb/.lib/help-type-mytype.md     ← any topic name works
+~/.nb/.lib/help-type-project.md    ← type-specific: auto-loads for every type: project note
+~/.nb/.lib/help-type-reports.md    ← type-specific: auto-loads for every type: reports note
+~/.nb/.lib/help-nb.md              ← generic: not tied to any type:, referenced explicitly
+~/.nb/.lib/help-help.md            ← generic: not tied to any type:, referenced explicitly
 ```
 
-The help file is a full nb note — it can have `xref:` in its own frontmatter, and any `note:` links inside it are live and clickable in the popover. This means the help text stays concise while depth is a click away through xref.
+**Type-targeted help happens automatically — no `help:` FM needed at all.** If a note's own `type:` value exactly matches a `help-type-<type>.md` file's `<type>`, every note of that type picks it up for free (checked live, only if the file actually exists — a type with no matching file contributes nothing, no wasted lookup). This is how `type: project`/`type: reports` notes get their help without a template author ever setting anything — the filename convention itself is the wiring. The match is against the literal `type:` value (`_FM_TYPES` in `app.py`), so it's plural-sensitive: name the file after the real FM value, not a display label.
 
-**Typical use** — put `help: <type>` in a template's default frontmatter. Users see the **?** button when they first open a note of that type; they remove the `help:` key (or just ignore it) once they're oriented.
+**A topic that isn't a real note type** (a domain like `nb`, a meta-topic like `help`) doesn't use the `help-type-` prefix — name it `help-<subject>.md` instead, and reference it explicitly as a literal selector rather than a bare topic (see below), since only the `help-type-` form gets found by bare-word lookup or auto-derivation.
 
-**Cascading** — `help:` also resolves through the same walk-up chain as `access:`/`xref:`/`checks:`: a note's own `help:` always wins, otherwise it falls through to `.{folder}.md` → `.{notebook}.md` → the global `.nb.md`. This means a whole folder or notebook can get a default help topic without setting `help:` on every note individually — and the global config always has one (`help: nb` → `.lib/help-type-nb.md`), so the cascade never bottoms out with no help at all. The **?** button lives in the preview toolbar (far right of `#nb-preview-actions`) and is visible for every note type, not just project/report/dashboard/dotfile.
+**`help:` — the manual, nearest-wins override.** Set it on a note's own frontmatter, or cascade it via `.{folder}.md` → `.{notebook}.md` → the global `.nb.md` (same walk-up chain as `access:`/`xref:`/`checks:` — a note's own value always wins, otherwise the nearest dotfile up the chain does). The value can be:
+- a **bare topic** (`help: project`) → wraps as `.lib/help-type-project.md`
+- a **real note selector**, anything containing `:` (`help: Takeout:folder/file.md`, or `help: .lib:help-nb.md` for a generic non-type file) → fetched and rendered directly
+- a **list mixing either form** (`help: [nb, "Takeout:folder/file.md"]`) → each entry resolves and renders in order, concatenated with a divider; empty entries are skipped silently
 
-**A `help:` value can also be a real note selector**, not just a bare topic — anything containing `:` (e.g. `help: Takeout:folder/file.md`) is fetched and rendered directly instead of being wrapped as `.lib/help-type-<topic>.md`. This lets a help popover point at a real, already-existing note (a project's own README, a docs page) instead of requiring a dedicated `.lib/` file.
+The global config always has one (`help: .lib:help-nb.md`), so the override chain never bottoms out with no help at all — unless something closer in the chain explicitly squelches it with `help: ''`.
 
-**`help:` can be a list, mixing either form** — `help: [nb, "Takeout:folder/file.md"]` fetches and renders each entry in order, concatenated in the popover with a divider between parts. Any entry that resolves to nothing (missing note, empty body) is skipped silently rather than showing an error.
+**`help_add:` — accumulate instead of override.** Same shape as `check_add:`/`cfg_attr_add:`: unions across `.nb.md` → `.{notebook}.md` → `.{foldername}.md` (every level contributes, none replace each other), layered on top of whatever `help:` resolves to rather than competing with it. Use `help_add:` when a whole notebook or folder should always show a shared topic *in addition to* whatever else resolves.
 
-**Type-targeted help happens automatically — no `help:` FM needed at all.** If a `.lib/help-type-<topic>.md` file's `<topic>` exactly matches a note's own `type:` value, every note of that type picks it up for free (checked live, only if the file actually exists — a type with no matching file contributes nothing, no wasted lookup). This is how `type: project` notes get their help without a template author ever setting `help: project` — the filename convention itself is the wiring. The type match is against the literal `type:` value, so it's plural-sensitive: `type: reports` looks for `help-type-reports.md`, not the existing (singular) `help-type-report.md`.
-
-**`help_add:` layers more help on top, cascading by accumulation instead of override** — same shape as `check_add:`/`cfg_attr_add:`: unions across `.nb.md` → `.{notebook}.md` → `.{foldername}.md` (every level contributes, none of them replace each other), rather than `help:`'s nearest-wins single value. Use `help_add:` when a whole notebook or folder should always show a shared topic *in addition to* whatever else resolves — `help:` is still the right tool for "this one note/folder needs a different topic than its default."
-
-**Final resolution order**: auto type-derived entry → `help_add:` union → `help:`'s own nearest-wins value/list, deduplicated. A `type: project` note in a notebook with `help_add: onboarding` and its own `help: my-notes` would show, in order: the project help, the onboarding topic, then its own specific help — three concatenated sections from zero to two FM keys.
+**Final resolution order**: auto type-derived entry → `help_add:` union → `help:`'s own nearest-wins value/list, deduplicated. A `type: project` note in a notebook with `help_add: onboarding` would show, in order: the project help, the onboarding topic, then whatever `help:` resolves to (the note's own, or the global default) — real targeted help from zero FM keys, with room to layer on more.
