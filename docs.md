@@ -4,15 +4,13 @@ draft: true
 access: admin
 pinned: true
 date: 2026-07-15
-gallery: thunb .
+nav: .
 ---
 # docs Dashboard
 
 {{nb: count docs:}} notes · {{date: %A %B %d}}
-```nav
-.
-```
 
+The docs: notebook is the information station. Click the NAV bar above to see a listing.
 ---
 
 ## Links
