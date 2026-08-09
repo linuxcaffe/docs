@@ -96,3 +96,15 @@ These work while a note is open in the editor.
 | `Escape` | The universal cancel. From a text field: blur and park focus on the Menu button. From a modal or inline bar: close it. From the menu: close it. From multi-select: clear selection. |
 
 `Escape` always leaves you somewhere safe — the Menu button — from which you can Tab or arrow-key onward.
+
+## Search Within Document
+
+Use the browser's search function to find text within a document
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+F` | Involke browser search (works in most browsers, y.m.m.v.) |
+
+---
+
+
