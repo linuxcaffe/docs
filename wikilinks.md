@@ -165,7 +165,10 @@ Commands can reference the **current note** using `{variable}` placeholders, res
 [Git history](term:git -C {dir} log --oneline -- {file})
 [Encrypt](term:nb encrypt {selector})
 [Spellcheck](term:aspell check {file})
+[Create a new project](term:nb add {notebook}:new-project.md --template project)
 ```
+
+**Creating a note from a template** — `nb add` has a real `--template <name>` flag (looks up `.templates/<name>.md` the same way nb's own template resolution already does), so a term: link can create a new, properly-indexed note on the spot — unlike a raw `cp`/`touch` into the notebook folder, which leaves the file unindexed until something reconciles it. `{notebook}` makes the same link work correctly from wherever it's clicked; hardcode a notebook name instead (`nb add accts:new-project.md --template project`) if you want it fixed to one place regardless of context.
 
 Variables are especially useful in **notebook templates** — a `[Run](term:bash {file})` link in a template gives every note in that notebook a run button automatically.
 
@@ -241,6 +244,8 @@ The quick test: if `hledger <query>` in your terminal produces more than one or 
 ```
 
 The path is resolved relative to the current note's location. You can use `../` to step up folders, or prefix with a notebook name (`accts:`) for cross-notebook includes. Frontmatter is stripped — only the body renders.
+
+**`.lib:` files need the colon, not a slash.** `{{inline: .lib:help-nb.md}}` works — a leading `.lib:` (or any `<name>:`) is recognized as an already-complete selector and used as-is. `{{inline: .lib/help-nb.md}}` does **not** — with no colon, it's treated as a path *relative to the current note*, so from inside `home:home.md` it resolves to the nonsensical `home:.lib/help-nb.md` (`.lib` misread as a subfolder of `home`) instead of the real top-level `.lib` stub. Same rule for wikilinks: `[[.lib:help-nb.md|Help]]` resolves directly; `[[.lib/help-nb.md|Help]]` searches the current notebook's titles/filenames for that literal string and never finds it. Confirmed live 2026-08-09 — this exact slash-vs-colon mixup silently broke a real include for about a day before being caught.
 
 Included content is rendered in a bordered block (a left-rule bar with a slight background tint) so it's visually distinct from the surrounding note. Wikilinks, term: links, and inline queries inside the included note are all live — the full rendering pipeline runs on included content.
 
