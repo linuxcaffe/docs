@@ -513,6 +513,13 @@ original static HTML button; the other two tiers are still plain `.html`.)
 One note, all users, each sees exactly their tier's content accumulated. No conditionals
 in the note, no JS level-checking — the server handles it all.
 
+**Snips** (`snip-<cat>-<snipname>.ext`, added 2026-08-09) — general-purpose, typically
+ungated content fragments (nav lists, decorative elements) — distinct from the
+access-suffixed components above. `<cat>` is an organizational grouping only, not an
+access declaration; a snip needing real gating uses `access:` frontmatter instead of a
+filename suffix. No shorthand include — always the full selector,
+`{{inline: .lib:snip-nav-acctlinks.md}}`. See `.lib:lib.md`'s own Conventions section.
+
 **Help docs** (`help-block-{lang}-{access}.md`) — adds a `?` button to a barblock header.
 
 **Open scripts** (`open-block-{lang}-{access}.sh`) — wires the barblock title-click and
