@@ -121,20 +121,20 @@ Click the **?** at the far right of the preview toolbar to open a short, topic-s
 ```
 ~/.nb/.lib/help-type-project.md    ← type-specific: auto-loads for every type: project note
 ~/.nb/.lib/help-type-reports.md    ← type-specific: auto-loads for every type: reports note
-~/.nb/.lib/help-nb.md              ← generic: not tied to any type:, referenced explicitly
-~/.nb/.lib/help-help.md            ← generic: not tied to any type:, referenced explicitly
+~/.nb/.lib/help-nb.md              ← generic: not tied to any type:, still reachable as bare "nb"
+~/.nb/.lib/help-help.md            ← generic: not tied to any type:, still reachable as bare "help"
 ```
 
 **Type-targeted help happens automatically — no `help:` FM needed at all.** If a note's own `type:` value exactly matches a `help-type-<type>.md` file's `<type>`, every note of that type picks it up for free (checked live, only if the file actually exists — a type with no matching file contributes nothing, no wasted lookup). This is how `type: project`/`type: reports` notes get their help without a template author ever setting anything — the filename convention itself is the wiring. The match is against the literal `type:` value (`_FM_TYPES` in `app.py`), so it's plural-sensitive: name the file after the real FM value, not a display label.
 
-**A topic that isn't a real note type** (a domain like `nb`, a meta-topic like `help`) doesn't use the `help-type-` prefix — name it `help-<subject>.md` instead, and reference it explicitly as a literal selector rather than a bare topic (see below), since only the `help-type-` form gets found by bare-word lookup or auto-derivation.
+**A topic that isn't a real note type** (a domain like `nb`, a meta-topic like `help`) doesn't use the `help-type-` prefix — name it `help-<subject>.md` instead. A bare topic still finds it: bare-word lookup tries `help-type-<subject>.md` first, and falls back to `help-<subject>.md` if that doesn't exist — so `help: nb` keeps working as a plain word, no selector needed, regardless of which naming form the underlying file actually uses. Only auto-derivation (the type-matching above) is strict to the `help-type-` form specifically.
 
 **`help:` — the manual, nearest-wins override.** Set it on a note's own frontmatter, or cascade it via `.{folder}.md` → `.{notebook}.md` → the global `.nb.md` (same walk-up chain as `access:`/`xref:`/`checks:` — a note's own value always wins, otherwise the nearest dotfile up the chain does). The value can be:
-- a **bare topic** (`help: project`) → wraps as `.lib/help-type-project.md`
-- a **real note selector**, anything containing `:` (`help: Takeout:folder/file.md`, or `help: .lib:help-nb.md` for a generic non-type file) → fetched and rendered directly
-- a **list mixing either form** (`help: [nb, "Takeout:folder/file.md"]`) → each entry resolves and renders in order, concatenated with a divider; empty entries are skipped silently
+- a **bare topic** (`help: project`, or `help: nb`) → tries `.lib/help-type-<topic>.md` first, falls back to `.lib/help-<topic>.md`
+- a **real note selector**, anything containing `:` (`help: Takeout:folder/file.md`) → fetched and rendered directly, no fallback (there's nothing to fall back to)
+- a **list mixing either form** (`help: [hledger, nb, "Takeout:folder/file.md"]`) → each entry resolves and renders in order, concatenated with a divider; empty entries are skipped silently
 
-The global config always has one (`help: .lib:help-nb.md`), so the override chain never bottoms out with no help at all — unless something closer in the chain explicitly squelches it with `help: ''`.
+The global config always has one (`help: nb`), so the override chain never bottoms out with no help at all — unless something closer in the chain explicitly squelches it with `help: ''`.
 
 **`help_add:` — accumulate instead of override.** Same shape as `check_add:`/`cfg_attr_add:`: unions across `.nb.md` → `.{notebook}.md` → `.{foldername}.md` (every level contributes, none replace each other), layered on top of whatever `help:` resolves to rather than competing with it. Use `help_add:` when a whole notebook or folder should always show a shared topic *in addition to* whatever else resolves.
 
