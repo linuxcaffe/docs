@@ -44,6 +44,11 @@ Idea  →  Storylines  →  Screenplay  →  Shot List  →  Schedule  →  Budg
 
 Each stage has its own folder in your notebook and its own doc in [`docs/`](docs/). This README walks the arc; follow the links for the full picture.
 
+Before any of that, one setup step outside the pipeline itself: fill in your notebook's own
+**production note** (`type: production`, one per notebook) with company info and ATL crew as
+you know them — see [docs/CONFIGURATION.md](docs/CONFIGURATION.md#the-production-note-type-production).
+Fill-in-the-blanks, not a form to complete all at once.
+
 ---
 
 ### 1. Storylines
