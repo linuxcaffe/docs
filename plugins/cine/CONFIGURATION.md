@@ -38,4 +38,7 @@ to instead *replace* whatever the notebook-level config says for that same key, 
 
 Embedding the production card elsewhere: `{{inline: card production.md}}` (see the main
 nb-web docs for `{{inline:}}` generally) drops the full rendered card — not just the note's
-body text — into any other note.
+body text — into any other note (your notebook's dashboard, for instance). An embedded card
+has no Changes panel of its own to edit through, so the whole card is a click-through link back
+to `production.md` — click anywhere on it (that isn't already a link, like the phone/email
+rows) to open the real note and make changes there.
