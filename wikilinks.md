@@ -178,13 +178,22 @@ Terminal links work anywhere Markdown renders — note bodies, templates, requir
 
 ## Inline Live Queries
 
-`{{provider: query}}` — live data injected inline into note prose at render time.
+`{{provider: query}}` — live data injected inline into note prose, re-resolved every time the
+note renders. **Not the same mechanism as [[docs:TEMPLATES#Placeholders|template placeholders]]**
+— those (`{{title}}`, `{{tags}}`, `{{day}}`, `{{weather}}`, etc.) are bare, no colon, and
+substituted exactly once, at note-creation time, then baked into the file. Several provider
+names below deliberately echo those placeholder names (`day`, `weather`) for the live
+equivalent of the same idea — the colon is what tells them apart.
 
 ```
 Current cash: {{hledger: bal Assets:Cash --no-total}}
 Pending tasks: {{tw: count status:pending +work}}
 Story cards: {{fm: count Takeout:storylines/film-school/ type:story}}
-Today: {{date: %A, %B %d}}
+This note's tags: {{fm: tags}}
+Date: {{date: %A, %B %d}}
+Today: {{day: }}
+Last edited: {{mtime: }}
+Weather: {{weather: }}
 ```
 
 | Provider | What it runs | Example |
@@ -192,8 +201,11 @@ Today: {{date: %A, %B %d}}
 | `hledger` | hledger query against the notebook's journal | `{{hledger: bal Assets:Cash --depth 1}}` |
 | `tw` | Taskwarrior filter (returns count by default) | `{{tw: count due:today}}` |
 | `nb` | nb count/list — bare-metal `nb` CLI, no custom `type:` awareness | `{{nb: count home:}}` |
-| `fm` | Frontmatter-filtered count, folder-scoped, understands custom `type:` values — same query grammar as the [[docs:CODEBLOCKS\|fm codeblock]], `count`-only for now | `{{fm: count Takeout:storylines/film-school/ type:story}}` |
+| `fm` | `count ...` — frontmatter-filtered count, folder-scoped, understands custom `type:` values, same query grammar as the [[docs:CODEBLOCKS\|fm codeblock]]. A single field name instead (no `count`) reads that field from the **current note's own frontmatter**, live | `{{fm: count Takeout:storylines/film-school/ type:story}}` / `{{fm: tags}}` |
 | `date` | strftime format | `{{date: %Y-%m-%d}}` / `{{date: %A}}` |
+| `day` | strftime format, defaults to `%A, %B %-d, %Y` (same default as the template placeholder) | `{{day: }}` / `{{day: %A}}` |
+| `mtime` | Current note's own file modification time, strftime-formatted, defaults to `%Y-%m-%d %H:%M` | `{{mtime: }}` / `{{mtime: %Y-%m-%d}}` |
+| `weather` | wttr.in one-liner, cached 1h. Empty query → notebook's `weather_location:` config default if set, else server-guessed. A cine `locations/` note's `alias:` value resolves to its `address:` field; anything else is used as a literal wttr.in place name | `{{weather: }}` / `{{weather: LG}}` / `{{weather: Toronto}}` |
 | `inline` | Render another note's body in-place (see [[#Inline Note Includes]]) | `{{inline: ../notes/shared.md}}` |
 
 **`fm` vs `nb`** — reach for `fm` whenever the count needs to respect a custom frontmatter `type:` (`story`, `plotline`, `shot`, or any other notebook/plugin convention) or needs to be scoped to a specific folder; `nb`'s own `--type` flag only understands its built-in file categories (note, bookmark, image, etc.) and has no folder-recursion story beyond `nb count`'s flat first-level count. `fm`'s folder scope is **recursive** — a match in a nested subfolder still counts.
