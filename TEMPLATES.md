@@ -29,15 +29,20 @@ Templates use `{{placeholder}}` syntax, substituted at note-creation time.
 | Placeholder | Resolves to |
 |-------------|-------------|
 | `{{title}}` | Note title (from the Title field) |
+| `{{name}}` | Alias for `{{title}}` — used by some notebook-scoped templates |
+| `{{input}}` | Alias for `{{title}}` — same value, named for "whatever the user typed" |
 | `{{tags}}` | Hashtag list (from the Tags field) |
 | `{{content}}` | Body text (from the Content field) |
 | `{{date}}` | `YYYY-MM-DD` |
 | `{{day}}` | `Saturday, May 9, 2026` |
 | `{{time}}` | `HH:MM` |
 | `{{weather}}` | wttr.in one-liner (fetched lazily, cached 1 h) |
-| `$(command)` | Any shell command substitution |
 
-Templates are processed as Bash strings with `eval` — arbitrary shell expressions are valid. Keep template files trusted; don't use templates from untrusted sources.
+This is a fixed set — resolution is a plain literal-string replace over the template
+text, not a scripting language. There is no shell/`eval` step and no arbitrary
+`$(command)` substitution; unrecognized `{{placeholder}}` text is left in the note
+as-is. A template can still contain real Markdown, frontmatter, and fenced codeblocks
+freely — those just aren't placeholders.
 
 ## Naming convention — `typename.md`
 
