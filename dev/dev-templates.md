@@ -29,15 +29,21 @@ Regular templates use notebook-local scope first, then fall back to global. Both
 | Placeholder | Resolution |
 |-------------|-----------|
 | `{{title}}` | Note title from the Add form |
+| `{{name}}` | Alias for `{{title}}` — same dict value, used by some notebook-scoped templates |
+| `{{input}}` | Alias for `{{title}}` — same dict value, named for "whatever the user typed" |
 | `{{tags}}` | Space-separated `#tag` list from the Add form |
 | `{{content}}` | Body text from the Add form |
 | `{{date}}` | `YYYY-MM-DD` via `datetime.now()` |
 | `{{day}}` | `Saturday, May 9, 2026` via `strftime` |
 | `{{time}}` | `HH:MM` via `strftime` |
 | `{{weather}}` | wttr.in one-liner — fetched lazily, only if `{{weather}}` appears in template text |
-| `$(command)` | Shell command substitution — resolved via `eval` in bash subprocess |
 
-Resolution uses string replacement on the raw template text before the file is written. The preview shown in the Template picker shows **raw placeholders** — resolution only happens on "Create note".
+Resolution is a fixed Python `dict` of literal strings (`subs`), applied with plain
+`text.replace(k, v)` per entry — **not** a shell/`eval` step, and there is no
+`$(command)` substitution of any kind. This table is the complete set; a
+`{{placeholder}}` not in it passes through to the note untouched. The preview shown
+in the Template picker shows **raw placeholders** — resolution only happens on
+"Create note".
 
 ---
 
