@@ -223,6 +223,40 @@ sortOptions: [
 
 Plugin sort options appear below the built-in options after a separator. `NbWeb-contacts` uses this for **Last name** sort.
 
+### `editorKeybindings`
+
+Adds keyboard shortcuts scoped to the note editor's `<textarea>`. Either a plain array, or a
+`note => [...]` function when the binding should only apply to certain note types:
+
+```javascript
+editorKeybindings: note => note.type === 'scene' ? [
+    {
+        key: '[', ctrl: true, shift: false, alt: false,
+        label: 'Insert shot reference (Ctrl+[)',
+        action: (ta, note) => { /* splice text at ta.selectionStart, etc. */ },
+    },
+] : [],
+```
+
+`main.js`'s `_populateEditor` calls `NbWeb.getEditorKeybindings(note)` (`nbweb.js`) once per
+editor open, which collects `editorKeybindings` from every *active plugin module* for the
+note's notebook (`_activeFor(nb)`) — **this mechanism is plugin-scoped only; there is no
+built-in way to register a universal/core keybinding through it.** A core feature that needs
+an editor keybinding regardless of active plugins (e.g. the Edit-mode image-embed modal's
+`Ctrl+Shift+1`, added 2026-09-04 — see `nb-web` CLAUDE.md invariant 60) has to wire its own
+`keydown` listener directly in `main.js` instead, alongside the plugin-sourced dispatch rather
+than through it. See `nbweb-cine.js`'s scene-editor `Ctrl+[` binding (`_insertShotAction`) for
+the fullest worked example of an `action(ta, note)` implementation: it saves the cursor
+position, opens a confirm/cancel overlay, and on confirm splices text into `ta.value` and
+restores the selection.
+
+**If you're building a JS-appended overlay/modal for an `action` callback** (not static
+markup in `index.html`), it must grab focus into itself immediately on open, and its own
+Escape/close handler must call `e.stopPropagation()` before refocusing anything else —
+skipping either leaves a real path for an Escape keypress to leak to `ui-chrome.js`'s global
+"Escape from inputs" handler and close the whole editor instead of just the modal. Full
+writeup: `nb-web` CLAUDE.md invariant 60.
+
 ### Planned: `listExcerpt`, `addFormExtras`
 
 `listExcerpt` — override the excerpt shown in list view. In practice the backend already handles the common cases (`caption` frontmatter, `items/` folder pricing). A frontend hook would only be needed for cases the backend can't anticipate.
