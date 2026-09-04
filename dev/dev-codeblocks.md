@@ -32,7 +32,7 @@ Several block types accept **`.`** as a shorthand for the current note's locatio
 | `fm` | Current notebook (scope prefix) | `_frontParseQuery(raw, currentSelector)` — dot token in notebook list |
 | `git` | Current notebook (repo name) | Inline in `_loadGitBlock` before fetch |
 | `cfg` | Current note's `notebook:folder/` | `_configParseQuery(raw, currentSelector)` — `!target \|\| target === '.'` |
-| `gallery` | Current note's folder | `selector` param passed to `/api/gallery` with `path=.` |
+| `gallery` | Nearest `images/` folder, walking up | No `path` param sent at all when the query is bare (e.g. `gallery: thumb`) — `path=.` only when a literal `.` is written explicitly. See "gallery block — implementation notes" below. |
 
 **Selector extraction pattern** (used by `nav`, `fm`, `git`):
 ```javascript
