@@ -625,6 +625,8 @@ med
 
 Renders a CSS grid of images from the nearest `images/` folder, found by walking up from the current note's location. Click any image to open a full-screen lightbox with keyboard navigation (← → Esc).
 
+**Adding images** — while editing a note, click the 📷 button next to **mkd ref** (or press `Ctrl+Shift+1`) to embed an image: capture with a camera (coming soon), pick from the note's own nearest `images/` folder, or browse for a file. A brand-new upload lets you rename it first (handy for camera-roll names like `IMG_20260904_143201.jpg`); picking an already-existing image skips straight to choosing a size. Either way the image lands in this same `images/` folder, so it shows up here automatically — no gallery configuration needed. See [[KEYBOARD#Editing|Keyboard § Editing]] for the shortcut.
+
 **Sizes** — the first word sets the cell width:
 
 | Size | Cell width |
@@ -635,6 +637,8 @@ Renders a CSS grid of images from the nearest `images/` folder, found by walking
 | `large` | 320 px |
 
 Grid columns auto-fill the available width at the chosen cell size.
+
+*The single-image embed step above (📷) offers this same thumb/small/med/large vocabulary, plus "Full size" — but there it sets that one image's own display width in the note body, not a grid cell size. Two different mechanisms sharing one size scale for consistency, not the same setting.*
 
 **Path argument** — optional second word overrides the folder search:
 

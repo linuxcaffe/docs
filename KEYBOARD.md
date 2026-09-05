@@ -85,6 +85,7 @@ These work while a note is open in the editor.
 | Key | Action |
 |-----|--------|
 | `Ctrl+Enter` | Save the note (works in title, tags, and body fields) |
+| `Ctrl+Shift+1` | Embed an image at the cursor (camera / pick from folder / browse) — same as the 📷 button next to **mkd ref** |
 | `Escape` | Cancel edit — return to preview without saving |
 
 ---
