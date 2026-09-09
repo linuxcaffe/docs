@@ -74,6 +74,32 @@ separately — see "Marker placement" below.)
 endpoints guard this explicitly and return an honest zero rather than silently computing an
 unfiltered `since_invoice` if a marker name doesn't match anything.
 
+## RATE marker persistence across scope boundaries
+
+A `> RATE:` marker is forward-looking and has no expiry — once set, it stays in
+effect until the next one, however far away that is, completely independent of
+where a `since_invoice`/`since_marker` scope's own slice happens to start.
+
+`_marker_group_totals` used to hand each milestone group's own bounded slice to
+`_parse_timedot_slice` with the note's raw frontmatter `rate:` as `start_rate` —
+correct only by accident, for as long as no RATE marker had ever fired earlier in
+the diary, outside that slice. Found live 2026-09-09 on
+`djp:projects/Seaman/nathan/nathan.md`: `> RATE: 35` set 2026-07-10, never
+repeated; every invoice through INV-2026-016 (flat/journal path — no MILESTONE
+marker existed in scope yet) correctly billed $35/hr, since that path reads
+pre-baked amounts off the generated journal, which itself walks the whole diary
+from the top. The moment a MILESTONE marker existed inside a `since_invoice`
+scope, generation switched to the milestone-grouped path and silently reverted
+to the note's base rate ($30) for any group whose own slice didn't happen to
+still contain the RATE line.
+
+Fixed by `_rate_in_effect(lines, before_line, fallback_rate)` — scans the full
+diary from line 0 (not just the group's own slice) for the last RATE marker
+before the group's `line_start`, and that becomes the group's `start_rate`.
+`_parse_timedot_slice` already correctly tracks a RATE marker that occurs *inside*
+a slice; this only fixes the slice's *starting* rate. Regression test:
+`test_quote_milestone_sections.py::test_rate_marker_before_scope_start_still_applies`.
+
 ## Quote vs. invoice presentation differences
 
 Both share `_render_milestone_sections` — these are parameter differences, not separate code
