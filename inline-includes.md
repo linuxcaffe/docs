@@ -81,8 +81,8 @@ self-contained document.
 
 - **Use a colon for `.lib` files**: `{{inline: .lib:help-nb.md}}` works; `{{inline: .lib/help-nb.md}}`
   is read as a path relative to the current note and fails. The same goes for wikilinks.
-- **Includes don't nest**: `{{inline:}}` lines inside an included note are dropped, which
-  prevents loops.
+- **Two levels deep**: an included note's own includes work (so a book's chapter can pull in a
+  section), but includes three levels down are dropped, which also prevents loops.
 - **Write the `.md`**: `docs:wikilinks.md#Summary` works; `docs:wikilinks#Summary` doesn't find
   the note.
 - **Not published**: Quartz shows `{{inline:}}` as literal text.
