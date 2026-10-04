@@ -213,7 +213,7 @@ Key lessons from the `fm` codeblock (frontmatter filter/query block) and its sib
 `{{fm: count ...}}` inline-query provider. Full query-language design history and the day it
 was all built: `claude:fm_query_language_extension_plan_2026-08-04.md` (all 5 phases shipped
 same-day). User-facing reference: [[docs:CODEBLOCKS#fm — Frontmatter Filter]],
-[[docs:WIKILINKS#Inline Live Queries]].
+[[docs:inline-queries.md|Inline live queries]].
 
 **Scope prefix parsing** (`_frontParseQuery` in `nbweb-codeblocks.js`, `_parse_fm_scope` in
 `app.py` — kept in sync by hand, no shared source, since one runs in the browser and the other

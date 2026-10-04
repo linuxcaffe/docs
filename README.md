@@ -120,7 +120,7 @@ Commands can reference the **current note** using `{variable}` placeholders reso
 
 Put a `[Run](term:bash {file})` link in a notebook template and every note in that notebook gets a run button. The note *is* the script. Click once — the terminal opens and the command runs immediately. If the terminal is already open, the command is sent to the running session. Works in note bodies, templates, and wikilinked docs.
 
-→ [[docs:WIKILINKS#Terminal Links]]
+→ [[docs:terminal-links.md|Terminal links]]
 
 ---
 

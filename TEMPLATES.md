@@ -26,7 +26,7 @@ Templates are plain Markdown files stored in `.templates/` directories. nb-web m
 
 Templates use `{{placeholder}}` syntax, substituted once, at note-creation time. For a *live*,
 re-resolved-on-every-render equivalent usable anywhere in prose (not just templates) — including
-`day` and `weather` by the same name — see [[docs:wikilinks#Inline Live Queries]].
+`day` and `weather` by the same name — see [[docs:inline-queries.md|Inline live queries]].
 
 | Placeholder | Resolves to |
 |-------------|-------------|

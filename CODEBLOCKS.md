@@ -811,7 +811,7 @@ count Takeout:storylines/film-school/ type:story
 sum:budget Takeout:storylines/ type:story
 ```
 
-Two more leading verbs, same reserved-prefix convention as `group`/`list`. Neither renders a list — just the header, with the number. `count` shows the match count; `sum:<field>` totals that field's numeric value across every match. For counting inline in prose instead of as a standalone block, see `{{fm: count ...}}` in [[docs:WIKILINKS#Inline Live Queries]] — same underlying query, different rendering surface.
+Two more leading verbs, same reserved-prefix convention as `group`/`list`. Neither renders a list — just the header, with the number. `count` shows the match count; `sum:<field>` totals that field's numeric value across every match. For counting inline in prose instead of as a standalone block, see `{{fm: count ...}}` in [[docs:inline-queries.md|Inline live queries]] — same underlying query, different rendering surface.
 
 `sum:` silently skips any matching note that lacks the field or holds a non-numeric value for it — the header shows `(counted/total)` so that's visible rather than hidden, and a missing/bad value is never treated as `0` (which would understate nothing but silently implies every match contributes, which usually isn't true — a budget field genuinely unset on 3 of 10 cards is very different from those 3 being budgeted at zero). Works for pseudo-fields too: `sum:wordcount` totals word count across every match, e.g. total words written across all scenes in a folder — no separate `wordcount` verb needed since it's exactly this with a fixed field name.
 
