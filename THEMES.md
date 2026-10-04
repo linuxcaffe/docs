@@ -43,8 +43,8 @@ The key `bg` becomes CSS var `--bg`; `text-muted` becomes `--text-muted`; and so
 |------|------|-----------|
 | `default` | Default | The original dark/light palette |
 | `groovy` | Groovy | Warm amber and earth tones |
-
-#TODO add the 2 other themes to this list (solarized and high-contrast)
+| `hi-contrast` | Hi-Contrast | Pure black/white backgrounds with saturated accents, for maximum legibility |
+| `solarized` | Solarized | The classic Solarized palette, in both its dark and light forms |
 ---
 
 ## Setting a theme
@@ -138,5 +138,18 @@ When you navigate to a note, nb-web reads `effective_fm.theme` and applies the r
 | `alert` | `--alert` | Alert text |
 | `alert-bg` | `--alert-bg` | Alert background |
 | `alert-border` | `--alert-border` | Alert border |
+
+**Rules for code (nb-web and its plugins):**
+
+- **Use only these keys for colour.** Pick by meaning: `red` for errors and danger, `yellow` for
+  warnings and "in progress", `green` for success, `accent` for links, `text-muted` for secondary
+  text, `bg3` for subtle fills, `border` for any line. Don't invent a name like `--link` or
+  `--text-danger` that no theme defines.
+- **No hex fallback** (`var(--red, #e74c3c)`): `styles.css` `:root` gives every key a default
+  already, and a hard-coded fallback ignores the theme.
+- **A genuinely new key** goes in all three places at once: this table, `:root`, and every theme
+  file (both `dark:` and `light:`).
+- nb-web-tests `test_theme_vars.py` fails on any CSS variable that nothing defines, in nb-web or
+  in the plugins. Fixed 2026-10-04: ~20 such names had crept in.
 
 Layout variables (font sizes, pane widths, spacing) and font choices are intentionally outside the theme system — they belong to personal preference settings, not colour themes.
