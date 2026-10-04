@@ -1,137 +1,95 @@
 ---
-title: "check-sweep.py"
+title: "Check sweep"
 type: dotfile
 tags: [checks, sweep, guide]
 ---
 
-# check-sweep.py — bulk check triage across notebooks
+# Check sweep — every applicable check across a notebook
 
 > Developer documentation for nb-web. See [[docs:DEVELOPERS.md]] for the full index.
-> Companion to [[docs:dev/dev-checks.md]] — that page covers the `check` codeblock/individual
-> script model; this page covers the standalone tool that runs checks in bulk, outside the
-> reactive per-note UI.
+> Companion to [[docs:dev/dev-checks.md]] — that page covers the `check` codeblock and the
+> per-note script model; this one covers sweeping a whole notebook outside the per-note UI.
 
-`~/.nb/.tools/check-sweep.py`. Built 2026-07-15, substantially reworked 2026-07-17.
+Rebuilt 2026-10-03 ("check sweep v2"). Design and decisions:
+`claude:check_sweep_v2_design_2026-10-02.md`. Why the old version was replaced:
+`claude:check_sweep_index_churn_2026-10-02.md`.
 
-## Why this exists
+## What it's for
 
-nb-web's check system is entirely **reactive** — `/api/check/run`, `/api/check/glob`, and
-`/api/check/batch` all fire only when a specific note is rendered in the UI. There is no
-background sweep, no notebook-wide dashboard aggregator. A note that nobody happens to open can
-have a real, broken `check:` result sitting undetected indefinitely — confirmed the hard way
-2026-07-17, when a YAML frontmatter error in a subfolder note broke a published Quartz build
-before anyone had viewed the note since the edit that introduced it. `check-sweep.py` closes that
-gap: it walks every note in scope, resolves each one's own `check:`/`check_add:`/`check_skip:`
-cascade exactly as the live UI would, and runs the applicable scripts — either as a one-off
-manual triage, or unattended on a cron schedule.
+Notes you open are already checked as they render. A sweep catches problems in notes **nobody
+opens**, mainly in notebooks that get published, before they go live.
 
-## Basic usage
+## Where it runs
 
-```bash
-python3 ~/.nb/.tools/check-sweep.py [--notebook NAME[,NAME...]] [--scripts LIST] \
-                                    [--check-sweep] [--log-out DIR] [--json] [--workers N]
-```
+Inside nb-web, at `/api/check/sweep`:
 
-| Flag | Meaning |
-|------|---------|
-| `--notebook` | Comma-separated notebook name(s) to limit to. Default: every notebook. |
-| `--scripts` | Comma-separated script names (bare or `.sh`) — restrict execution to just these, skipping everything else a note would otherwise resolve to. A dangling-dash family prefix (`syntax-`) expands via `/api/check/glob`, same convention as `check:` in frontmatter. |
-| `--check-sweep` | Discover the notebook scope from `check_sweep: true` in each notebook's own dotfile, instead of `--notebook`. See below. |
-| `--log-out DIR` | A directory — write one findings report per notebook actually swept, `sweep-<notebook>.log`. See below. |
-| `--json` | Emit raw JSON (`{script: [{selector, notebook, exit_code, message}, ...]}`) instead of the formatted stdout report. |
-| `--workers N` | Concurrent HTTP workers (default 6). |
+| Call | Does |
+|------|------|
+| `POST {notebook, mode: "changed"}` | Re-check notes changed since the last sweep; merge into the stored result |
+| `POST {notebook, mode: "full"}` | Re-check every note |
+| `GET ?notebook=` | The last stored result (404 if never swept) |
 
-Requires nb-web running (reads notes via its API) and a local API token at
-`~/dev/nb-web/.api_token` (override with `NB_WEB_API_TOKEN_FILE`). Note **enumeration** is a
-direct filesystem walk (`os.walk` over `~/.nb`), not an API call — `/api/notes?notebook=_all`
-only reads each notebook's top-level `.index`, silently missing anything in a subfolder (the
-actual root cause of the 2026-07-17 incident above).
+Needs `user` level plus access to the notebook. One sweep per notebook at a time: a second POST
+gets `409` with the last stored result.
 
-## Opting a notebook into scheduled sweeping
+Results are stored in `~/.nb/.logs/sweep/<notebook>.json`, which is gitignored and outside every
+notebook repo, so a sweep can never move a notebook's HEAD.
 
-Three dotfile fields, read directly from each notebook's own `.{notebook}.md` (not through
-nb-web's API — the same file `_notebook_config()` reads server-side):
+**It never runs `nb`.** Notes come from a file walk (dotfiles and dot-directories skipped), paths
+are known, and each note's checks are resolved server-side exactly as the browser resolves them
+(`_note_check_tokens`, pinned to `main.js`'s `_virtualTestPrefix` by a test that runs the real
+JavaScript). Concurrent `nb` processes are what corrupted `docs/.index` under the old sweep.
 
-| Field | Set by | Meaning |
-|-------|--------|---------|
-| `check_sweep: true` | You | Opt-in flag — this notebook is a candidate for `--check-sweep` discovery |
-| `check_sweep_date:` | `check-sweep.py`, automatically | UTC timestamp of the last time this notebook was actually looked at (swept for real, or confirmed unchanged) |
-| `check_sweep_commit:` | `check-sweep.py`, automatically | Git HEAD hash as of the last real sweep — compared against current HEAD to decide whether to skip |
+## Who triggers it
 
-Both machine-written fields get a trailing `# generated by check-sweep.py` comment marking them
-as machine-managed — don't hand-edit them, they'll be overwritten the next real sweep anyway.
-**Clearing either by hand is meaningful, not a bug**: it falls through to "never run"/"unknown
-commit", so the next sweep treats that notebook as needing a fresh check regardless of whether
-its HEAD actually moved. Deliberately decoupled from `website:`/`.nb-website.json` (a notebook
-having a published site and a notebook wanting ambient check coverage are different concepts
-that happened to coincide on the same two notebooks the day this was built — don't conflate them
-just because of that coincidence).
+- **Publishing.** `NbWeb.publishWebsite` runs a `changed` sweep first. Clean → publishes. Errors
+  or warnings → a dialog with **Fix first** (default, also Escape) or **Publish anyway**. If the
+  sweep can't run at all, publishing goes ahead: a soft gate.
+- **The Notebooks page.** Each swept notebook's row shows `⚠ N` when its last sweep found
+  problems (red if any errors, yellow if only warnings; nothing when clean). The detail panel's
+  **Checks** section lists the findings and has **Sweep now** (a full sweep).
+- **Nightly, 03:17.** The systemd user timer `nb-check-sweep.timer` (`Persistent=true`, so a missed
+  night runs at next boot) runs `~/.nb/.tools/check-sweep.py`, a thin client that POSTs a
+  `changed` sweep for every notebook whose dotfile has `check_sweep: true`.
 
 ```bash
-python3 ~/.nb/.tools/check-sweep.py --check-sweep --log-out ~/.nb/.logs
+python3 ~/.nb/.tools/check-sweep.py                 # all check_sweep: true notebooks, changed mode
+python3 ~/.nb/.tools/check-sweep.py --notebook docs --full
+journalctl --user -u nb-check-sweep.service         # what the nightly run said
 ```
 
-## Skipping unchanged notebooks
+## What "changed" re-checks
 
-Before walking a notebook's notes, `check-sweep.py` compares its current git HEAD to the
-`check_sweep_commit:` recorded from the last real sweep. If they match, the entire notebook is
-skipped — nothing in it could have changed since every note's content and every script's
-behavior are already accounted for by that commit. This is a whole-notebook check (one `git
-rev-parse HEAD`), not per-file mtime tracking — cheap, and correct as long as all relevant state
-(note content, check scripts, anything a check might read) is captured in that notebook's own
-git history.
+- Notes changed since the last sweep's commit: committed, uncommitted, untracked, or renamed.
+- Every note under a folder whose `.{folder}.md` changed (config cascades).
+- A note whose annotation sidecar changed (annotation frontmatter feeds the note's meta).
+- **Everything**, when the notebook's own `.{notebook}.md` changed, a check script or the global
+  `.nb.md` changed, there's no previous sweep, the previous commit isn't in history any more, or
+  the notebook isn't a git repo.
 
-## Execution-level dedup within a run
+## Per-note and notebook-wide scripts
 
-Some checks evaluate shared, notebook-wide state rather than each note's own content —
-`hl-*` scripts checking a notebook's shared hledger journal are the concrete example. Naively,
-these fire once per note via the same `check:` cascade real per-note checks use, producing the
-identical result N times over N notes for zero additional information — at real cost, since each
-run is a genuine subprocess (an `hledger` invocation, in this case).
+A script can only vary per note through `NB_NOTE_*` or `NB_FM_LINES`. One that never mentions
+them, and sources nothing, gives the same answer for every note in a notebook, so the sweep runs
+it **once** and reports it once, with the number of notes it applies to (`notebook_findings`).
+Everything else runs per note (`note_findings`). Decided from the script's text, erring toward
+per-note: a mention in a comment counts. As of 2026-10-03, 56 of 85 scripts are notebook-wide,
+including every `hl-*`.
 
-`check-sweep.py` detects this **empirically**, with no naming convention and no hardcoded list of
-"which scripts are notebook-wide": once a `(notebook, script)` pair produces the identical
-`(exit_code, message)` twice, it's cached and reused for that notebook's remaining notes instead
-of re-executing. A genuinely note-specific check's message varies from note to note by
-definition, so it never triggers the shortcut — the mechanism is safe by construction, not by
-guessing which scripts qualify. Confirmed 2026-07-17: this took `preciousfinds.ca:`'s `hl-*`
-checks from up to 144 potential `hledger` invocations per sweep down to a small, bounded number
-regardless of how many notes the notebook has.
+(The old sweep guessed this by sampling: "same result on two notes = notebook-wide". Two
+*passing* notes look the same, so per-note checks were silently skipped after two passes.)
 
-## Output: `--log-out`
+## Result levels
 
-`--log-out DIR` writes one file per notebook actually swept this run —
-`DIR/sweep-<notebook>.log` — each overwritten fresh (0 bytes when that notebook is clean).
-**A notebook skipped as unchanged is not written at all**: its existing log file is already
-exactly as accurate as a fresh write would be, so leaving it untouched avoids both wasted work
-and any need to merge stale-but-still-true findings with freshly-discovered ones. Findings within
-a notebook's file are also deduped by identical message (the same notebook-wide-check
-consolidation as above, applied to the report), so a `hl-*` finding shows as one line
-("notebook-wide, 16 notes") rather than 16 separate bullet points.
+| Level | Meaning |
+|-------|---------|
+| `error` | Script exited 1 (or couldn't run) |
+| `warn` | Script exited 2 |
+| `skipped` | Script hit the time limit (`_CHECK_SCRIPT_TIMEOUT`, 30s). Says nothing about the note. |
 
-This is what [[docs:dev/dev-checks.md]]'s reactive model can't do on its own: `.checks/
-nb-sweep-log.sh` (a `# no-env-guard` system check) scans every `~/.nb/.logs/*.log` file and
-fires ambiently — on whatever note you happen to be viewing in a notebook that opts in — if any
-of them are non-empty. That's the reactive check UI reused as the notification surface for a
-periodic background sweep, rather than building a separate dashboard.
+The message is the first non-empty line of the script's output.
 
-## Scheduling
+## Opting a notebook in
 
-A real system crontab entry, not the session-scoped Claude Code agent-cron tool (which is
-in-memory only and dies with the Claude session — the wrong mechanism for anything that needs to
-survive past one conversation):
-
-```
-7,22,37,52 * * * * python3 ~/.nb/.tools/check-sweep.py --check-sweep --log-out ~/.nb/.logs >> /tmp/publish-sweep-cron.log 2>&1
-```
-
-Deliberately offset from `:00`/`:30` (matches the docs-site GitHub Actions build's own 30-minute
-schedule at roughly double the frequency, so the sweep always has a chance to catch a problem
-before the next build does).
-
-## Full design/decision narrative
-
-`claude:nb_sweep_log_ambient_check_2026-07-17.md` — the trigger (a real build failure), why the
-reactive check system missed it, three unrelated check-system bugs found while building this,
-and the live CPU-spike investigation that led to the execution-dedup and skip-unchanged-notebook
-mechanisms above.
+Add `check_sweep: true` to the notebook's own `.{notebook}.md`. That only affects the nightly
+run; publishing sweeps any notebook being published, and **Sweep now** works on any notebook.
