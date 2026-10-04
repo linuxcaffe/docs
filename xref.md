@@ -1,20 +1,26 @@
 ---
 title: "xref — Cross-Reference Enrichment"
+caption: headings that link themselves to matching notes elsewhere
+topic: xref
+category: linking
+help_for: [key:xref, key:xref-ignore]
 type: doc
+toc: true
 processed: true
 ---
 
 # xref — Cross-Reference Enrichment
 
-`xref:` is nb-web frontmatter that automatically cross-references the headings of a note against titles in another notebook (or folder). Words that match become clickable reference indicators — small superscript links that open the matched note.
+## Summary
 
-It's designed for knowledge fusion: a guide that lives in one notebook (`accts:`) can surface relevant deep-reference notes from another (`hledger:`) without manual wikilinks on every heading.
+`xref: hledger:` in a note's frontmatter matches the words in its headings against the note titles
+in another notebook (or folder). Each match gets a small `[1]`, `[2]`… superscript that opens the
+matching note. Set it once in a notebook or folder config and every note there gets it: a guide in
+`accts:` can point at deep reference notes in `hledger:` with no wikilinks typed by hand.
 
----
+## How it works
 
-## Quick start
-
-Add `xref:` to any note's frontmatter:
+Add `xref:` to a note's frontmatter:
 
 ```yaml
 ---
@@ -23,52 +29,25 @@ xref: hledger:
 ---
 ```
 
-Every significant word in every heading will be matched against note titles in the `hledger` notebook. Matches appear as small `[1]` `[2]` superscripts after the word, linking directly to the matched note.
+Every significant word in every heading is matched against note titles in the `hledger` notebook.
+Matching words get a superscript, muted until you hover; click it to open the matched note.
+Numbering runs through the note in heading order, across all targets.
 
----
-
-## Syntax
-
-### Single target — whole notebook
+### Targets
 
 ```yaml
-xref: hledger:
+xref: hledger:                    # a whole notebook (its top-level notes)
+xref: accts:tutorial/             # one folder only
+xref: [hledger:, accts:tutorial/] # several; fetched in parallel, numbered in one sequence
 ```
 
-Scans all top-level `.md` files in the `hledger` notebook.
+`hledger:` (trailing colon) inside a YAML list is read by some tools as a mapping key; nb-web
+unwraps it, so the syntax above works as written, no quotes needed.
 
-### Single target — folder scope
+### Set it once for a whole notebook or folder
 
-```yaml
-xref: accts:tutorial/
-```
-
-Scans only `~/.nb/accts/tutorial/*.md`. Useful when a notebook is large and you only want to cross-reference a specific section.
-
-### Multiple targets
-
-```yaml
-xref: [hledger:, accts:tutorial/]
-```
-
-A YAML list. Each target is fetched independently (in parallel); ref numbers are assigned sequentially across all targets. The word `[1]` might come from `hledger:`, `[2]` from `accts:tutorial/`, etc.
-
-**YAML note:** `hledger:` (trailing colon) inside a YAML flow sequence is parsed by some tools as a mapping key rather than a plain string. nb-web detects and unwraps this automatically, so the syntax above works as written — no quoting needed.
-
----
-
-## Config-chain seeding
-
-Instead of adding `xref:` to every note, declare it once in a notebook or folder config — it flows to every note in that scope automatically.
-
-```yaml
-# in .nb.md (notebook config) or .folder.md (folder config)
-xref: docs:
-```
-
-Every note in the notebook now behaves as if it had `xref: docs:` in its own frontmatter. No per-note changes needed.
-
-**Domain seeding** — different notebooks point at their own reference domain:
+Instead of adding `xref:` to every note, put it in a notebook or folder config; it then applies to
+every note in that scope:
 
 ```yaml
 # ~/.nb/nb/.nb.md
@@ -78,75 +57,44 @@ xref: docs:           # nb-web docs for every nb: note
 xref: docs:hledger/   # hledger reference for every accts: note
 ```
 
-**Suppress at a narrower scope** — a folder or individual note can opt out:
+A folder or note can switch it off with a bare `xref:` (no value). `xref: ""` also works.
 
-```yaml
-xref:
-```
+### Annotation vocabulary
 
-Bare field with no value. Clears the inherited target at this level without affecting siblings. `xref: ""` also works; bare `xref:` is preferred (less is more).
-
----
-
-## Config dialog fields
-
-When a config note (`.nb.md`, `.folder.md`) is open, the config form's field labels — `access`, `pinned`, `check`, `tag_color`, etc. — participate in xref exactly like headings. If the notebook's `xref:` points at documentation that has matching sections, the field labels get superscript reference links automatically.
-
-This creates contextual help at zero cost: hover for the tooltip, click to read the doc, back to return. The links appear only on fields that have matching documentation — self-selecting, no noise on simple fields.
-
----
-
-## Domain stop words
-
-Universal English stop words are always ignored (articles, prepositions, auxiliaries, common noise words like "use", "file", "note").
-
-For domain-specific stop words — words that are common in your content but shouldn't trigger refs — use `xref-ignore:`:
-
-```yaml
-xref-ignore: ["journal", "account", "transaction"]
-```
-
-Words in this list are excluded from heading scans on the current note. They're note-level, so they only suppress matches in this note, not in the target index.
-
----
-
-## Annotation vocabulary
-
-The killer feature: if a note's *annotation sidecar* contains free text, those words are indexed too.
-
-Suppose `hledger:check.md` has the title "hledger check". The heading "Verify integrity" in your guide won't match "check" or "hledger" directly. But if the annotation sidecar for `hledger:check.md` contains:
+If a target note's **annotation** contains free text, those words count too. Say `hledger:check.md`
+is titled "hledger check": the heading "Verify integrity" matches neither word. If its annotation
+contains
 
 ```
 verify integrity validate structural soundness journal errors
 ```
 
-Then "Verify" and "integrity" will both match, and `[N]` indicators will appear on that heading.
+then "Verify" and "integrity" both match. Annotations are never published, so they let you tune
+matching without touching published text.
 
-Annotations are the private back-of-house layer (never published, not in `.index`). Using them as vocabulary enrichment lets you tune xref precision without editing published content.
+### Config forms
 
----
+In a config note (`.nb.md`, a folder's `.{folder}.md`), the config form's field labels (`access`,
+`pinned`, `check`, `tag_color`…) take part like headings. If the notebook's `xref:` points at docs
+with matching sections, those labels link to them: contextual help for free, only on fields that
+have docs.
 
-## Visual indicator
+## Reference
 
-Matching words get a small superscript injected inline — `[1]`, `[2]`, … — muted at rest, full opacity on hover. Click opens the matched note in the preview pane. Numbering is per-note, sequential across all xref targets, in heading order.
+- **`xref-ignore:`** lists words that shouldn't match in this note
+  (`xref-ignore: ["journal", "account"]`). Common English words ("the", "use", "file", "note"…)
+  are always ignored.
+- **Books**: in a note made of `{{inline:}}` chapters, xref scans every chapter's headings, and
+  loads all chapters up front to do it. For very long books, put `xref:` on the chapters instead.
+- **Top-level only**: a folder target scans that one folder, not its subfolders.
+- **Titles and annotations only**: the target notes' bodies aren't indexed.
+- **Headings and labelled elements only**: superscripts go on `<h1>`–`<h6>` and elements marked
+  `data-xref-heading` (config labels); paragraphs and codeblocks are untouched.
+- **Cache follows file times**: adding or editing a note in the target refreshes it automatically.
 
----
+See also: [[docs:wikilinks.md|Wikilinks]] for links typed by hand, and [[bookkeeper]] for xref in
+real use.
 
-## Books and inline notes
+## For developers
 
-Notes with `type: book` that use `{{inline:}}` to pull in chapter files work fully — xref scans headings across every chapter. Opening a book with `xref:` front-loads all chapter fetches rather than loading them lazily on scroll; on a local server this is imperceptible.
-
-For best performance on very long books, add `xref:` to individual chapter notes instead of the book root — chapters have no inlines to force and xref runs immediately.
-
----
-
-## Limitations
-
-- **Top-level files only** — folder-scoped targets scan one directory; nested subdirectories are not recursed.
-- **Titles and annotations only** — index vocabulary comes from note title and annotation sidecar; note body text is not indexed.
-- **Headings and labelled elements only** — xref injects into `<h1>`–`<h6>` and any element with `data-xref-heading` (config form labels, config codeblock field names). Body paragraphs and codeblocks are untouched.
-- **Cache is mtime-based** — the index refreshes when the target directory's mtime changes. Adding or editing a note in the target notebook invalidates the cache automatically.
-
----
-
-See also: [[docs:wikilinks]] for manual cross-references, [[bookkeeper]] for the canonical example of xref in action. Developer internals in [[docs:dev/dev-xref.md]].
+[[docs:dev/dev-xref.md]]
