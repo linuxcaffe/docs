@@ -44,6 +44,7 @@ The key `bg` becomes CSS var `--bg`; `text-muted` becomes `--text-muted`; and so
 | `default` | Default | The original dark/light palette |
 | `groovy` | Groovy | Warm amber and earth tones |
 
+#TODO add the 2 other themes to this list (solarized and high-contrast)
 ---
 
 ## Setting a theme
