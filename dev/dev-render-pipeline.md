@@ -93,6 +93,24 @@ For books, the user sees a blank pane until ALL chapters have fetched and
 rendered. Parallel fetches complete at similar times so the book "pops in" all
 at once rather than appearing progressively.
 
+### 7. Every `/api/note` costs ~0.3 s on the server (measured 2026-10-05, not yet fixed)
+
+One `GET /api/note` for a plain feature page took about 0.29 s on the bare dev server. A
+profile of three calls (`cProfile` around `app.api_note()` in a request context):
+
+- **~65% is YAML parsing**: about 36 `parse_frontmatter` calls per request. The config chain
+  (global → notebook → folders) is re-read and re-parsed for every cascading key
+  (`_collect_cascading_tokens` → `_read_raw`, 6 keys per note), on top of `_folder_config` and
+  friends. Nothing caches a parsed config.
+- **~30% is one `nb` subprocess** (`run_nb`, ~0.14 s), resolving the selector.
+
+Because the GIL serializes these, N parallel note requests take ~N × 0.3 s together; this is what
+made quick tab hopping stall page loads (fixed on the client side by caching tab labels, but
+every note open still pays it). **Fix, when someone picks it up:** cache parsed frontmatter by
+`(path, mtime_ns, size)` (one dict, a few lines, invalidates itself), and resolve plain
+`notebook:path.md` selectors straight from disk instead of through `nb`. Write a before/after
+timing test first.
+
 ---
 
 ## Redesign Plan
