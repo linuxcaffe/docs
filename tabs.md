@@ -1,6 +1,7 @@
 ---
 title: TABS
 caption: a row of tabs linking a set of related notes
+type: topic
 topic: tabs
 category: linking
 help_for: [key:tabs]

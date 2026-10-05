@@ -1,10 +1,10 @@
 ---
 title: "xref — Cross-Reference Enrichment"
 caption: headings that link themselves to matching notes elsewhere
+type: topic
 topic: xref
 category: linking
 help_for: [key:xref, key:xref-ignore]
-type: doc
 toc: true
 processed: true
 ---

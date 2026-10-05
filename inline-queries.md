@@ -1,6 +1,7 @@
 ---
 title: INLINE QUERIES
 caption: live numbers and values right inside a sentence
+type: topic
 topic: inline-queries
 category: live-blocks
 help_for: [page:editor]

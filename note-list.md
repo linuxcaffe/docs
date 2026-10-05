@@ -1,6 +1,7 @@
 ---
 title: NOTE LIST
 caption: the list of notes on the left, and the preview on the right
+type: topic
 topic: note-list
 category: basics
 help_for: [page:list, key:pinned]

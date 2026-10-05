@@ -1,6 +1,7 @@
 ---
 title: NOTEBOOKS
 caption: separate collections of notes, each its own folder and git repo
+type: topic
 topic: notebooks
 category: basics
 help_for: [page:notebooks]

@@ -1,6 +1,7 @@
 ---
 title: WIKILINKS
 caption: making connections across paragraphs, files and notebooks
+type: topic
 topic: wikilinks
 category: linking
 help_for: [page:editor, key:alias]

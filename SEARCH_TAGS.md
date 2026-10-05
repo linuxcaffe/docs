@@ -1,6 +1,7 @@
 ---
 title: SEARCH_TAGS
 caption: find notes by their text, by their tags, or both
+type: topic
 topic: search-tags
 category: basics
 help_for: [page:search, key:tags]

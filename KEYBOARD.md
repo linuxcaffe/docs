@@ -1,6 +1,7 @@
 ---
 title: KEYBOARD
 caption: keyboard shortcuts for moving around, finding and editing notes
+type: topic
 topic: keyboard
 category: basics
 help_for: [page:keyboard, key:ui_hide]

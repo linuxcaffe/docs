@@ -1,6 +1,7 @@
 ---
 title: TERMINAL LINKS
 caption: links that run a command in the built-in terminal
+type: topic
 topic: terminal-links
 category: linking
 help_for: [page:terminal]

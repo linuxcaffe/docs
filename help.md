@@ -1,9 +1,10 @@
 ---
 title: HELP
 caption: the ? button, and how help finds what to show
+type: topic
 topic: help
 category: basics
-help_for: [type:help, key:help, key:help_add, key:help_for]
+help_for: [type:help, type:topic, type:feature, key:help, key:help_add, key:help_for]
 toc: true
 processed: true
 ---

@@ -1,6 +1,7 @@
 ---
 title: INLINE INCLUDES
 caption: show another note, or one section of it, inside this one
+type: topic
 topic: inline
 category: linking
 help_for: [page:editor]

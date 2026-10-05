@@ -1,6 +1,7 @@
 ---
 title: EDITOR
 caption: editing a note's Markdown right in the browser
+type: topic
 topic: editor
 category: basics
 help_for: [page:editor, key:lock]
