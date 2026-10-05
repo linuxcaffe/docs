@@ -33,19 +33,21 @@ keeps tabs compact. Folder tabs use the folder's name.
 `.{notebook}.md` or a folder's `.{folder}.md` and every note in that scope gets the strip. A
 note's own `tabs:` overrides the inherited one.
 
-Bare names in a note's **own** `tabs:` are relative to that note's folder. Bare names in an
-**inherited** `tabs:` are relative to the notebook root, so one config works for every note
-below it; use `notebook:path` to be explicit.
+Bare names are relative to the folder of whoever set them: a note's **own** `tabs:` to the note's
+folder, a folder config's (`basics/.basics.md`) to that folder, the notebook config's to the
+notebook root. So one config works for every note below it. `../` steps up a folder, and
+`notebook:path` is always explicit. The `.md` can be left off (`note-list` means `note-list.md`).
 
 ## Reference
 
 | Entry | Resolves to |
 |-------|-------------|
-| `other.md` | own `tabs:`: beside the current note; inherited: at the notebook root |
+| `other.md` or `other` | beside whoever set the tabs (the note, or the config's folder) |
 | `../folder/file.md` | a path relative to the current note |
 | `notebook:path/file.md` | a note in another notebook (full path required) |
 | `subfolder/` | a folder tab: opens that subfolder and its pinned note |
 | `notebook:folder/` | a folder in another notebook (full path required) |
+| `notebook:/` | the notebook's top level |
 
 ## For developers
 
