@@ -19,8 +19,8 @@ from the same docs you can read in the `docs:` notebook, so there's one copy of 
 
 ## How it works
 
-Click **?** to open the popover; click it again, or anywhere outside, to close it. The first topic
-opens at its summary; the others show as one-line headings, and clicking one opens it.
+Click **?** to open the popover; click it again, or anywhere outside, to close it. Each topic
+starts folded to a one-line heading (its title and caption); click one to open its summary.
 
 ### Where the topics come from
 
