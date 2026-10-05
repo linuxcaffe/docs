@@ -93,7 +93,7 @@ For books, the user sees a blank pane until ALL chapters have fetched and
 rendered. Parallel fetches complete at similar times so the book "pops in" all
 at once rather than appearing progressively.
 
-### 7. Every `/api/note` costs ~0.3 s on the server (measured 2026-10-05, not yet fixed)
+### 7. Every `/api/note` costs ~0.3 s on the server (measured 2026-10-05, fixed the same day)
 
 One `GET /api/note` for a plain feature page took about 0.29 s on the bare dev server. A
 profile of three calls (`cProfile` around `app.api_note()` in a request context):
@@ -110,6 +110,12 @@ every note open still pays it). **Fix, when someone picks it up:** cache parsed 
 `(path, mtime_ns, size)` (one dict, a few lines, invalidates itself), and resolve plain
 `notebook:path.md` selectors straight from disk instead of through `nb`. Write a before/after
 timing test first.
+
+**Fixed 2026-10-05:** frontmatter YAML is cached by its text (deep copies handed out), and plain
+`notebook:path.ext` selectors skip `nb`. Real data: median 221 ms → 6 ms per warm call, 29 → ~0
+YAML parses, 1 → 0 `nb` runs; over HTTP about 10 ms. Fixing it also exposed a security hole in
+the same code (selectors walking out of their notebook with `../`), closed at the same time: see
+nb-web `CLAUDE.md` invariants 67 and 68.
 
 ---
 
