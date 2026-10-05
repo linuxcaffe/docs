@@ -5,7 +5,6 @@ type: topic
 topic: keyboard
 category: basics
 help_for: [page:keyboard, key:ui_hide]
-toc: true
 processed: true
 ---
 
