@@ -1,72 +1,62 @@
 ---
 title: SEARCH_TAGS
-caption: Full-text search, tag filtering, and cross-notebook search
+caption: find notes by their text, by their tags, or both
+topic: search-tags
+category: basics
+help_for: [page:search, key:tags]
 toc: true
 processed: true
 ---
 
 # Search and Tags
 
-[[#Search|Search]] · [[#Tag Filter|Tag Filter]] · [[#Combining Filters|Combining Filters]] · [[#Cross-Notebook Search|Cross-Notebook Search]] [[##Search Within Document|Search Within Document]]
----
+## Summary
 
-## Search
+Type in the **search** bar (`/`) to narrow the list to notes containing those words, or in the
+**tags** field (`#`) to show only notes with those tags. Both work together and update the list
+as you type. Put `-` before a tag to leave notes with it out (`recipes -tested`), and switch the
+notebook selector to **all** to search every notebook.
 
-The **search bar** filters the note list by full-text content as you type.
+## How it works
 
-- Focus it with `/` or `s` (keyboard shortcut), or click the field
-- Matches note titles, body text, and frontmatter
-- The active query appears as a token in the command bar — click `×` to clear
+### Search
 
-Search is scoped to the current notebook by default. Switch to **all** in the scope selector to search across every notebook at once.
+The search bar filters the list by note text as you type. `/` or `s` jumps to it. The query shows
+as a token in the command bar under the toolbar; click its `×` to clear it.
 
----
+Search covers the current notebook; choose **all** in the notebook selector to search every
+notebook, each result marked with its notebook.
 
-## Tag Filter
+### Tags
 
-The **tags field** filters by one or more `#tags`.
+The tags field filters by tags; `#` jumps to it. Type bare tag names, no `#` needed. Tags come
+from a note's frontmatter `tags:` list and from `#hashtags` in its text.
 
-- Focus it with `#` (keyboard shortcut), or click the field
-- Type a tag name — matching begins immediately
-- Tags are sourced from frontmatter `tags:` lists and inline `#hashtags` in note bodies
+- **Several tags** must all be present: `friend local` shows notes tagged both.
+- **`-tag`** leaves notes with that tag out: `recipes -tested` shows untested recipes; `-draft` on
+  its own shows everything except drafts.
 
-Just type bare tag names — no `#` needed. The field adds it automatically.
+The tag query shows as a `--tags` token in the command bar; its `×` clears it.
 
-**Positive tags** (AND logic) — all must be present:
+### Together
 
-`friend local` → notes tagged both `#friend` and `#local`
+Search, tags and the type chips above the list all apply at once: a note has to match the search,
+carry the tags and be of the chosen type. For example, todos tagged `#project` that mention
+"deploy".
 
-**Negative tags** (prefix with `-`) — exclude notes carrying that tag:
+## Reference
 
-`recipes -tested` → recipes not yet tested  
-`-draft` → everything except drafts
+| Key | Does |
+|---|---|
+| `/` or `s` | jump to the search bar |
+| `#` | jump to the tags field |
+| `Escape` | leave the field |
+| `Ctrl+F` | the browser's own find, for text within the open note |
 
-Positive and negative tags can be freely mixed. Negative-only queries (`-draft`) start from all notes and subtract.
+**Tip:** `/` and a word is the fastest way to find any note; switch the notebook to **all** first
+if you're not sure where it lives.
 
-The active tag query appears as a `--tags` token in the command bar — click `×` to clear.
+## For developers
 
----
-
-## Combining Filters
-
-Search and tags work together — both are applied simultaneously. A note must match the search query **and** carry the specified tags to appear in the list.
-
-The type filter (note / todo / bookmark / contact / …) in the Add bar also stacks with search and tags, letting you narrow to e.g. `#project` todos matching "deploy".
-
----
-
-## Cross-Notebook Search
-
-Select **all** from the notebook scope selector to search across all notebooks at once. The note list shows results from every notebook, each prefixed with its notebook name.
-
-The `--all` scope is also available as a token in the command bar — click it or change the scope selector to return to a single notebook.
-
-> **Tip:** `/` then a search term is the fastest way to find any note regardless of which notebook you're in — switch scope to `all` first if you're not sure where it lives.
-
-## Search Within Document
-
-Use the browser's search function to find text within a document
-
-| Key | Action |
-|-----|--------|
-| `Ctrl+F` | Involke browser search (works in most browsers, y.m.m.v.) |
+`search.js` (`NbSearch`) sends the query; the list request in `main.js` carries `q` and `tags` to
+`/api/notes`.

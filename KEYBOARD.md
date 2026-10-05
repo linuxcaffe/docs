@@ -1,111 +1,94 @@
 ---
 title: KEYBOARD
-caption: Keyboard shortcuts for navigating and editing in nb-web
+caption: keyboard shortcuts for moving around, finding and editing notes
+topic: keyboard
+category: basics
+help_for: [page:keyboard, key:ui_hide]
 toc: true
 processed: true
 ---
 
 # Keyboard
 
-[[#Navigation|Navigation]] · [[#Global Shortcuts|Global Shortcuts]] · [[#Adding Notes|Adding Notes]] · [[#Editing|Editing]] · [[#Universal Keys|Universal Keys]]
+## Summary
 
----
+Most of nb-web works without the mouse. `↑`/`↓` move through the list and `→` steps into the
+preview; `/` searches, `#` filters by tag, `a` adds a note and `e` edits the open one. `Escape`
+always backs you out to somewhere safe. Shortcuts are single keys, so they only work when you're
+not typing in a field.
 
-## Navigation
+## How it works
 
-Arrow key focus alternates between the **list pane** and the **preview pane**. The active pane determines what the arrow keys do.
+The arrow keys act on whichever pane has focus, the **list** or the **preview**.
 
-| Key | Action |
-|-----|--------|
-| `↑` / `↓` | Move selection up / down in the list |
-| `→` / `Enter` | Open selected note in preview (or drill into folder) |
-| `←` | Return focus to list (from preview), or go up a folder |
-| `Page Up` / `Page Down` | Jump 8 items in list; scroll by screen in preview |
+### In the list
 
----
+| Key | Does |
+|-----|------|
+| `↑` / `↓` | select the previous / next note (it opens in the preview) |
+| `Page Up` / `Page Down` | jump 8 notes |
+| `→` / `Enter` | move to the preview, or open a folder |
+| `←` | go up a folder |
+| `Delete` | delete the selected note (asks first) |
 
-## Global Shortcuts
+### In the preview
 
-These work any time focus is not inside a text field.
+| Key | Does |
+|-----|------|
+| `↑` / `↓`, `Page Up` / `Page Down` | scroll |
+| `Home` / `End` | jump to the top / bottom |
+| `←` | back to the list |
 
-### Finding notes
+### Anywhere (not in a text field)
 
-| Key | Action |
-|-----|--------|
-| `/` or `s` | Focus the **search bar** — start typing immediately |
-| `#` | Focus the **tags filter** — type `#tagname` to filter live |
+| Key | Does |
+|-----|------|
+| `/` or `s` | jump to the search bar |
+| `#` | jump to the tags field |
+| `a` | open the **Add** bar |
+| `e` | edit the open note |
+| `l` | show the **List** |
+| `p` | move to the preview |
+| `n` | jump to the notebook selector |
+| `c` | open the calendar |
+| `C` | show **Contacts** |
+| `T` | open the terminal |
+| `,` | open Settings |
+| `.` | show or hide the extras (frontmatter table and annotation) |
+| `Backspace` | go back |
+| `Escape` | close whatever is open, clear a selection, or leave a field |
 
-### Note actions
+### Adding and editing
 
-| Key | Action |
-|-----|--------|
-| `e` | Edit the currently selected note |
-| `a` | Open the **Add** bar |
-| `Delete` | Delete the selected note (with confirmation) |
-| `Backspace` | Navigate back |
+| Key | Does |
+|-----|------|
+| `Enter` (Add bar) | create the note |
+| `Ctrl+Enter` (Add bar) | create it and open it in the editor |
+| `Ctrl+Enter` (editor) | save |
+| `Escape` (editor) | cancel without saving |
+| `Ctrl+Shift+1` (editor) | embed an image at the cursor |
 
-### View
+## Reference
 
-| Key | Action |
-|-----|--------|
-| `l` | Switch to **List** command |
-| `p` | Move focus to the preview pane |
-| `n` | Focus the notebook/scope selector |
-| `c` | Open calendar |
-| `C` | Switch to **Contacts** |
-| `T` | Open the terminal pane |
-| `,` | Open Settings |
-| `.` | Toggle **extras** (frontmatter table + annotation foot) |
+**`Escape` is the universal way out.** In a text field it leaves the field (and cancels an open
+editor); otherwise it closes a menu, dialog or bar, or clears a multi-selection, and finally parks
+focus on the Menu button, from where `Tab` and the arrows take you on.
 
-**Setting a default instead of toggling every time:** a note or folder can declare its own preferred extras state with `ui_hide:` in frontmatter, instead of relying on `.`/the ◉ button each time you open it:
+**Hide the extras by default**: instead of pressing `.` each time, a note, folder or notebook can
+set `ui_hide:` in its frontmatter or config:
 
 ```yaml
-ui_hide: fm              # hide just the frontmatter table
-ui_hide: annotation      # hide just the annotation foot
-ui_hide: fm,annotation   # hide both — the note opens exactly as if you'd pressed `.`
+ui_hide: fm              # hide the frontmatter table
+ui_hide: annotation      # hide the annotation
+ui_hide: fm,annotation   # hide both
 ```
 
-Set it directly on a note, or in a `.{folder}.md`/`.{notebook}.md` config file to cascade it to every note in that scope (see [[FOLDER-CONFIG]]) — handy for something like a screenplay folder where you always want a clean, chrome-free read. `.`/the button still works as a one-off override for the current note; it just won't stick past the next time you open a note, since the frontmatter setting is the actual default now.
+Set in a `.{folder}.md` or `.{notebook}.md`, it applies to every note there (see
+[[docs:FOLDER-CONFIG]]); `.` still toggles it for the note you're on.
 
----
+**Find text in a note**: `Ctrl+F` is the browser's own find.
 
-## Adding Notes
+## For developers
 
-After typing a title in the Add bar:
-
-| Key | Action |
-|-----|--------|
-| `Enter` | Save the note |
-| `Ctrl+Enter` | Save and immediately open in the editor |
-
-## Editing
-
-These work while a note is open in the editor.
-
-| Key | Action |
-|-----|--------|
-| `Ctrl+Enter` | Save the note (works in title, tags, and body fields) |
-| `Ctrl+Shift+1` | Embed an image at the cursor (camera / pick from folder / browse) — same as the 📷 button next to **mkd ref** |
-| `Escape` | Cancel edit — return to preview without saving |
-
----
-
-## Universal Keys
-
-| Key | Action |
-|-----|--------|
-| `Escape` | The universal cancel. From a text field: blur and park focus on the Menu button. From a modal or inline bar: close it. From the menu: close it. From multi-select: clear selection. |
-
-`Escape` always leaves you somewhere safe — the Menu button — from which you can Tab or arrow-key onward.
-
-## Search Within Document
-
-Use the browser's search function to find text within a document
-
-| Key | Action |
-|-----|--------|
-| `Ctrl+F` | Involke browser search (works in most browsers, y.m.m.v.) |
-
----
-
-
+The key handler is in `ui-chrome.js` (one `keydown` listener on `document`); the editor's own keys
+are in `main.js`. nb-web `CLAUDE.md` invariant 60 explains how dialogs must handle `Escape`.
