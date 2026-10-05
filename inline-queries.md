@@ -56,6 +56,10 @@ Budget still unset: {{fm: count Takeout:storylines/ type:story budget:""}}
 
 Only `count` renders inline; `sum:`/`group:` return more than one value and need the codeblock.
 
+**Scope**: a whole notebook is its bare name (`{{fm: count features topic:}}`); a folder is
+`notebook:path/` with the trailing slash. `features:` with a colon and no slash is read as a
+filter on a field called `features`, and counts 0.
+
 ### Inline or codeblock?
 
 Inline queries suit **a single value or a short flat list**. Report-style output (headers,
