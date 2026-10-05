@@ -57,6 +57,12 @@ Your notes are always a browser tab away — searchable, readable, and editable 
 
 ## Feature Tour
 
+<!-- readme:categories
+     The README export replaces everything from here to readme:categories-end with one section
+     per features: category, in the dashboards' chapter order: the category's title and caption,
+     then each topic's caption and ## Summary from docs:. Until that export exists, the
+     hand-written tour below stands in. See claude:nb-web_help_single_source_design_2026-10-04.md. -->
+
 ### Note list and preview
 
 [screenshot: split-pane note list with rendered preview]
@@ -285,6 +291,8 @@ Four plugins ship with nb-web; additional plugins are loaded from `nb-settings.j
 | **NbWeb-hledger** | Accounting journals, invoice generation, contact lookup (external) |
 
 → [[docs:PLUGINS]]
+
+<!-- readme:categories-end -->
 
 ---
 
