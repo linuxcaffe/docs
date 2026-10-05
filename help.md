@@ -19,8 +19,10 @@ from the same docs you can read in the `docs:` notebook, so there's one copy of 
 
 ## How it works
 
-Click **?** to open the popover; click it again, or anywhere outside, to close it. Each topic
-starts folded to a one-line heading (its title and caption); click one to open its summary.
+Click **?** to open the popover; click it again, or anywhere outside, to close it. A line of
+**Basics** links sits at the top of every popover (Notebooks, Note list, Search and tags, Editor,
+Keyboard, Help); click one to open it right there. Below it, each topic for this note starts
+folded to a one-line heading (its title and caption); click one to open its summary.
 
 ### Where the topics come from
 
@@ -76,7 +78,9 @@ folder can always show a shared topic as well as whatever else applies.
   rather than `access:`.
 - **Type files are named after the literal `type:` value**, plural included:
   `help-type-reports.md` for `type: reports`. A topic that isn't a type is `help-<subject>.md`.
-- **The topic notebook** is `docs` unless `.nb.md` sets `help_topics: <notebook>`.
+- **The topic notebook** is `docs` unless `.nb.md` sets `help_topics: <notebook>`; the tour's
+  notebook (for **Try it** and the Basics line) is `features` unless it sets `features_notebook:`.
+- **The Basics line** follows the chapters of `features:basics/basics.md`, in order.
 - **Topics are re-read** when a file in the topic notebook changes; no restart needed.
 
 ## For developers
