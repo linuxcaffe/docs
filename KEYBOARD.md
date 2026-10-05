@@ -90,5 +90,7 @@ Set in a `.{folder}.md` or `.{notebook}.md`, it applies to every note there (see
 
 ## For developers
 
+- [[docs:dev/dev-architecture.md|Architecture]]
+
 The key handler is in `ui-chrome.js` (one `keydown` listener on `document`); the editor's own keys
 are in `main.js`. nb-web `CLAUDE.md` invariant 60 explains how dialogs must handle `Escape`.

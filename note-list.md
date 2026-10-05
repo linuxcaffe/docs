@@ -21,7 +21,9 @@ together.
 ## How it works
 
 Each row shows a note's icon, title and first line; its number is its position in the folder's
-`.index`. Clicking a folder opens it; `←` (or the back button) takes you back up.
+`.index`. Clicking a folder opens it, and the breadcrumb above the list shows where you are: click any part
+of it, or press `←`, to go back up. Opening a link to a note (a bookmark, a shared URL, a refresh)
+shows that note's notebook and folder in the list.
 
 ### Filtering by type
 
@@ -67,6 +69,9 @@ selection.
   [[docs:TYPED-NOTES]].
 
 ## For developers
+
+- [[docs:dev/dev-notebook-config.md#List defaults|Notebook config: list defaults]]
+- [[docs:dev/dev-architecture.md#Excerpt rendering|Architecture: excerpts]]
 
 `_list_notes` (`app.py`) builds the list; `renderList` and `_getSortedNotes` (`main.js`) draw and
 sort it; the list header menus and multi-select live in `ui-chrome.js`.

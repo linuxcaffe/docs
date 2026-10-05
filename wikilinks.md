@@ -86,6 +86,12 @@ wikilinks to them resolve normally. Use the bare stem, with the leading dot and 
 
 Dotfiles rarely have a `title:`, so add a pipe label: `[[.shots|shots config]]`.
 
+### Folder links
+
+A link ending in `/` points at a folder: `[[features:basics/|Basics]]` opens the `basics` folder
+in the list and shows its dashboard, `basics/basics.md`, if there is one; otherwise the folder's
+first note, as when you click a folder in the list.
+
 ### Backlinks
 
 An `nb` codeblock with `backlinks` lists every note that links to the current note's title:
@@ -109,6 +115,7 @@ Results come from ripgrep and are capped at 20; pass a number to raise it (`back
 | `[[Note Title\|display text]]` | Link with custom display text |
 | `[[notebook:path/file.md]]` | Link by explicit selector, e.g. `[[docs:THEMES.md]]` |
 | `[[42]]` | Link by bare note id within the current notebook |
+| `[[notebook:folder/\|label]]` | Open that folder in the list, and its own `folder/<folder>.md` (its dashboard) if it has one |
 | `[[Page#Heading]]`, `[[#Heading]]` | Anchor links (above) |
 
 A bare id is a position in a folder's `.index`, so it isn't unique across folders; prefer the
@@ -136,4 +143,6 @@ See [[NbWeb-quartz]] for the publishing workflow.
 
 ## For developers
 
-[[docs:dev/dev-wikilinks.md]]: resolution internals and display label caching.
+- [[docs:dev/dev-wikilinks.md|Wikilinks internals]]
+- [[docs:dev/dev-architecture.md#Markdown rendering pipeline|Markdown rendering pipeline]]
+

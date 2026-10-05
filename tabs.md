@@ -48,5 +48,8 @@ below it; use `notebook:path` to be explicit.
 
 ## For developers
 
+- [[docs:dev/dev-architecture.md#Tab strip|Architecture: tab strip]]
+- [[docs:dev/dev-notebook-config.md|Notebook config]]
+
 `_buildTabs` in `main.js`; `tabs` is in `_FM_BLOCK_KEYS` (`app.py`), which is how it cascades.
 

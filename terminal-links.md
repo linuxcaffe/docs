@@ -81,6 +81,9 @@ folder, which leaves the file unindexed:
 
 ## For developers
 
+- [[docs:dev/dev-wikilinks.md|Wikilinks internals]]
+- [[docs:dev/dev-architecture.md#Markdown rendering pipeline|Markdown rendering pipeline]]
+
 [[docs:dev/dev-wikilinks.md]] covers link rendering; the click handler is in `main.js`
 (`href.startsWith('term:')`).
 

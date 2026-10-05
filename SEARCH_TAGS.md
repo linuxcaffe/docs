@@ -58,5 +58,7 @@ if you're not sure where it lives.
 
 ## For developers
 
+- [[docs:dev/dev-architecture.md#Hashtags|Architecture: hashtags]]
+
 `search.js` (`NbSearch`) sends the query; the list request in `main.js` carries `q` and `tags` to
 `/api/notes`.

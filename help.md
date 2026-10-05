@@ -85,6 +85,9 @@ folder can always show a shared topic as well as whatever else applies.
 
 ## For developers
 
+- [[docs:dev/dev-architecture.md#.lib inline components|Architecture: .lib components]]
+- [[docs:dev/dev-notebook-config.md|Notebook config (the cascade)]]
+
 `_resolve_help_list` and `_help_for_matches` (`app.py`) build `effective_help`; `_showTypeHelp`
 (`main.js`) draws the popover. nb-web `CLAUDE.md` invariants 31–33 and 66. Design:
 [[claude:nb-web_help_single_source_design_2026-10-04.md]].

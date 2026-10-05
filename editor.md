@@ -51,6 +51,9 @@ the top. Save, and the preview shows the result.
 
 ## For developers
 
+- [[docs:dev/dev-frontmatter-editor.md|Frontmatter editor]]
+- [[docs:dev/dev-security.md|Security and access]]
+
 `_openEditor`, `_computeEditGate` and the save path in `main.js`; nb-web `CLAUDE.md` invariants
 59 (the Edit gate) and 60 (the in-use notice and overlay focus rules).
 

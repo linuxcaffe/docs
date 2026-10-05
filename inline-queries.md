@@ -99,6 +99,10 @@ script and refreshes the value.
 
 ## For developers
 
+- [[docs:dev/dev-render-pipeline.md|Render pipeline]]
+- [[docs:dev/dev-codeblocks.md|Codeblocks]]
+- [[docs:dev/dev-cbql.md|CBQL]]
+
 `api_inline_query` (`app.py`) handles every provider except `inline`; a new provider only needs
 a branch there. `_resolveInlineQueries` (`main.js`) finds and fills the spans. Details in nb-web's
 `CLAUDE.md`, "Inline queries".

@@ -89,6 +89,9 @@ self-contained document.
 
 ## For developers
 
+- [[docs:dev/dev-wikilinks.md|Wikilinks internals]]
+- [[docs:dev/dev-render-pipeline.md|Render pipeline]]
+
 `_resolveInlineInclude` and `_sliceSection` in `main.js`; the render pipeline is in
 [[docs:dev/dev-wikilinks.md]] and nb-web's `CLAUDE.md` ("Inline queries").
 

@@ -97,4 +97,5 @@ real use.
 
 ## For developers
 
-[[docs:dev/dev-xref.md]]
+- [[docs:dev/dev-xref.md|xref internals]]
+

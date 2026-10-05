@@ -90,5 +90,9 @@ bar uses it automatically. A folder's own `.templates/` does the same for notes 
 
 ## For developers
 
+- [[docs:dev/dev-notebook-config.md|Notebook config]]
+- [[docs:dev/dev-sync.md|Sync]]
+- [[docs:dev/dev-storage.md|Storage]]
+
 `api_notebooks`, `_effective_notebook_prefs` and the notebook creation in `api_create_note`
 (`app.py`); the Notebooks page is `notebooks-page.js`.
