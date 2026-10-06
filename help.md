@@ -30,9 +30,9 @@ caption); click one to open its summary. On topic notes and tour pages, a line o
 
 Help is gathered from these places, in this order, without repeats:
 
-1. **A tour page's own topic**: a note with `topic:` (a `features:` page) leads with that topic.
-2. **The note's type**: a `type: project` note gets `.lib/help-type-project.md` automatically, if
+1. **The note's type**: a `type: project` note gets `.lib/help-type-project.md` automatically, if
    that file exists.
+2. **A tour page's own topic**: a note with `topic:` (a `features:` page) gets that topic next.
 3. **Docs topics that say they apply** (`help_for:`, below).
 4. **`help_add:`** from the global, notebook and folder configs, all added together.
 5. **`help:`**, the note's own value, or else the nearest one up the config chain.
