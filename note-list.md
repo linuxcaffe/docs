@@ -17,7 +17,8 @@ The left pane lists the notes in the current notebook or folder; click one (or m
 arrow keys) to show it on the right. Folders come first, then pinned notes, then the rest. The
 row above the list filters by type (notes, bookmarks, todos, contacts, folders, images), the
 **⇅** button changes the sort, and Ctrl-click selects several notes to move, export or delete
-together.
+together. Notes pinned in their frontmatter (dashboards, usually) come first, then ones you pin
+from the menu.
 
 ## How it works
 
@@ -49,8 +50,17 @@ its config, see [[docs:NOTEBOOKS.md#Defaults|Notebooks → Defaults]].
 
 ### Pinned notes
 
-Pinned notes sit at the top, under the folders. Pin a note from the preview toolbar's 📌, or give
-it `pinned: true`: it's pinned the first time it's opened. Pins are remembered per browser.
+There are two kinds of pin, and the list shows them in this order, under the folders:
+
+1. **Pinned in the note**: `pinned: true` in its frontmatter (a dashboard usually is), or the
+   note a folder's config names with `pinned: <name>`. The same in every browser. Opening a
+   folder selects its first one, so a folder with a dashboard opens on it.
+2. **Pinned from the menu**: the preview menu's **📌 Pin to list top**, remembered by this
+   browser only.
+
+**📌 Unpin from list** undoes either. For a note pinned in its frontmatter it leaves `pinned:`
+blank rather than deleting the line, so you can still find formerly pinned notes with an `fm`
+query on `pinned:`.
 
 ### Selecting several notes
 
