@@ -4,7 +4,7 @@ caption: the ? button, and how help finds what to show
 type: topic
 topic: help
 category: basics
-help_for: [type:help, type:topic, type:feature, key:help, key:help_add, key:help_for]
+help_for: [type:help, key:help, key:help_add, key:help_for, key:help_header]
 toc: true
 processed: true
 ---
@@ -20,15 +20,17 @@ from the same docs you can read in the `docs:` notebook, so there's one copy of 
 
 ## How it works
 
-Click **?** to open the popover; click it again, or anywhere outside, to close it. A line of
-**Basics** links sits at the top of every popover (Notebooks, Note list, Search and tags, Editor,
-Keyboard, Help); click one to open it right there. Below it, each topic for this note starts
-folded to a one-line heading (its title and caption); click one to open its summary.
+Click **?** to open the popover; click it again, or anywhere outside, to close it. Its top line
+comes from `help_header:` (links to the project, Help, Basics and the docs); following one closes
+the popover. Below it, each topic for this note starts folded to a one-line heading (its title and
+caption); click one to open its summary. On topic notes and tour pages, a line of **Basics** links
+(Notebooks, Note list, Search and tags, Editor, Keyboard, Help) opens those topics right there.
 
 ### Where the topics come from
 
-Help is gathered from four places, in this order, without repeats:
+Help is gathered from these places, in this order, without repeats:
 
+0. **A tour page's own topic**: a note with `topic:` (a `features:` page) leads with that topic.
 1. **The note's type**: a `type: project` note gets `.lib/help-type-project.md` automatically, if
    that file exists.
 2. **Docs topics that say they apply** (`help_for:`, below).
@@ -79,6 +81,8 @@ folder can always show a shared topic as well as whatever else applies.
   rather than `access:`.
 - **Type files are named after the literal `type:` value**, plural included:
   `help-type-reports.md` for `type: reports`. A topic that isn't a type is `help-<subject>.md`.
+- **`help_header:`** is one line of Markdown, nearest wins (note → folder → notebook → global
+  `.nb.md`). With a header set, every note has a **?**, even one with no topics.
 - **The topic notebook** is `docs` unless `.nb.md` sets `help_topics: <notebook>`; the tour's
   notebook (for **Try it** and the Basics line) is `features` unless it sets `features_notebook:`.
 - **The Basics line** follows the chapters of `features:basics/basics.md`, in order.
