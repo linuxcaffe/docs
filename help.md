@@ -93,7 +93,7 @@ folder can always show a shared topic as well as whatever else applies.
 - **The help notebooks** are `docs` and the tour notebook, unless `.nb.md` sets `help_topics:` (a
   notebook or a list); each note's own `access:` applies, under its own notebook's config. The
   tour's notebook (for **Try it**) is `features` unless `.nb.md` sets `features_notebook:`.
-- **The Basics line** follows the chapters of `features:basics/basics.md`, in order.
+- **A category line** follows its dashboard's chapters (its `{{inline:}}` lines), in order.
 - **Topics are re-read** when a file in the topic notebook changes; no restart needed.
 
 ## For developers
