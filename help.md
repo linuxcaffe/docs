@@ -23,8 +23,9 @@ from the same docs you can read in the `docs:` notebook, so there's one copy of 
 Click **?** to open the popover; click it again, or anywhere outside, to close it. Its top line
 comes from `help_header:` (links to the project, Help, Basics and the docs); following one closes
 the popover. Below it, each topic for this note starts folded to a one-line heading (its title and
-caption); click one to open its summary. On topic notes and tour pages, a line of **Basics** links
-(Notebooks, Note list, Search and tags, Editor, Keyboard, Help) opens those topics right there.
+caption); click one to open its summary. **Category** lines sit just under the header: a
+category's name, then its topics (Basics: Notebooks · Note list · …). A topic opens right there;
+the name opens the category's dashboard. Basics shows on topic notes and tour pages.
 
 ### Where the topics come from
 
@@ -55,6 +56,10 @@ help_for: [type:project, block:timedot, key:timeframe, notebook:accts]
 | `page:<page>` | is shown on that page's own **?**: `editor` (the editor toolbar), `terminal` (the terminal's title bar), `notebooks` (a notebook's details on the Notebooks page) |
 
 `check:` and `plugin:` contexts are for help on check findings and plugins (not built yet).
+
+**Categories:** `help_for:` works on any note in the help notebooks, not just topic notes. On a
+category dashboard (`features:basics/basics.md` has `help_for: [type:topic, type:feature]`) it
+makes that category a line of its topics in the popover, in the dashboard's chapter order.
 Adding help somewhere new is one line in the topic note. A topic note's own `access:` hides it from
 anyone below that level.
 
@@ -85,8 +90,9 @@ folder can always show a shared topic as well as whatever else applies.
   `help-type-reports.md` for `type: reports`. A topic that isn't a type is `help-<subject>.md`.
 - **`help_header:`** is one line of Markdown, nearest wins (note → folder → notebook → global
   `.nb.md`). With a header set, every note has a **?**, even one with no topics.
-- **The topic notebook** is `docs` unless `.nb.md` sets `help_topics: <notebook>`; the tour's
-  notebook (for **Try it** and the Basics line) is `features` unless it sets `features_notebook:`.
+- **The help notebooks** are `docs` and the tour notebook, unless `.nb.md` sets `help_topics:` (a
+  notebook or a list); each note's own `access:` applies, under its own notebook's config. The
+  tour's notebook (for **Try it**) is `features` unless `.nb.md` sets `features_notebook:`.
 - **The Basics line** follows the chapters of `features:basics/basics.md`, in order.
 - **Topics are re-read** when a file in the topic notebook changes; no restart needed.
 
