@@ -4,7 +4,7 @@ caption: keyboard shortcuts for moving around, finding and editing notes
 type: topic
 topic: keyboard
 category: basics
-help_for: [page:keyboard, key:ui_hide]
+help_for: [page:keyboard, page:editor, key:ui_hide]
 processed: true
 ---
 
