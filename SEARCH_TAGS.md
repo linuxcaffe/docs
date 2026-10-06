@@ -13,10 +13,7 @@ processed: true
 
 ## Summary
 
-Type in the **search** bar (`/`) to narrow the list to notes containing those words, or in the
-**tags** field (`#`) to show only notes with those tags. Both work together and update the list
-as you type. Put `-` before a tag to leave notes with it out (`recipes -tested`), and switch the
-notebook selector to **all** to search every notebook.
+Type in the **search** bar (or start search with `/`) to narrow the list to notes containing those words, or in the **tags** field (use `#yourtag` to jump there) to show only notes with those tags. Both work together and update the list as you type. Put `-` before a tag to leave notes with it out (`recipes -tested`), and switch the notebook selector to **all** to search every notebook.
 
 ## How it works
 
