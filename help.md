@@ -52,7 +52,9 @@ help_for: [type:project, block:timedot, key:timeframe, notebook:accts]
 | `key:<key>` | has that frontmatter key |
 | `notebook:<name>` | is in that notebook |
 
-`page:`, `check:` and `plugin:` contexts are for help buttons on pages, check findings and plugins.
+| `page:<page>` | is shown on that page's own **?**: `editor` (the editor toolbar), `list` (the note list's header), `terminal` (the terminal's title bar), `notebooks` (a notebook's details on the Notebooks page) |
+
+`check:` and `plugin:` contexts are for help on check findings and plugins (not built yet).
 Adding help somewhere new is one line in the topic note. A topic note's own `access:` hides it from
 anyone below that level.
 
