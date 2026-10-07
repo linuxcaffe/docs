@@ -4,7 +4,7 @@ caption: settings for a whole folder or notebook, kept in a hidden note inside i
 type: topic
 topic: folder-config
 category: structure
-help_for: [type:dotfile, key:constraints, key:constraints_add, key:ui_hide]
+help_for: [type:dotfile, type:dashboard, key:constraints, key:constraints_add, key:ui_hide]
 toc: true
 processed: true
 ---
