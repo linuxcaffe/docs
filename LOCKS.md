@@ -41,7 +41,7 @@ in, annotating, restoring an old version, and folder rename/move/copy. nb-web re
 journals) aren't locked.
 
 **Annotations** are locked with their note. An annotation can also be locked on its own, with
-`lock: yes` in its frontmatter; an admin unlocks it by saving it without `lock:`.
+`lock: yes` in its frontmatter; whoever may lock there unlocks it by saving it without `lock:`.
 
 Locks bind nb-web, not the files: `nb` in a terminal, or any editor, can still change them.
 
@@ -50,7 +50,7 @@ Locks bind nb-web, not the files: `nb` in a terminal, or any editor, can still c
 | Locks | How | Unlock |
 |-------|-----|--------|
 | a note | `lock: yes` in its frontmatter | **🔒 Unlock** |
-| an annotation | `lock: yes` in its frontmatter (or its note's lock) | save it without `lock:` (admin) |
+| an annotation | `lock: yes` in its frontmatter (or its note's lock) | save it without `lock:` |
 | a folder | **⋯ → 🔒 Lock → Lock folder**, or a `.nb-lock` file | the same tab |
 | a notebook | **Menu → Notebooks → 🔒 Lock notebook** | the same button |
 
