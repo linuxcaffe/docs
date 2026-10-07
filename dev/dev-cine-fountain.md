@@ -1,6 +1,5 @@
 ---
 title: Cine — Fountain Screenwriting Adoption
-type: dev
 tags: cine, fountain, screenwriting, planned
 status: wip
 ---

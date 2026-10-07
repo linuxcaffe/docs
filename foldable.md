@@ -1,6 +1,5 @@
 ---
 title: "foldable — Collapsible Headings"
-type: doc
 processed: true
 ---
 
