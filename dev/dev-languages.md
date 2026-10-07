@@ -75,7 +75,7 @@ Elements in `index.html` use `data-i18n` attributes. `applyI18n()` translates th
 <button data-i18n-title="tip_extras" title="Show/hide extras…">◉</button>
 
 <!-- Both text and title -->
-<button data-i18n="btn_changes" data-i18n-title="tip_changes">Changes</button>
+<button data-i18n="btn_fm" data-i18n-title="tip_fm">FM</button>
 ```
 
 The English text in the HTML is the hard-coded fallback — visible if JS hasn't run yet.
