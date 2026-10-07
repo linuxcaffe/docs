@@ -206,32 +206,6 @@ The **`dotfile.md`** global template pre-wires `cfg: org` into every new folder 
 
 ---
 
-### Folder and notebook locks
-
-Any folder or notebook can be made read-only by placing an `.nb-lock` file inside it. Locked notes hide the **Edit** and **Delete** buttons and show a 🔒 indicator in the toolbar. Hovering the indicator shows the reason, if one was given.
-
-The lock is **hierarchical**: a notebook-level `.nb-lock` covers every folder inside it; a folder-level lock covers every note in that folder without affecting sibling folders.
-
-**Via the UI:**
-- **Folder** — click `⋯` on any folder → 🔒 Lock tab → *Lock folder* (add an optional reason)
-- **Notebook** — Menu → Notebooks → select a notebook → *🔒 Lock notebook*
-
-Toggling lock/unlock **renames** the file between `.nb-lock` (locked) and `.nb-unlock` (unlocked) rather than deleting it, so the reason text is preserved across cycles.
-
-**Manually:**
-
-```bash
-# Lock a folder:
-echo "Tutorial — read only" > ~/.nb/home/tutorial/.nb-lock
-
-# Unlock (preserves the reason for next time):
-mv ~/.nb/home/tutorial/.nb-lock ~/.nb/home/tutorial/.nb-unlock
-
-# Re-lock:
-mv ~/.nb/home/tutorial/.nb-unlock ~/.nb/home/tutorial/.nb-lock
-```
-
----
 
 ### Sync
 
