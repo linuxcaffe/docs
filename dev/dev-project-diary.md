@@ -16,13 +16,13 @@ This document covers the concrete implementation of the project diary system: ho
 
 Get this wrong once and you'll spend two sessions rediscovering it.
 
-**Layer 1 — The diary** (`nathan.md`, `type: project`)
+**Layer 1 — The diary** (`smith.md`, `type: project`)
 The only place humans write. Date headings, prose, timedot blocks, csv blocks, markers. Nothing is ever filtered or deleted from it. It accumulates forever.
 
-**Layer 2 — The journals** (`journals/nathan-gen.*.journal`, `journals/nathan-gen.timedot`)
+**Layer 2 — The journals** (`journals/smith-gen.*.journal`, `journals/smith-gen.timedot`)
 Derived artifacts. Rebuilt from the diary on every block save. They contain **all records, all time** — no timeframe filtering here. Never hand-edit these files; edits will be overwritten on the next save.
 
-**Layer 3 — The reports** (`nathan-reports.md`, `type: reports`)
+**Layer 3 — The reports** (`smith-reports.md`, `type: reports`)
 A projection surface. CBQL blocks fetch from the journals and apply a timeframe filter at **query time**. The same journals serve every timeframe selection — only the hledger `date:FROM..TO` argument changes.
 
 > **The architectural invariant**: journals = complete records; timeframe = query filter only.
@@ -33,16 +33,16 @@ A projection surface. CBQL blocks fetch from the journals and apply a timeframe 
 ## File layout
 
 ```
-projects/gbct/nathan/
-  .nathan.md                      ← folder dotfile: delivers project:, journal:, rate: etc
-  nathan.md                       ← project diary (source of truth)
-  nathan-reports.md               ← type: reports (projection surface)
+projects/acme/smith/
+  .smith.md                      ← folder dotfile: delivers project:, journal:, rate: etc
+  smith.md                       ← project diary (source of truth)
+  smith-reports.md               ← type: reports (projection surface)
   journals/
-    nathan.journal                ← stable manifest: P directive + include chain (NEVER rewritten)
-    nathan-gen.timedot            ← DO NOT HAND EDIT — rebuilt from all timedot blocks
-    nathan-gen.labour.journal     ← DO NOT HAND EDIT — rebuilt from timedot × rate
-    nathan-gen.materials.journal  ← DO NOT HAND EDIT — rebuilt from csv materials blocks
-    nathan-gen.tools.journal      ← DO NOT HAND EDIT — rebuilt from csv tools blocks
+    smith.journal                ← stable manifest: P directive + include chain (NEVER rewritten)
+    smith-gen.timedot            ← DO NOT HAND EDIT — rebuilt from all timedot blocks
+    smith-gen.labour.journal     ← DO NOT HAND EDIT — rebuilt from timedot × rate
+    smith-gen.materials.journal  ← DO NOT HAND EDIT — rebuilt from csv materials blocks
+    smith-gen.tools.journal      ← DO NOT HAND EDIT — rebuilt from csv tools blocks
 ```
 
 ### The `-gen` suffix convention
@@ -50,15 +50,15 @@ projects/gbct/nathan/
 Any file that is a **derived artifact** (generated from source blocks, rebuilt on every save) gets a `-gen` suffix before the extension:
 
 ```
-nathan-gen.timedot            ✓
-nathan-gen.labour.journal     ✓
-nathan.timedot                ✗  (old naming — no longer used)
-nathan.labour.journal         ✗  (old naming — no longer used)
+smith-gen.timedot            ✓
+smith-gen.labour.journal     ✓
+smith.timedot                ✗  (old naming — no longer used)
+smith.labour.journal         ✗  (old naming — no longer used)
 ```
 
 This makes generated files trivially identifiable in file listings, enables tooling to distinguish hand-edited from generated, and prevents accidental hand-edits that would be silently overwritten.
 
-### `nathan.journal` — the stable manifest
+### `smith.journal` — the stable manifest
 
 This file is written once and never rewritten by the system. It holds:
 
@@ -66,15 +66,15 @@ This file is written once and never rewritten by the system. It holds:
 2. `include` directives for all `-gen` sub-journals
 
 ```hl
-; nathan.journal — master project ledger
+; smith.journal — master project ledger
 ; All sub-journals are auto-synced from note blocks on save. Edit source blocks, not these files.
 
 P 2026-06-01 h 30.00 CAD
 
-include ./nathan-gen.timedot
-include ./nathan-gen.labour.journal
-include ./nathan-gen.materials.journal
-include ./nathan-gen.tools.journal
+include ./smith-gen.timedot
+include ./smith-gen.labour.journal
+include ./smith-gen.materials.journal
+include ./smith-gen.tools.journal
 ```
 
 **Why the `P` directive lives here and nowhere else**: hledger rejects `P` price directives in `.timedot` files with a parse error. The master `.journal` is the only valid home for it.
@@ -83,18 +83,18 @@ include ./nathan-gen.tools.journal
 
 ---
 
-## Folder dotfile — `.nathan.md`
+## Folder dotfile — `.smith.md`
 
 The folder dotfile delivers project-wide FM keys to every note in the folder via `effective_fm`. Notes don't need to repeat these values.
 
 ```yaml
 ---
-journal: /home/djp/.nb/djp/projects/gbct/nathan/journals/nathan.journal
-project: gbct:nathan
+journal: ~/.nb/work/projects/acme/smith/journals/smith.journal
+project: acme:smith
 rate: 30
 rate_unit: hour
 billing_type: cash
-client: "contacts:nathan.md"
+client: "contacts:smith.md"
 ---
 ```
 
@@ -110,7 +110,7 @@ client: "contacts:nathan.md"
 
 When a timedot block is saved inline (via the block editor in nb-web), `api_t_timedot_write` fires:
 
-1. Writes the updated timedot content to `nathan-gen.timedot` (full rebuild, not append)
+1. Writes the updated timedot content to `smith-gen.timedot` (full rebuild, not append)
 2. Calls `_ensure_journal_stubs(master_journal)` — creates any missing `-gen.*.journal` stub files
 3. Calls `_nb_index_add(td)` — adds the timedot to the nb `.index` if not already present
 
@@ -130,8 +130,8 @@ _ensure_journal_stubs(td.parent / f'{master_stem}.journal')
 
 ```hl
 2026-06-29 work
-    Assets:AR:gbct:nathan        105.00 CAD
-    Income:Services:Hourly:gbct:nathan
+    Assets:AR:acme:smith        105.00 CAD
+    Income:Services:Hourly:acme:smith
 ```
 
 The labour journal is **a complete rebuild every time**. No deduplication needed — it's a derived artifact.
@@ -187,7 +187,7 @@ If no billing markers exist, `current` starts from the beginning of the log.
 
 ```javascript
 const query = baseQuery + (from ? ` date:${from}..` : '') + (to ? `..${to}` : '');
-// e.g.: "bal Assets:AR:gbct:nathan date:2026-06-28..2026-07-03"
+// e.g.: "bal Assets:AR:acme:smith date:2026-06-28..2026-07-03"
 ```
 
 This is the **only** place timeframe filtering happens. Journals are never filtered.
@@ -200,8 +200,8 @@ This is the **only** place timeframe filtering happens. Journals are never filte
 
 ```markdown
 ```hl
-source: nathan.md
-bal Assets:AR:gbct:nathan
+source: smith.md
+bal Assets:AR:acme:smith
 ```
 ```
 
@@ -211,11 +211,11 @@ bal Assets:AR:gbct:nathan
 
 ### Critical: scope your account
 
-A bare `bal` on `nathan.journal` shows **all accounts from all included files** — both CAD entries from `nathan-gen.labour.journal` AND raw hour amounts from `nathan-gen.timedot`. Always scope to the account you want:
+A bare `bal` on `smith.journal` shows **all accounts from all included files** — both CAD entries from `smith-gen.labour.journal` AND raw hour amounts from `smith-gen.timedot`. Always scope to the account you want:
 
 ```
-bal Assets:AR:gbct:nathan           ← shows receivable (positive CAD) ✓
-bal Income:Services:Hourly:gbct:nathan  ← shows income (negative CAD — hledger convention) ✓
+bal Assets:AR:acme:smith           ← shows receivable (positive CAD) ✓
+bal Income:Services:Hourly:acme:smith  ← shows income (negative CAD — hledger convention) ✓
 bal                                 ← shows mixed CAD + raw hours ✗
 ```
 
@@ -223,7 +223,7 @@ bal                                 ← shows mixed CAD + raw hours ✗
 
 ```markdown
 ```hl
-reg Income:Services:Hourly:gbct:nathan
+reg Income:Services:Hourly:acme:smith
 ```
 ```
 
@@ -233,7 +233,7 @@ No `source:` = no CBQL path. Queries the note's journal directly (from `effectiv
 
 Accepts `{ journalFile, query }`. Runs `hledger -f <journalFile> <query>` directly. Returns stdout.
 
-`journalFile` is the absolute path to the real journal (e.g. the master `nathan.journal`). No temp files needed — the master journal already includes all sub-journals via `include` directives.
+`journalFile` is the absolute path to the real journal (e.g. the master `smith.journal`). No temp files needed — the master journal already includes all sub-journals via `include` directives.
 
 ---
 
@@ -250,11 +250,11 @@ In the project diary, timedot entries use a shorthand sub-account notation:
 The leading ` :` is expanded by `_timedotRewrite(text, project)` to the full account path:
 
 ```
- gbct:nathan:flooring  3.5
- gbct:nathan:trim      2.0
+ acme:smith:flooring  3.5
+ acme:smith:trim      2.0
 ```
 
-**Invariant: the leading space is mandatory.** In hledger timedot format, an unindented line is interpreted as a date. `gbct:nathan:flooring` (no leading space) will cause a parse error or silent misparse. The generator (`_timedotRewrite`) does NOT normalize missing spaces — it preserves whatever indentation the source has. If `:flooring` in the diary has no leading space, the generated file will too.
+**Invariant: the leading space is mandatory.** In hledger timedot format, an unindented line is interpreted as a date. `acme:smith:flooring` (no leading space) will cause a parse error or silent misparse. The generator (`_timedotRewrite`) does NOT normalize missing spaces — it preserves whatever indentation the source has. If `:flooring` in the diary has no leading space, the generated file will too.
 
 **Rule**: all timedot account lines must be indented by at least one space. ` :flooring` not `:flooring`.
 
@@ -283,14 +283,14 @@ This marker becomes the new phase boundary. The next `current` timeframe starts 
 
 ### Sub-accounts on the `Re:` line
 
-`_timedot_categories(timedot_path, project)` reads `nathan-gen.timedot` and extracts unique sub-accounts, stripping the project prefix:
+`_timedot_categories(timedot_path, project)` reads `smith-gen.timedot` and extracts unique sub-accounts, stripping the project prefix:
 
 ```
-gbct:nathan:flooring  →  flooring
-gbct:nathan:paint     →  paint
+acme:smith:flooring  →  flooring
+acme:smith:paint     →  paint
 ```
 
-Result: `Re: project: nathan (flooring, paint, trim)`
+Result: `Re: project: smith (flooring, paint, trim)`
 
 The timedot path is derived from `journal_key` when not in FM:
 ```python
@@ -304,13 +304,13 @@ if not timedot_key and journal_key:
 Invoices land at the **client level**, not the project level:
 
 ```
-projects/gbct/
+projects/acme/
   invoices/
-    INV-2026-004.md    ← shared across all gbct projects
+    INV-2026-004.md    ← shared across all acme projects
     INV-2026-005.md
-  nathan/
-    nathan.md
-    nathan-reports.md
+  smith/
+    smith.md
+    smith-reports.md
 ```
 
 Invoice number sequence is per-client, naturally avoiding duplicates across projects under the same client.
@@ -345,7 +345,7 @@ Called after every generated file write. Idempotent.
 
 ### `P` directive invalid in `.timedot` files
 
-hledger rejects `P` price directives in `.timedot` files with a parse error. The directive must live in a `.journal` file. The stable manifest `nathan.journal` is the right home.
+hledger rejects `P` price directives in `.timedot` files with a parse error. The directive must live in a `.journal` file. The stable manifest `smith.journal` is the right home.
 
 ### bare `bal` mixes commodities
 
@@ -353,7 +353,7 @@ The master journal includes both the labour journal (CAD) and the timedot (raw h
 
 ### Timedot sub-account indent
 
-`:flooring` without a leading space generates `gbct:nathan:flooring` at column 0 — hledger misparses it as a date. The generator does not auto-correct this. Fix it in the source block.
+`:flooring` without a leading space generates `acme:smith:flooring` at column 0 — hledger misparses it as a date. The generator does not auto-correct this. Fix it in the source block.
 
 ### `effective_fm` doesn't reach the invoice endpoint
 
@@ -365,7 +365,7 @@ Save on a timedot block triggers journal rebuild for that block. But the intende
 
 ### hledger cache invalidation
 
-The hledger cache in `app.py` keys on journal file mtime. When sub-journals change (timedot or labour rebuild), the master `nathan.journal` mtime doesn't change — so the cache doesn't invalidate. `api_t_timedot_write` and `api_t_journal_from_csv` both call `_hledger_cache.clear()` explicitly.
+The hledger cache in `app.py` keys on journal file mtime. When sub-journals change (timedot or labour rebuild), the master `smith.journal` mtime doesn't change — so the cache doesn't invalidate. `api_t_timedot_write` and `api_t_journal_from_csv` both call `_hledger_cache.clear()` explicitly.
 
 ---
 
@@ -373,7 +373,7 @@ The hledger cache in `app.py` keys on journal file mtime. When sub-journals chan
 
 | Item | Notes |
 |------|-------|
-| Materials CBQL block in reports | `bal Expenses:Materials:gbct:nathan` — needs timeframe filter wired |
+| Materials CBQL block in reports | `bal Expenses:Materials:acme:smith` — needs timeframe filter wired |
 | Tools / transport CBQL blocks | Same pattern as materials |
 | `billing_type: t&m` invoice template | `invoice-tm.md` template; HST calculation on subtotal |
 | Invoice ledger block → post to journal | On generate: write AR/income entry to journal for payment tracking |
@@ -388,11 +388,11 @@ The hledger cache in `app.py` keys on journal file mtime. When sub-journals chan
 
 ```markdown
 ---
-title: "Project Nathan — Reports"
+title: "Project Smith — Reports"
 type: reports
-source: nathan.md
-project: gbct:nathan        ← or inherited from .nathan.md folder dotfile
-client: "contacts:nathan.md"
+source: smith.md
+project: acme:smith        ← or inherited from .smith.md folder dotfile
+client: "contacts:smith.md"
 billing_type: cash
 rate: 30
 rate_unit: hour
@@ -400,29 +400,29 @@ rate_unit: hour
 
 ## Timeline
 ```timeline
-source: nathan.md
+source: smith.md
 ```
 
 ## Time
 ```timedot
-source: nathan.md
+source: smith.md
 timeframe: current
 ```
 
 ## Current phase — Labour
 ```hl
-source: nathan.md
-bal Assets:AR:gbct:nathan
+source: smith.md
+bal Assets:AR:acme:smith
 ```
 
 ## All labour
 ```hl
-reg Income:Services:Hourly:gbct:nathan
+reg Income:Services:Hourly:acme:smith
 ```
 
 ## Materials
 ```hl
-reg Expenses:Materials:gbct:nathan
+reg Expenses:Materials:acme:smith
 ```
 ```
 
