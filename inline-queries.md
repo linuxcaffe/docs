@@ -35,7 +35,7 @@ Results appear as plain text in the sentence. While loading, a `⋯` placeholder
 the raw `{{...}}` is shown dimmed with the error in a tooltip. Patterns inside `` `code` `` or
 fenced blocks are never evaluated.
 
-**Not the same as [[docs:TEMPLATES#Placeholders|template placeholders]].** Those (`{{title}}`,
+**Not the same as [[docs:TEMPLATES.md#How it works|template placeholders]].** Those (`{{title}}`,
 `{{day}}`, `{{weather}}`…) have no colon and are filled in once, when a note is created, then
 saved into the file. The colon is what makes a query live. Some providers echo placeholder names
 (`day`, `weather`) on purpose: they're the live version of the same idea.
