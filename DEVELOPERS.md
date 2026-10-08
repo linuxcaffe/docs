@@ -30,6 +30,7 @@ nb-web is a Flask + vanilla JS web interface for [nb](https://github.com/xwmx/nb
 | [[docs:dev/dev-check-sweep.md]] | `check-sweep.py` — bulk check triage across notebooks, cron-driven ambient sweeping, execution dedup |
 | [[docs:dev/dev-test-suite.md]] | Automated test suite strategy: hybrid pytest + `.checks/` scripts, synthetic fixtures, isolated repo |
 | [[docs:dev/dev-contributing.md]] | Reporting issues, submitting changes, running from source |
+| [[docs:dev/dev-example-data.md]] | The example cast (Pat and Sam Smith, client Acme, project Jones) and the private-names safety net |
 | [[docs:dev/dev-xref.md]] | Stemming algorithm, prefix matching, `/api/xref` reference, `forceAll()` book behavior |
 | [[docs:dev/dev-security.md]] | Auth scheme — session login, user cards, dotfolder notebooks, level-based access |
 | [[docs:dev/dev-notebook-config.md]] | `.<notebook>.md` config file — themes, icon, colour, plugin config, UI flags, vision doc |

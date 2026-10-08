@@ -72,23 +72,52 @@ A standalone read-only notebook shipped separately from the plugin. Profile-agno
 
 ---
 
+## Importing org-mode tutorials
+
+Much hledger documentation and community material is written in Emacs org-mode. `tools/org-to-nb-notes.py` (in the **nb-web** repo, not this one) converts an `.org` file into a folder of nb notes. It was used to build the `accts:tutorial/` notebook folder from the hledger beginner tutorial.
+
+```bash
+cd ~/dev/nb-web
+python3 tools/org-to-nb-notes.py \
+    ~/dev/awesome-hledger/contrib-resources/hledger-beginner-tutorial.org \
+    ~/.nb/accts/tutorial
+```
+
+**What it does:**
+1. Runs `pandoc -f org -t commonmark` (requires `pandoc`).
+2. Splits on `##` headings: each section becomes `NN_slug.md`, and any text before the first section becomes `00_overview.md`.
+3. Cleans each note:
+   - strips org's `; ` prose-comment prefix outside code fences (inside fences `;` stays, since it's hledger comment syntax)
+   - turns `$ hledger …` example lines into clickable `[cmd](term:cmd)` terminal links
+   - links mentions of other section titles as `[[stem|Title]]` wikilinks
+4. Adds frontmatter (`title:`, `type: tutorial`, `tags: [hledger, tutorial]`), writes the folder's `.index`, and commits.
+
+**Caveats:**
+- **Tags are hardcoded** to `hledger, tutorial`. Edit `main()` before converting non-hledger material.
+- **The optional third argument (notebook name) is ignored.**
+- **The script writes files directly, bypassing nb.** It replaces the target folder's `.index` but doesn't register a *new* folder in its parent's `.index`. Run `nb index reconcile` on the parent folder, or the new folder won't show in nb-web.
+- **It runs `git add -A` on the target's parent directory.** Commit or stash unrelated work in that notebook first, or it gets swept into the import commit.
+- **It's a one-shot import, not a sync.** Re-running overwrites the notes, including any hand edits.
+
+---
+
 ## Service business pack
 
 ### Project folder layout
 
 ```
 projects/
-  gbct/                          ← client folder
+  acme/                          ← client folder
     invoices/
       INV-2026-001.md            ← generated; type: invoice; shared across all projects
-    nathan/                      ← project folder
-      nathan.md                  ← type: project; diary + timedot + csv blocks
-      nathan-reports.md          ← type: reports; live hledger queries; Invoice button
+    jones/                      ← project folder
+      jones.md                  ← type: project; diary + timedot + csv blocks
+      jones-reports.md          ← type: reports; live hledger queries; Invoice button
       journals/
-        nathan.journal            ← master include file
-        nathan.timedot            ← auto-rebuilt from timedot blocks on every save
-        nathan.labour.journal     ← auto-rebuilt: timedot entries × rate → explicit CAD
-        nathan.materials.journal  ← auto-rebuilt from csv materials block on save
+        jones.journal            ← master include file
+        jones.timedot            ← auto-rebuilt from timedot blocks on every save
+        jones.labour.journal     ← auto-rebuilt: timedot entries × rate → explicit CAD
+        jones.materials.journal  ← auto-rebuilt from csv materials block on save
 ```
 
 ### Project diary (`type: project`)
@@ -98,13 +127,13 @@ The diary note is the source of truth. It accumulates dated sections with timedo
 ```yaml
 ---
 type: project
-project: gbct:nathan
+project: acme:jones
 rate: 30
 rate_unit: hour           # or day
 billing_type: cash        # or t&m
-client: "contacts:gbct.md"
-timedot_file: /abs/path/to/journals/nathan.timedot
-journal: /abs/path/to/journals/nathan.journal
+client: "contacts:acme.md"
+timedot_file: /abs/path/to/journals/jones.timedot
+journal: /abs/path/to/journals/jones.journal
 csv: [materials, tools]
 foldable: '\d{4}-\d{2}-\d{2}'
 ---
@@ -115,7 +144,7 @@ foldable: '\d{4}-\d{2}-\d{2}'
 
 ```timedot
 2026-06-18
- gbct:nathan:flooring  5  ; tearing out carpet
+ acme:jones:flooring  5  ; tearing out carpet
 ```
 
 ```csv materials
@@ -136,15 +165,15 @@ Every file in `journals/` is kept current by nb-web — no cron jobs or gen scri
 
 | Trigger | Writes |
 |---------|--------|
-| Timedot block saved | `nathan.timedot` (full rebuild) + `nathan.labour.journal` (explicit CAD entries) |
-| CSV materials block saved | `nathan.materials.journal` |
+| Timedot block saved | `jones.timedot` (full rebuild) + `jones.labour.journal` (explicit CAD entries) |
+| CSV materials block saved | `jones.materials.journal` |
 | First timedot save on a new project | Stubs all missing journal files |
 
 **Why a separate labour journal?** hledger's timedot virtual postings are unitless — `-X CAD` can't convert them via `P` directives. The labour journal writes explicit `CAD` amounts (`hours × rate`), so `bal Income` and `reg` work natively without commodity conversion.
 
 **Rate changes mid-project:** drop a bare-number `> RATE: 35` marker into the diary at the point the new rate takes effect — no `$`, no unit (that's fixed by `rate_unit:` above). Everything after the marker bills at the new rate; invoices spanning the change split into separate line items automatically. Full detail: `docs:plugins/hledger/INVOICING.md`'s "Changing your rate mid-project".
 
-**Account convention:** `Assets:AR:gbct:nathan` — short `AR:` form throughout.
+**Account convention:** `Assets:AR:acme:jones` — short `AR:` form throughout.
 
 **hledger cache:** cleared on every journal write, since master journal mtime doesn't change when sub-journals change.
 
@@ -153,10 +182,10 @@ Every file in `journals/` is kept current by nb-web — no cron jobs or gen scri
 ```yaml
 ---
 type: reports
-project: gbct:nathan
-journal: /abs/path/to/journals/nathan.journal
+project: acme:jones
+journal: /abs/path/to/journals/jones.journal
 billing_type: cash
-client: "contacts:gbct.md"
+client: "contacts:acme.md"
 ---
 ```
 
@@ -172,7 +201,7 @@ a copy on the reports note. Specialty header shows live budget totals and
 2. Preflight reads labour + materials totals, suggests next `INV-YYYY-NNN`
    - Counter scans the client-level `invoices/` folder — sequential across all projects for that client
 3. Dialog shows item breakdown; confirm/edit Invoice #, Date, Due, Notes
-4. Generate writes `projects/gbct/invoices/INV-2026-001.md` and opens it
+4. Generate writes `projects/acme/invoices/INV-2026-001.md` and opens it
 
 #### Billing types
 
@@ -191,7 +220,7 @@ Template variables: `{{invoice_num}}`, `{{issued}}`, `{{due}}`, `{{to_block}}`, 
 `{{client}}`, `{{client_raw}}`, `{{project}}`, `{{rate}}`, `{{reports_selector}}`
 
 - **`{{to_block}}`** — resolved from `contacts/` notebook via `client:` FM key, then project prefix fallback; formats name, org, address
-- **`{{re_line}}`** — `project: nathan (flooring, paint, electrical)` — project stem + unique timedot sub-categories
+- **`{{re_line}}`** — `project: jones (flooring, paint, electrical)` — project stem + unique timedot sub-categories
 - **`{{labour_lines}}`** — one Markdown table row per diary session (date, description, hours, rate, amount)
 - **`{{subtotal}}`** / **`{{hst}}`** / **`{{ar_total}}`** — numeric amounts for t&m table rows (subtotal before HST, HST amount, total due)
 - **`{{ledger_block}}`** — canonical hledger entries for your books (AR + income at invoice time; commented payment template)
