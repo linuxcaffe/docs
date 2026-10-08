@@ -21,6 +21,7 @@ If you already enjoy working with nb, or with text files as your primary way of 
 
 ## TL;DR
 
+- Create notes quickly with as much or as little markdown, with keyboard, mouse or mobile
 - Browse, search, and edit all your nb notebooks in a split-pane, Markdown-rendering web UI
 - Full CRUD: add notes, bookmarks, todos, and contacts with per-notebook templates
 - **Wikilinks** — `[[Note Title]]` links between notes, resolved live on click
