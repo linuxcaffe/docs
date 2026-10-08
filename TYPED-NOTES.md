@@ -4,7 +4,7 @@ caption: "a type: in frontmatter, and the header bar some types get"
 type: topic
 topic: typed-notes
 category: structure
-help_for: [file:*-org.md, type:dashboard, type:dotfile, type:project, type:report, type:reports, type:invoice, type:quote, type:budget]
+help_for: [file:*-org.md,  type:dotfile, type:project, type:report, type:reports, type:invoice, type:quote, type:budget]
 toc: true
 processed: true
 ---
