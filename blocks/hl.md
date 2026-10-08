@@ -78,4 +78,4 @@ tutorials: it's shown highlighted and never run.
 
 Renderer: `_loadHledgerBlock` (`plugins/nbweb-codeblocks.js`), backed by `/api/hledger-query`;
 the add form is `_showHledgerAddForm`. Accounting domain notes: the `hledger` skill and
-[[docs:plugins/hledger/README.md|nbweb-hledger]].
+[nbweb-hledger](https://github.com/linuxcaffe/nbweb-hledger).
