@@ -61,4 +61,5 @@ Renderer: `_loadNavBlock` (`plugins/nbweb-codeblocks.js`), query parsed by `_nav
 Backed by `/api/notes` (notebook/folder mode), `/api/nb/notebooks` (empty/root mode), or
 `/api/fs/list` (raw filesystem mode — the admin gate above is enforced there, server-side).
 Already on the shared `_buildBarHeader`/`_initCollapseToggle` header, so it gets the universal
-`?` and `↻` controls for free rather than building its own.
+`?` and `↻` controls for free rather than building its own. Broader renderer architecture:
+[[docs:dev/dev-codeblocks.md]] (#TODO not yet reviewed against code — read with that in mind).

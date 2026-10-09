@@ -6,6 +6,8 @@ toc: true
 
 # CODEBLOCKS (dev)
 
+#TODO not yet reviewed against code — no `type:`/`reviewed:`, linked from topic notes on trust, not verification
+
 Developer reference for the codeblock renderer system. For user-facing codeblock docs see [[docs:CODEBLOCKS]]. For writing check scripts see [[docs:dev/dev-checks.md]].
 
 ---
