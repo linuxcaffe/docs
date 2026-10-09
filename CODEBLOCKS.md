@@ -67,7 +67,14 @@ fm: true
 ---
 ```
 
-**Collapse state** — FM-mode blocks start collapsed. State is then persisted per-block in `localStorage` the same as body blocks.
+**Collapse state** — FM-mode blocks start collapsed. Most (anything with its own `+`/`↻`-driven
+lazy load — `tw`, `hl`, `nb`, `git`, `fm`, `cfg`, `nav`, `gallery`, `toc`, `t`, `timedot`, `csv`,
+`sysadmin`, `add`) **always** start collapsed on every open — clicking one open is a per-visit
+convenience, not a remembered preference; it does not survive a reload. The exceptions are the
+few blocks that render immediately rather than lazily (`check`, `tui`) — those do remember
+open/closed in `localStorage` across reloads, the same as body blocks. Checked against code
+2026-10-09, writing `block-toc`: the previous wording ("persisted the same as body blocks")
+described only this second, smaller group.
 
 **`check:` is excluded** — `check:` in frontmatter is a config directive (see below), not a codeblock to display. It has no FM-mode toolbar incarnation. To show check output explicitly, use ` ```check``` ` in the body.
 
@@ -146,21 +153,7 @@ See [[docs:dev/dev-security.md]] for the full access level scheme.
 
 ---
 
-### toc — Table of Contents
-
-`toc` is FM-mode only — declare `toc: true` in frontmatter; there is no fenced body form.
-
-```yaml
----
-toc: true
----
-```
-
-Adds a collapsible TOC barblock to the FM strip. The header shows the heading count; expanding it reveals a clickable list of every heading in the note. Clicking a heading scrolls smoothly to it.
-
-Headings `h1`–`h6` are all included. Indentation in the list reflects heading level. IDs are auto-assigned via slug if the heading has none (`# My Section` → `my-section`).
-
-The block starts collapsed; open/closed state persists in `localStorage` per note.
+{{inline: docs:blocks/toc.md}}
 
 ---
 
