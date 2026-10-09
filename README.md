@@ -5,7 +5,7 @@ draft: true
 toc_min: 1
 toc: true
 xref: [docs:, docs:dev/]
-xref-ignore: nb-web
+xref-ignore: [nb-web, readme]
 processed: true
 check: sys-readme-stale
 ---
