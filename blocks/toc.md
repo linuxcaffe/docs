@@ -5,6 +5,7 @@ type: topic
 topic: block-toc
 category: live-blocks
 help_for: [block:toc, key:toc_min]
+toc: true
 processed: true
 ---
 
