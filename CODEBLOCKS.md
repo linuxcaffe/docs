@@ -138,30 +138,7 @@ See [[docs:dev/dev-security.md]] for the full access level scheme.
 
 ## Block Types
 
-### nav — Folder Navigator
-
-````markdown
-```nav
-accts:guide/
-```
-````
-
-Renders a stateful folder navigator in the preview pane. Clicking folders drills in; clicking notes opens them. The breadcrumb header is fully clickable.
-
-| Format | Example | Navigates to |
-|--------|---------|-------------|
-| `.` | `.` | Current note's folder |
-| nb selector | `accts:guide/` | Notebook folder |
-| Filesystem path | `~/.nb/accts/guide` | Same, via path |
-| Hidden dir path | `~/.nb/.test` | Raw filesystem listing |
-
-**`.` (current folder)** — resolves to the folder containing the open note. Useful as a dashboard block or FM-mode entry on a hub note: the navigator starts where you are.
-
-The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (check scripts), `~/.nb/.templates`, etc.
-
-**Controls:** **▼/▶** collapse (persists in `localStorage` by starting path) · **↻** refresh · breadcrumb segments are clickable.
-
-**Default collapsed** on first render for hidden-dir paths.
+{{inline: docs:blocks/nav.md}}
 
 ---
 
