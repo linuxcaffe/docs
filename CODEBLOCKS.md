@@ -7,7 +7,7 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#tw — Taskwarrior|tw]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#hl — Accounting|hl]] · [[#chart — Financial Charts|chart]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#toc — Table of Contents|toc]] · [[#test — Embedded Assertions|test]] · [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#cine — Film Production|cine]] · [[#csv — Spreadsheet Table|csv]]
+[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#toc — Table of Contents|toc]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#sysadmin — Admin Dashboard|sysadmin]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#csv — Spreadsheet Table|csv]] · [[#tw — Taskwarrior|tw]] · [[#hl — Accounting|hl]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]] · [[#test — Embedded Assertions|test]] · [[#chart — Financial Charts|chart]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -138,6 +138,467 @@ See [[docs:dev/dev-security.md]] for the full access level scheme.
 
 ## Block Types
 
+### nav — Folder Navigator
+
+````markdown
+```nav
+accts:guide/
+```
+````
+
+Renders a stateful folder navigator in the preview pane. Clicking folders drills in; clicking notes opens them. The breadcrumb header is fully clickable.
+
+| Format | Example | Navigates to |
+|--------|---------|-------------|
+| `.` | `.` | Current note's folder |
+| nb selector | `accts:guide/` | Notebook folder |
+| Filesystem path | `~/.nb/accts/guide` | Same, via path |
+| Hidden dir path | `~/.nb/.test` | Raw filesystem listing |
+
+**`.` (current folder)** — resolves to the folder containing the open note. Useful as a dashboard block or FM-mode entry on a hub note: the navigator starts where you are.
+
+The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (check scripts), `~/.nb/.templates`, etc.
+
+**Controls:** **▼/▶** collapse (persists in `localStorage` by starting path) · **↻** refresh · breadcrumb segments are clickable.
+
+**Default collapsed** on first render for hidden-dir paths.
+
+---
+
+### gallery — Image Gallery
+
+````markdown
+```gallery
+med
+```
+````
+
+Renders a CSS grid of images from the nearest `images/` folder, found by walking up from the current note's location. Click any image to open a full-screen lightbox with keyboard navigation (← → Esc).
+
+**Adding images** — while editing a note, click the 📷 button next to **mkd ref** (or press `Ctrl+Shift+1`) to embed an image: capture with a camera (coming soon), pick from the note's own nearest `images/` folder, or browse for a file. A brand-new upload lets you rename it first (handy for camera-roll names like `IMG_20260904_143201.jpg`); picking an already-existing image skips straight to choosing a size. Either way the image lands in this same `images/` folder, so it shows up here automatically — no gallery configuration needed. See [[docs:KEYBOARD.md#Adding and editing|Keyboard § Adding and editing]] for the shortcut.
+
+**Sizes** — the first word sets the cell width:
+
+| Size | Cell width |
+|------|-----------|
+| `thumb` | 80 px |
+| `small` | 140 px |
+| `med` | 220 px |
+| `large` | 320 px |
+
+Grid columns auto-fill the available width at the chosen cell size.
+
+*The single-image embed step above (📷) offers this same thumb/small/med/large vocabulary, plus "Full size" — but there it sets that one image's own display width in the note body, not a grid cell size. Two different mechanisms sharing one size scale for consistency, not the same setting.*
+
+**Path argument** — optional second word overrides the folder search:
+
+````markdown
+```gallery
+med .
+```
+
+```gallery
+large pfinds:items/photos/
+```
+````
+
+| Path | Behaviour |
+|------|-----------|
+| *(absent)* | Walk up from note dir; use first `images/` found |
+| `.` | Look only for `images/` in the current note's folder; vanish silently if absent |
+| `notebook:path/` | Use that specific folder directly |
+
+**FM-mode** — declare in frontmatter to surface the gallery in the toolbar strip above the body (collapses to a header bar, shows "no images" when empty):
+
+```yaml
+gallery: med .
+gallery: "thumb .images:"
+gallery: "large pfinds:items/photos/"
+```
+
+**YAML syntax rules for FM-mode:**
+
+- The value is always `size path` — the size keyword must come first, separated by a space. A value with no space (e.g. `gallery: ../.images`) is parsed entirely as the size key; the path is silently ignored and defaults to walk-up behaviour.
+- Values ending with `:` must be quoted — `"thumb .images:"` not `thumb .images:` (bare trailing colon breaks YAML).
+- Values starting with `.` or `/` must be quoted — `"med ~/.nb/.images"`.
+
+| Path in FM value | Behaviour |
+|-----------------|-----------|
+| *(absent — size only)* | Walk up from note dir; use first `images/` found |
+| `.` | Look only for `images/` in the current note's folder |
+| `notebook:path/` | Explicit folder — `.images:` resolves to `~/.nb/.images/` |
+| `~/path` | Absolute path with `~` expansion |
+
+**Lightbox controls:** click any thumbnail to open · ← / → to navigate · Esc or click outside to close.
+
+---
+
+### toc — Table of Contents
+
+`toc` is FM-mode only — declare `toc: true` in frontmatter; there is no fenced body form.
+
+```yaml
+---
+toc: true
+---
+```
+
+Adds a collapsible TOC barblock to the FM strip. The header shows the heading count; expanding it reveals a clickable list of every heading in the note. Clicking a heading scrolls smoothly to it.
+
+Headings `h1`–`h6` are all included. Indentation in the list reflects heading level. IDs are auto-assigned via slug if the heading has none (`# My Section` → `my-section`).
+
+The block starts collapsed; open/closed state persists in `localStorage` per note.
+
+---
+
+### fm — Frontmatter Filter
+
+````markdown
+```fm
+shot: | All shots
+```
+````
+
+Renders a collapsible list of notes matching frontmatter field conditions. Results are clickable — opening the note in the preview pane. Hover any row to see all frontmatter fields in a tooltip.
+
+**Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks. **`.`** resolves to the current note's notebook.
+
+**Folder scope** — a scope token can also carry a folder path: `notebook:folder/path/` (trailing slash required). Recursive — matches notes in nested subfolders too, not just the folder's immediate contents. A colon-bearing token only counts as folder scope when it ends in `/`; without the trailing slash it's parsed as the first filter instead, not a folder.
+
+**Pseudo-fields** — `mtime` (last-modified date, `YYYY-MM-DD`), `wordcount`, and `linecount` (both counted from the note's body, frontmatter excluded) are computed per note, not stored in YAML, and filterable with the exact same `field:value` syntax as real frontmatter:
+
+```fm
+mtime:2026-08-04 | Touched today
+```
+
+A pseudo-field always overrides a real frontmatter field of the same name if a note happens to have one.
+
+**Filter conditions** (AND logic):
+
+| Syntax | Meaning |
+|--------|---------|
+| `field:value` | Field equals value (case-insensitive) |
+| `field:` | Field exists (any value) |
+| `field:""` | Field absent or empty |
+| `field:>value` | Field greater than value |
+| `field:<value` | Field less than value |
+| `field:value1,value2` | Field equals any of the listed values |
+| `-field:value` | Negates any of the above — field does *not* match |
+
+`>`/`<` try numeric comparison first (so `seq:>6` correctly treats `10 > 6`, not a lexicographic `"10" < "6"`), falling back to string comparison — which is exactly right for `mtime` and any other `YYYY-MM-DD` field, since lexicographic order matches chronological order for that format:
+
+```fm
+mtime:>2026-07-28 | Touched this week
+```
+
+A note missing the field entirely never matches a `>`/`<`, `eq`, or any-of filter (same as `eq` always has) — **except under negation**, where a missing field counts as a pass: `-type:cut` matches a note with no `type:` at all just as readily as one with `type: something-else`, since it certainly isn't `type: cut`.
+
+type:story,plotline | Story or plotline cards
+```fm
+type:story,plotline | Story or plotline cards
+```
+---
+type:story,plotline | Story or plotline cards
+```fm
+type:story,plotline | Story or plotline cards
+```
+
+-type:cut | Everything except cut material
+```fm
+-type:cut | Everything except cut material
+```
+
+**`sort:`/`limit:`** — directives, not match conditions; can appear anywhere among the filters, not just at the end:
+
+| Syntax | Meaning |
+|--------|---------|
+| `sort:field` | Order ascending by field's value |
+| `sort:-field` | Order descending (leading `-` on the field name) |
+| `limit:N` | Keep only the first N results, after sorting |
+
+Applied after the fact to whatever the scan already matched — a display-level cap, separate from the query's own internal safety limit (500 matches max, regardless of `limit:`). Same numeric-first-then-string comparison as `>`/`<`, so `sort:-mtime` correctly orders by real date and `sort:-seq` correctly orders `10` after `6`, not lexicographically:
+
+Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
+```fm
+Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
+```
+
+`limit:` composes with `count`/`sum:` too — `count type:story limit:5` (count capped at 5) and `sum:budget sort:-mtime limit:5` (total spend across the 5 most recent) are both valid, if less common, shapes.
+
+**`\| Label`** — optional label shown in the header bar.
+
+**Examples:**
+
+````markdown
+```fm
+shot: | All shots
+```
+````
+Takeout type:shot loc:LG | Lee Gardens shots
+```fm
+Takeout type:shot loc:LG | Lee Gardens shots
+```
+
+Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
+```fm
+Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
+```
+
+model:true | Example notes
+```fm
+model:true | Example notes
+```
+
+#### fm: group — Grouped Counts
+
+````markdown
+```fm
+group:plotline Takeout:storylines/ type:story | Story cards per plotline
+```
+````
+
+A leading `group:<field>` verb (same reserved-prefix convention `list` uses — must be the very first token) buckets matches by that field's value instead of rendering one flat list. Each bucket shows as its own labeled sub-list, largest group first. Notes missing the field land in a `(none)` bucket rather than being dropped — a completeness scan wants those surfaced, not hidden.
+
+Scope and filters after the `group:` token work exactly like the plain form — folder scope, multiple filters, and the `| Label` suffix all compose normally:
+
+````markdown
+```fm
+group:type Takeout:storylines/film-school/
+```
+````
+
+#### fm: count / sum — Header-Only Aggregates
+
+````markdown
+```fm
+count Takeout:storylines/film-school/ type:story
+```
+````
+
+```fm
+sum:budget Takeout:storylines/ type:story
+```
+
+Two more leading verbs, same reserved-prefix convention as `group`/`list`. Neither renders a list — just the header, with the number. `count` shows the match count; `sum:<field>` totals that field's numeric value across every match. For counting inline in prose instead of as a standalone block, see `{{fm: count ...}}` in [[docs:inline-queries.md|Inline live queries]] — same underlying query, different rendering surface.
+
+`sum:` silently skips any matching note that lacks the field or holds a non-numeric value for it — the header shows `(counted/total)` so that's visible rather than hidden, and a missing/bad value is never treated as `0` (which would understate nothing but silently implies every match contributes, which usually isn't true — a budget field genuinely unset on 3 of 10 cards is very different from those 3 being budgeted at zero). Works for pseudo-fields too: `sum:wordcount` totals word count across every match, e.g. total words written across all scenes in a folder — no separate `wordcount` verb needed since it's exactly this with a fixed field name.
+
+#### fm: list — FM Key Browser
+
+````markdown
+```fm
+list
+```
+````
+
+Shows a scrollable table of every frontmatter key found across the current notebook — sorted by note count. Columns: **Key · # notes · Sample values**. Click any row to drill into that field's note list (the same view as `field:`). A **← list** button returns to the browser.
+
+**Scope tokens** narrow the key set:
+
+| Token | Keys shown |
+|-------|-----------|
+| `list` | All keys in the notebook |
+| `list-core` | Built-in nb-web keys (title, type, status, tags, access…) |
+| `list-cine` | Film production keys (scene, shot, loc, cast, day_night…) |
+| `list-empty` | Keys present in notes but with a null or empty value — useful for finding cruft |
+
+**Row limit** — an integer after the token sets how many rows are visible before scrolling. Default is 8.
+
+````markdown
+```fm
+list 20
+```
+
+```fm
+list-core
+```
+
+```fm
+list-empty 12
+```
+````
+
+FM-mode syntax (`fm: list-core 10` in frontmatter) is also supported — the key browser appears as a collapsible FM strip block.
+
+#### fm: edit — the frontmatter form in the body
+
+````markdown
+```fm
+edit |Edit this recipe
+```
+````
+
+A button (labelled after the `|`, default `fm-edit`) that opens the same form as the toolbar's
+**FM** button, right there in the note: one input per field, plus the fields the folder declares
+that the note doesn't have yet. See [[docs:FOLDER-CONFIG.md#Constraints|Folder config: constraints]].
+`changes` is the old name and still works.
+
+---
+
+{{inline: docs:blocks/cfg.md}}
+
+---
+
+### sysadmin — Admin Dashboard
+
+````markdown
+```sysadmin
+```
+````
+
+A dashboard block for installation-wide admin tasks — notebook inventory, plugin list, key config file checklist, and (via its two modes below) user management and the live crontab. **Requires `tech` level** — every mode's own backend endpoint checks this independently of any page the block happens to sit on, so it's a real access lock, not just a note-level convention. `djp:sysadmin.md` is the reference installation of this block; copy its structure for a second admin dashboard rather than starting from scratch.
+
+**Bare form** (no argument) — notebook inventory (dotfile presence, wired/remote/branch, active plugins, has `.checks/`, note count), the installed plugin list, and a checklist of key config files (global dotfile, manifest, checks index, guards rule, tools index, `nb-settings.json`) with existence ticks. Click a notebook name to open its dotfile.
+
+**`users` mode** — a full user-management panel, not just a read-only list:
+
+````markdown
+```sysadmin
+users
+```
+````
+
+Lists every account (username, access level, display name, notebook scoping). Change a user's level inline via the dropdown; delete a user (except yourself) via 🗑; **+ Add user** creates a new account with username/name/level/password. Backend (`/api/users`) enforces `admin` level independently — one level below the `tech` this block type itself defaults to, so in practice anyone who can see this block can also use it.
+
+**`crontab` mode** — the real, current output of `crontab -l` for the user running nb-web, parsed into schedule / command / description (a leading `#`-comment line above an entry is taken as its description — the same convention `check-sweep`'s own cron entry uses):
+
+````markdown
+```sysadmin
+crontab
+```
+````
+
+**Access note**: this block type is also gated in `codeblock_access` (`{read: tech}`, added 2026-07-21) — belt-and-suspenders on top of each mode's own independent backend check above, so the block silently disappears from the page for a sub-`tech` viewer instead of showing an inline denial.
+
+---
+
+### toolbar — Shortcut Buttons
+
+Notes with `toolbar: true` frontmatter appear as icon shortcut buttons in the list toolbar — instant one-click access to any note regardless of which folder or sort is active.
+
+```yaml
+---
+title: Cashflow Report
+toolbar: true
+toolbar_icon: 💰
+---
+```
+
+The button appears in the list header bar alongside any plugin-provided toolbar buttons. Clicking it opens the note in the preview pane immediately.
+
+**`toolbar_icon:`** — sets the icon displayed on the button. Falls back in order: `toolbar_icon:` value → plugin icon function (if the note's type has a registered icon) → `indicator:` frontmatter → 📌.
+
+**Scope** — toolbar notes are scanned notebook-wide at load time. A note in any folder of the current notebook can expose a button. Switching notebooks rebuilds the toolbar.
+
+**Common patterns:**
+
+| Note | `toolbar_icon:` | Purpose |
+|------|----------------|---------|
+| `cashflow.md` | `💰` | Jump to financial overview |
+| `checklist.md` | `📋` | Daily checklist |
+| `schedule.md` | `🗓` | Weekly schedule |
+| `dashboard.md` | `📊` | Project hub |
+
+There is no codeblock form — `toolbar: true` is a frontmatter-only directive. No FM-mode slot; the button itself is the presentation.
+
+---
+
+### csv — Spreadsheet Table
+
+Renders an editable spreadsheet grid directly in the note preview. Data lives inside the fenced block and is written back on save — no separate file, no sync step.
+
+````markdown
+```csv
+Item,Qty,Price
+Wrench,2,14.99
+Tape,5,3.50
+```
+````
+
+The first row is always the **column header**. Remaining rows are data. The grid uses [Jspreadsheet CE](https://bossanova.uk/jspreadsheet/) — you can sort, resize columns, and manage rows via right-click context menu.
+
+**Controls:**
+
+| Control | Action |
+|---------|--------|
+| Click header bar | Collapse / expand the block |
+| Right-click cell | Jspreadsheet context menu — insert/delete rows and columns, copy, paste |
+| **↓** (save button) | Write current grid contents back to the note |
+
+Changes made directly in the grid are **not auto-saved** — click **↓** when done.
+
+---
+
+#### csv templates
+
+A named token after `csv` loads a reusable column template from `~/.nb/.lib/<token>.csv`, keeping column structure out of the note body.
+
+````markdown
+```csv materials
+Copper pipe 1/2,3,m,4.50,13.50
+PVC elbow fitting,6,ea,1.20,7.20
+```
+````
+
+The template file (`~/.nb/.lib/materials.csv`) defines the structure:
+
+```csv
+Description,Qty,Unit,Unit Cost,Total
+contents
+TOTAL,,,,=SUM(E1:E1)
+```
+
+**Template format:**
+
+| Row | Role |
+|-----|------|
+| First row | Column headers — displayed as the spreadsheet header |
+| `contents` | Sentinel — separates header rows from footer rows |
+| Rows after `contents` | Footer rows — appended after user data; formula cells are evaluated by Jspreadsheet |
+
+The `contents` row never appears in the rendered grid. Rows above it become column headers; rows below become a fixed footer (useful for `=SUM()` totals). The codeblock body holds only the **data rows** — the template rows are never written back to the note.
+
+**Formula ranges are rewritten at render time.** The upper bound of any range starting at row 1 is replaced with the actual data row count before the grid is initialised. This prevents circular references when the footer row lands inside the formula range (which happens whenever the data is shorter than the range you wrote).
+
+In practice: always write footer formulas with `1` as the upper bound — `=SUM(E1:E1)`, `=SUM(D1:D1)`. The renderer expands it to the correct last row automatically. You never need to update the template when rows are added or removed, and the same template works correctly for notes with one row or a hundred.
+
+**Template controls:**
+
+| Control | Action |
+|---------|--------|
+| **CSV** badge (header) | Open the catalog checklist picker (see below) |
+| **↓** button | Save data rows back to the note (header and footer rows excluded) |
+| Right-click | Jspreadsheet context menu for row/column management |
+
+**Creating a template:** write a plain `.csv` file to `~/.nb/.lib/` with the token name. The `contents` sentinel and footer rows are optional — a template with only a header row is valid. Formula syntax is standard spreadsheet style (`=SUM(E1:E6)`, `=E2*D2`); adjust row ranges to match your expected data size.
+
+#### Checklist picker
+
+Click the **CSV** badge on any template block header to open a catalog checklist. It reads the nearest `type: <token>` note (walking up the folder tree) and shows all its items grouped by heading.
+
+Items already present in the spreadsheet are pre-checked. Check or uncheck items, then click **Save** — the selection replaces the spreadsheet's data rows and writes immediately back to the note. The catalog remains untouched.
+
+This is the primary way to populate a template block from a master list: write the catalog once, pick from it per-note.
+
+#### csv in FM-mode — compact catalog view
+
+Declaring `csv: <token>` in frontmatter renders a compact read-only summary in the FM strip instead of a full spreadsheet. This is useful for a quick cost overview without expanding the grid.
+
+```yaml
+csv: materials
+csv: materials 12
+```
+
+The value is the catalog token. An optional integer sets the visible row limit before scrolling (default 8). The FM strip shows **description left, cost right**, grouped by the catalog's headings. Clicking a group heading opens the catalog note.
+
+#### Opening a `.csv` file directly
+
+This is a different, simpler path than the codeblock above — any `.csv` file anywhere in a notebook opens as a full-pane spreadsheet editor automatically, no fence needed. Column widths are set from actual content (same as the codeblock form), and the grid fills the whole preview pane.
+
+**Header row** is a manual toggle (**First row is header**, in the toolbar next to Save/Cancel) — off by default, every time you open the file. It's not remembered between sessions and never auto-detected: a raw export file (bank statement, etc.) often has no header row at all, and guessing wrong would risk quietly turning a real data row into a column title. Check it to pin row 1 as column headers and pull it out of the data grid; uncheck to put it back. Toggling preserves any edits you've already made — it doesn't reload the file.
+
+---
+
 ### tw — Taskwarrior
 
 ````markdown
@@ -159,6 +620,10 @@ columns:id,description,due
 +work
 ```
 ````
+
+---
+
+{{inline: docs:blocks/hl.md}}
 
 ---
 
@@ -211,46 +676,6 @@ The first word is a repo **alias** (configured in `nb-settings.json`) or **`.`**
 ```
 
 Permitted subcommands (read-only): `branch`, `describe`, `diff`, `log`, `ls-files`, `remote`, `shortlog`, `show`, `stash`, `status`, `tag`.
-
----
-
-{{inline: docs:blocks/hl.md}}
-
----
-
-### chart — Financial Charts
-
-````markdown
-```chart
-cashflow thisyear
-```
-````
-
-Interactive Chart.js visualisations driven by hledger data. Requires the **NbWeb-hledger** plugin with a configured journal.
-
-**Syntax:** `` ```chart\n<report> [period] [depth:N]\n``` ``
-
-| Report | Chart | Description |
-|--------|-------|-------------|
-| `cashflow` | bar + line | Monthly income vs expenses, cumulative net change |
-| `networth` | line | Assets, liabilities, and net worth over time |
-| `expenses` | stacked bar | Monthly expense breakdown by category |
-| `expenses-pie` | doughnut | Expense share by category for the period |
-| `assets-pie` | doughnut | Asset allocation snapshot |
-| `income-pie` | doughnut | Income sources for the period |
-
-**Period** is any hledger period expression: `thismonth`, `thisyear`, `lastyear`, `last3months`, `2025`, `2025-01..2025-06`, etc.
-
-**`depth:N`** controls account depth for category breakdown (default `2`).
-
-**Header controls:**
-
-| Control | Action |
-|---------|--------|
-| **▾ / ▸** | Collapse/expand |
-| **mo / yr / prev** | Quick period switcher (reloads chart) |
-| **◕ / ▦** | Doughnut ↔ bar toggle on `*-pie` and `expenses`; redraws from cached data |
-| **↺** | Force reload from hledger |
 
 ---
 
@@ -493,400 +918,6 @@ timedot_file: ~/freelance/time.timedot
 ```
 
 When both keys are set on a note that has both a `t` block and a `timedot` block, the `t` block's clock-in/out and dot-mode toggle, and the `timedot` block's `+` add form, all write to the same pair of files — keeping timeclock and timedot in sync for the same project.
-
----
-
-### toolbar — Shortcut Buttons
-
-Notes with `toolbar: true` frontmatter appear as icon shortcut buttons in the list toolbar — instant one-click access to any note regardless of which folder or sort is active.
-
-```yaml
----
-title: Cashflow Report
-toolbar: true
-toolbar_icon: 💰
----
-```
-
-The button appears in the list header bar alongside any plugin-provided toolbar buttons. Clicking it opens the note in the preview pane immediately.
-
-**`toolbar_icon:`** — sets the icon displayed on the button. Falls back in order: `toolbar_icon:` value → plugin icon function (if the note's type has a registered icon) → `indicator:` frontmatter → 📌.
-
-**Scope** — toolbar notes are scanned notebook-wide at load time. A note in any folder of the current notebook can expose a button. Switching notebooks rebuilds the toolbar.
-
-**Common patterns:**
-
-| Note | `toolbar_icon:` | Purpose |
-|------|----------------|---------|
-| `cashflow.md` | `💰` | Jump to financial overview |
-| `checklist.md` | `📋` | Daily checklist |
-| `schedule.md` | `🗓` | Weekly schedule |
-| `dashboard.md` | `📊` | Project hub |
-
-There is no codeblock form — `toolbar: true` is a frontmatter-only directive. No FM-mode slot; the button itself is the presentation.
-
----
-
-### cine — Film Production
-
-Requires the **[NbWeb-cine](https://github.com/linuxcaffe/nbweb-cine)** plugin and a `.nb-cine.json` anchor file in the notebook.
-
-````markdown
-```cine
-shots.strip | day: 1
-```
-````
-
-**Syntax:** `field[.format] [: code, code, …] [| filter: value, …]`
-
-| Query | Result |
-|-------|--------|
-| `shots` | Compact shot list — all shots, all days |
-| `shots \| day: 1` | Shot list for shoot day 1 |
-| `shots.strip` | Draggable stripboard — drag to resequence |
-| `shots.strip \| day: 1` | Stripboard filtered to one day |
-| `shots.sheet \| day: 1` | Call sheet cards — verbose, print-friendly |
-| `scenes` | Scene index: all scenes, colour-coded by I/E · D/N |
-| `storylines` | 2D story structure board — draggable cards across named lanes |
-| `storylines.large` | Board with full card detail (scenes, metadata) |
-| `actor.phone: JD, AM` | Field lookup — phone numbers for listed actors |
-| `location.address: LG` | Field lookup — address for location LG |
-
-Filters stack: `shots.sheet | day: 1, actor: JD`. See the [NbWeb-cine README](https://github.com/linuxcaffe/nbweb-cine) for the full query reference, frontmatter schemas, and storylines board documentation.
-
----
-
-### nav — Folder Navigator
-
-````markdown
-```nav
-accts:guide/
-```
-````
-
-Renders a stateful folder navigator in the preview pane. Clicking folders drills in; clicking notes opens them. The breadcrumb header is fully clickable.
-
-| Format | Example | Navigates to |
-|--------|---------|-------------|
-| `.` | `.` | Current note's folder |
-| nb selector | `accts:guide/` | Notebook folder |
-| Filesystem path | `~/.nb/accts/guide` | Same, via path |
-| Hidden dir path | `~/.nb/.test` | Raw filesystem listing |
-
-**`.` (current folder)** — resolves to the folder containing the open note. Useful as a dashboard block or FM-mode entry on a hub note: the navigator starts where you are.
-
-The hidden-dir form (`~/.nb/.*`) uses a raw filesystem listing — useful for browsing `~/.nb/.test` (check scripts), `~/.nb/.templates`, etc.
-
-**Controls:** **▼/▶** collapse (persists in `localStorage` by starting path) · **↻** refresh · breadcrumb segments are clickable.
-
-**Default collapsed** on first render for hidden-dir paths.
-
----
-
-### gallery — Image Gallery
-
-````markdown
-```gallery
-med
-```
-````
-
-Renders a CSS grid of images from the nearest `images/` folder, found by walking up from the current note's location. Click any image to open a full-screen lightbox with keyboard navigation (← → Esc).
-
-**Adding images** — while editing a note, click the 📷 button next to **mkd ref** (or press `Ctrl+Shift+1`) to embed an image: capture with a camera (coming soon), pick from the note's own nearest `images/` folder, or browse for a file. A brand-new upload lets you rename it first (handy for camera-roll names like `IMG_20260904_143201.jpg`); picking an already-existing image skips straight to choosing a size. Either way the image lands in this same `images/` folder, so it shows up here automatically — no gallery configuration needed. See [[docs:KEYBOARD.md#Adding and editing|Keyboard § Adding and editing]] for the shortcut.
-
-**Sizes** — the first word sets the cell width:
-
-| Size | Cell width |
-|------|-----------|
-| `thumb` | 80 px |
-| `small` | 140 px |
-| `med` | 220 px |
-| `large` | 320 px |
-
-Grid columns auto-fill the available width at the chosen cell size.
-
-*The single-image embed step above (📷) offers this same thumb/small/med/large vocabulary, plus "Full size" — but there it sets that one image's own display width in the note body, not a grid cell size. Two different mechanisms sharing one size scale for consistency, not the same setting.*
-
-**Path argument** — optional second word overrides the folder search:
-
-````markdown
-```gallery
-med .
-```
-
-```gallery
-large pfinds:items/photos/
-```
-````
-
-| Path | Behaviour |
-|------|-----------|
-| *(absent)* | Walk up from note dir; use first `images/` found |
-| `.` | Look only for `images/` in the current note's folder; vanish silently if absent |
-| `notebook:path/` | Use that specific folder directly |
-
-**FM-mode** — declare in frontmatter to surface the gallery in the toolbar strip above the body (collapses to a header bar, shows "no images" when empty):
-
-```yaml
-gallery: med .
-gallery: "thumb .images:"
-gallery: "large pfinds:items/photos/"
-```
-
-**YAML syntax rules for FM-mode:**
-
-- The value is always `size path` — the size keyword must come first, separated by a space. A value with no space (e.g. `gallery: ../.images`) is parsed entirely as the size key; the path is silently ignored and defaults to walk-up behaviour.
-- Values ending with `:` must be quoted — `"thumb .images:"` not `thumb .images:` (bare trailing colon breaks YAML).
-- Values starting with `.` or `/` must be quoted — `"med ~/.nb/.images"`.
-
-| Path in FM value | Behaviour |
-|-----------------|-----------|
-| *(absent — size only)* | Walk up from note dir; use first `images/` found |
-| `.` | Look only for `images/` in the current note's folder |
-| `notebook:path/` | Explicit folder — `.images:` resolves to `~/.nb/.images/` |
-| `~/path` | Absolute path with `~` expansion |
-
-**Lightbox controls:** click any thumbnail to open · ← / → to navigate · Esc or click outside to close.
-
----
-
-### fm — Frontmatter Filter
-
-````markdown
-```fm
-shot: | All shots
-```
-````
-
-Renders a collapsible list of notes matching frontmatter field conditions. Results are clickable — opening the note in the preview pane. Hover any row to see all frontmatter fields in a tooltip.
-
-**Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks. **`.`** resolves to the current note's notebook.
-
-**Folder scope** — a scope token can also carry a folder path: `notebook:folder/path/` (trailing slash required). Recursive — matches notes in nested subfolders too, not just the folder's immediate contents. A colon-bearing token only counts as folder scope when it ends in `/`; without the trailing slash it's parsed as the first filter instead, not a folder.
-
-**Pseudo-fields** — `mtime` (last-modified date, `YYYY-MM-DD`), `wordcount`, and `linecount` (both counted from the note's body, frontmatter excluded) are computed per note, not stored in YAML, and filterable with the exact same `field:value` syntax as real frontmatter:
-
-```fm
-mtime:2026-08-04 | Touched today
-```
-
-A pseudo-field always overrides a real frontmatter field of the same name if a note happens to have one.
-
-**Filter conditions** (AND logic):
-
-| Syntax | Meaning |
-|--------|---------|
-| `field:value` | Field equals value (case-insensitive) |
-| `field:` | Field exists (any value) |
-| `field:""` | Field absent or empty |
-| `field:>value` | Field greater than value |
-| `field:<value` | Field less than value |
-| `field:value1,value2` | Field equals any of the listed values |
-| `-field:value` | Negates any of the above — field does *not* match |
-
-`>`/`<` try numeric comparison first (so `seq:>6` correctly treats `10 > 6`, not a lexicographic `"10" < "6"`), falling back to string comparison — which is exactly right for `mtime` and any other `YYYY-MM-DD` field, since lexicographic order matches chronological order for that format:
-
-```fm
-mtime:>2026-07-28 | Touched this week
-```
-
-A note missing the field entirely never matches a `>`/`<`, `eq`, or any-of filter (same as `eq` always has) — **except under negation**, where a missing field counts as a pass: `-type:cut` matches a note with no `type:` at all just as readily as one with `type: something-else`, since it certainly isn't `type: cut`.
-
-type:story,plotline | Story or plotline cards
-```fm
-type:story,plotline | Story or plotline cards
-```
----
-type:story,plotline | Story or plotline cards
-```fm
-type:story,plotline | Story or plotline cards
-```
-
--type:cut | Everything except cut material
-```fm
--type:cut | Everything except cut material
-```
-
-**`sort:`/`limit:`** — directives, not match conditions; can appear anywhere among the filters, not just at the end:
-
-| Syntax | Meaning |
-|--------|---------|
-| `sort:field` | Order ascending by field's value |
-| `sort:-field` | Order descending (leading `-` on the field name) |
-| `limit:N` | Keep only the first N results, after sorting |
-
-Applied after the fact to whatever the scan already matched — a display-level cap, separate from the query's own internal safety limit (500 matches max, regardless of `limit:`). Same numeric-first-then-string comparison as `>`/`<`, so `sort:-mtime` correctly orders by real date and `sort:-seq` correctly orders `10` after `6`, not lexicographically:
-
-Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
-```fm
-Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
-```
-
-`limit:` composes with `count`/`sum:` too — `count type:story limit:5` (count capped at 5) and `sum:budget sort:-mtime limit:5` (total spend across the 5 most recent) are both valid, if less common, shapes.
-
-**`\| Label`** — optional label shown in the header bar.
-
-**Examples:**
-
-````markdown
-```fm
-shot: | All shots
-```
-````
-Takeout type:shot loc:LG | Lee Gardens shots
-```fm
-Takeout type:shot loc:LG | Lee Gardens shots
-```
-
-Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
-```fm
-Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
-```
-
-model:true | Example notes
-```fm
-model:true | Example notes
-```
-
-#### fm: group — Grouped Counts
-
-````markdown
-```fm
-group:plotline Takeout:storylines/ type:story | Story cards per plotline
-```
-````
-
-A leading `group:<field>` verb (same reserved-prefix convention `list` uses — must be the very first token) buckets matches by that field's value instead of rendering one flat list. Each bucket shows as its own labeled sub-list, largest group first. Notes missing the field land in a `(none)` bucket rather than being dropped — a completeness scan wants those surfaced, not hidden.
-
-Scope and filters after the `group:` token work exactly like the plain form — folder scope, multiple filters, and the `| Label` suffix all compose normally:
-
-````markdown
-```fm
-group:type Takeout:storylines/film-school/
-```
-````
-
-#### fm: count / sum — Header-Only Aggregates
-
-````markdown
-```fm
-count Takeout:storylines/film-school/ type:story
-```
-````
-
-```fm
-sum:budget Takeout:storylines/ type:story
-```
-
-Two more leading verbs, same reserved-prefix convention as `group`/`list`. Neither renders a list — just the header, with the number. `count` shows the match count; `sum:<field>` totals that field's numeric value across every match. For counting inline in prose instead of as a standalone block, see `{{fm: count ...}}` in [[docs:inline-queries.md|Inline live queries]] — same underlying query, different rendering surface.
-
-`sum:` silently skips any matching note that lacks the field or holds a non-numeric value for it — the header shows `(counted/total)` so that's visible rather than hidden, and a missing/bad value is never treated as `0` (which would understate nothing but silently implies every match contributes, which usually isn't true — a budget field genuinely unset on 3 of 10 cards is very different from those 3 being budgeted at zero). Works for pseudo-fields too: `sum:wordcount` totals word count across every match, e.g. total words written across all scenes in a folder — no separate `wordcount` verb needed since it's exactly this with a fixed field name.
-
-#### fm: list — FM Key Browser
-
-````markdown
-```fm
-list
-```
-````
-
-Shows a scrollable table of every frontmatter key found across the current notebook — sorted by note count. Columns: **Key · # notes · Sample values**. Click any row to drill into that field's note list (the same view as `field:`). A **← list** button returns to the browser.
-
-**Scope tokens** narrow the key set:
-
-| Token | Keys shown |
-|-------|-----------|
-| `list` | All keys in the notebook |
-| `list-core` | Built-in nb-web keys (title, type, status, tags, access…) |
-| `list-cine` | Film production keys (scene, shot, loc, cast, day_night…) |
-| `list-empty` | Keys present in notes but with a null or empty value — useful for finding cruft |
-
-**Row limit** — an integer after the token sets how many rows are visible before scrolling. Default is 8.
-
-````markdown
-```fm
-list 20
-```
-
-```fm
-list-core
-```
-
-```fm
-list-empty 12
-```
-````
-
-FM-mode syntax (`fm: list-core 10` in frontmatter) is also supported — the key browser appears as a collapsible FM strip block.
-
-#### fm: edit — the frontmatter form in the body
-
-````markdown
-```fm
-edit |Edit this recipe
-```
-````
-
-A button (labelled after the `|`, default `fm-edit`) that opens the same form as the toolbar's
-**FM** button, right there in the note: one input per field, plus the fields the folder declares
-that the note doesn't have yet. See [[docs:FOLDER-CONFIG.md#Constraints|Folder config: constraints]].
-`changes` is the old name and still works.
-
----
-
-{{inline: docs:blocks/cfg.md}}
-
----
-
-### sysadmin — Admin Dashboard
-
-````markdown
-```sysadmin
-```
-````
-
-A dashboard block for installation-wide admin tasks — notebook inventory, plugin list, key config file checklist, and (via its two modes below) user management and the live crontab. **Requires `tech` level** — every mode's own backend endpoint checks this independently of any page the block happens to sit on, so it's a real access lock, not just a note-level convention. `djp:sysadmin.md` is the reference installation of this block; copy its structure for a second admin dashboard rather than starting from scratch.
-
-**Bare form** (no argument) — notebook inventory (dotfile presence, wired/remote/branch, active plugins, has `.checks/`, note count), the installed plugin list, and a checklist of key config files (global dotfile, manifest, checks index, guards rule, tools index, `nb-settings.json`) with existence ticks. Click a notebook name to open its dotfile.
-
-**`users` mode** — a full user-management panel, not just a read-only list:
-
-````markdown
-```sysadmin
-users
-```
-````
-
-Lists every account (username, access level, display name, notebook scoping). Change a user's level inline via the dropdown; delete a user (except yourself) via 🗑; **+ Add user** creates a new account with username/name/level/password. Backend (`/api/users`) enforces `admin` level independently — one level below the `tech` this block type itself defaults to, so in practice anyone who can see this block can also use it.
-
-**`crontab` mode** — the real, current output of `crontab -l` for the user running nb-web, parsed into schedule / command / description (a leading `#`-comment line above an entry is taken as its description — the same convention `check-sweep`'s own cron entry uses):
-
-````markdown
-```sysadmin
-crontab
-```
-````
-
-**Access note**: this block type is also gated in `codeblock_access` (`{read: tech}`, added 2026-07-21) — belt-and-suspenders on top of each mode's own independent backend check above, so the block silently disappears from the page for a sub-`tech` viewer instead of showing an inline denial.
-
----
-
-### toc — Table of Contents
-
-`toc` is FM-mode only — declare `toc: true` in frontmatter; there is no fenced body form.
-
-```yaml
----
-toc: true
----
-```
-
-Adds a collapsible TOC barblock to the FM strip. The header shows the heading count; expanding it reveals a clickable list of every heading in the note. Clicking a heading scrolls smoothly to it.
-
-Headings `h1`–`h6` are all included. Indentation in the list reflects heading level. IDs are auto-assigned via slug if the heading has none (`# My Section` → `my-section`).
-
-The block starts collapsed; open/closed state persists in `localStorage` per note.
 
 ---
 
@@ -1134,99 +1165,68 @@ See [[docs:dev/dev-security.md#ii-access-control]] and `.rules/access.md` for th
 
 ---
 
-### csv — Spreadsheet Table
-
-Renders an editable spreadsheet grid directly in the note preview. Data lives inside the fenced block and is written back on save — no separate file, no sync step.
+### chart — Financial Charts
 
 ````markdown
-```csv
-Item,Qty,Price
-Wrench,2,14.99
-Tape,5,3.50
+```chart
+cashflow thisyear
 ```
 ````
 
-The first row is always the **column header**. Remaining rows are data. The grid uses [Jspreadsheet CE](https://bossanova.uk/jspreadsheet/) — you can sort, resize columns, and manage rows via right-click context menu.
+Interactive Chart.js visualisations driven by hledger data. Requires the **NbWeb-hledger** plugin with a configured journal.
 
-**Controls:**
+**Syntax:** `` ```chart\n<report> [period] [depth:N]\n``` ``
+
+| Report | Chart | Description |
+|--------|-------|-------------|
+| `cashflow` | bar + line | Monthly income vs expenses, cumulative net change |
+| `networth` | line | Assets, liabilities, and net worth over time |
+| `expenses` | stacked bar | Monthly expense breakdown by category |
+| `expenses-pie` | doughnut | Expense share by category for the period |
+| `assets-pie` | doughnut | Asset allocation snapshot |
+| `income-pie` | doughnut | Income sources for the period |
+
+**Period** is any hledger period expression: `thismonth`, `thisyear`, `lastyear`, `last3months`, `2025`, `2025-01..2025-06`, etc.
+
+**`depth:N`** controls account depth for category breakdown (default `2`).
+
+**Header controls:**
 
 | Control | Action |
 |---------|--------|
-| Click header bar | Collapse / expand the block |
-| Right-click cell | Jspreadsheet context menu — insert/delete rows and columns, copy, paste |
-| **↓** (save button) | Write current grid contents back to the note |
-
-Changes made directly in the grid are **not auto-saved** — click **↓** when done.
+| **▾ / ▸** | Collapse/expand |
+| **mo / yr / prev** | Quick period switcher (reloads chart) |
+| **◕ / ▦** | Doughnut ↔ bar toggle on `*-pie` and `expenses`; redraws from cached data |
+| **↺** | Force reload from hledger |
 
 ---
 
-#### csv templates
+### cine — Film Production
 
-A named token after `csv` loads a reusable column template from `~/.nb/.lib/<token>.csv`, keeping column structure out of the note body.
+Requires the **[NbWeb-cine](https://github.com/linuxcaffe/nbweb-cine)** plugin and a `.nb-cine.json` anchor file in the notebook.
 
 ````markdown
-```csv materials
-Copper pipe 1/2,3,m,4.50,13.50
-PVC elbow fitting,6,ea,1.20,7.20
+```cine
+shots.strip | day: 1
 ```
 ````
 
-The template file (`~/.nb/.lib/materials.csv`) defines the structure:
+**Syntax:** `field[.format] [: code, code, …] [| filter: value, …]`
 
-```csv
-Description,Qty,Unit,Unit Cost,Total
-contents
-TOTAL,,,,=SUM(E1:E1)
-```
+| Query | Result |
+|-------|--------|
+| `shots` | Compact shot list — all shots, all days |
+| `shots \| day: 1` | Shot list for shoot day 1 |
+| `shots.strip` | Draggable stripboard — drag to resequence |
+| `shots.strip \| day: 1` | Stripboard filtered to one day |
+| `shots.sheet \| day: 1` | Call sheet cards — verbose, print-friendly |
+| `scenes` | Scene index: all scenes, colour-coded by I/E · D/N |
+| `storylines` | 2D story structure board — draggable cards across named lanes |
+| `storylines.large` | Board with full card detail (scenes, metadata) |
+| `actor.phone: JD, AM` | Field lookup — phone numbers for listed actors |
+| `location.address: LG` | Field lookup — address for location LG |
 
-**Template format:**
-
-| Row | Role |
-|-----|------|
-| First row | Column headers — displayed as the spreadsheet header |
-| `contents` | Sentinel — separates header rows from footer rows |
-| Rows after `contents` | Footer rows — appended after user data; formula cells are evaluated by Jspreadsheet |
-
-The `contents` row never appears in the rendered grid. Rows above it become column headers; rows below become a fixed footer (useful for `=SUM()` totals). The codeblock body holds only the **data rows** — the template rows are never written back to the note.
-
-**Formula ranges are rewritten at render time.** The upper bound of any range starting at row 1 is replaced with the actual data row count before the grid is initialised. This prevents circular references when the footer row lands inside the formula range (which happens whenever the data is shorter than the range you wrote).
-
-In practice: always write footer formulas with `1` as the upper bound — `=SUM(E1:E1)`, `=SUM(D1:D1)`. The renderer expands it to the correct last row automatically. You never need to update the template when rows are added or removed, and the same template works correctly for notes with one row or a hundred.
-
-**Template controls:**
-
-| Control | Action |
-|---------|--------|
-| **CSV** badge (header) | Open the catalog checklist picker (see below) |
-| **↓** button | Save data rows back to the note (header and footer rows excluded) |
-| Right-click | Jspreadsheet context menu for row/column management |
-
-**Creating a template:** write a plain `.csv` file to `~/.nb/.lib/` with the token name. The `contents` sentinel and footer rows are optional — a template with only a header row is valid. Formula syntax is standard spreadsheet style (`=SUM(E1:E6)`, `=E2*D2`); adjust row ranges to match your expected data size.
-
-#### Checklist picker
-
-Click the **CSV** badge on any template block header to open a catalog checklist. It reads the nearest `type: <token>` note (walking up the folder tree) and shows all its items grouped by heading.
-
-Items already present in the spreadsheet are pre-checked. Check or uncheck items, then click **Save** — the selection replaces the spreadsheet's data rows and writes immediately back to the note. The catalog remains untouched.
-
-This is the primary way to populate a template block from a master list: write the catalog once, pick from it per-note.
-
-#### csv in FM-mode — compact catalog view
-
-Declaring `csv: <token>` in frontmatter renders a compact read-only summary in the FM strip instead of a full spreadsheet. This is useful for a quick cost overview without expanding the grid.
-
-```yaml
-csv: materials
-csv: materials 12
-```
-
-The value is the catalog token. An optional integer sets the visible row limit before scrolling (default 8). The FM strip shows **description left, cost right**, grouped by the catalog's headings. Clicking a group heading opens the catalog note.
-
-#### Opening a `.csv` file directly
-
-This is a different, simpler path than the codeblock above — any `.csv` file anywhere in a notebook opens as a full-pane spreadsheet editor automatically, no fence needed. Column widths are set from actual content (same as the codeblock form), and the grid fills the whole preview pane.
-
-**Header row** is a manual toggle (**First row is header**, in the toolbar next to Save/Cancel) — off by default, every time you open the file. It's not remembered between sessions and never auto-detected: a raw export file (bank statement, etc.) often has no header row at all, and guessing wrong would risk quietly turning a real data row into a column title. Check it to pin row 1 as column headers and pull it out of the data grid; uncheck to put it back. Toggling preserves any edits you've already made — it doesn't reload the file.
+Filters stack: `shots.sheet | day: 1, actor: JD`. See the [NbWeb-cine README](https://github.com/linuxcaffe/nbweb-cine) for the full query reference, frontmatter schemas, and storylines board documentation.
 
 ---
 
