@@ -31,6 +31,13 @@ and transfers between their accounts. Their kid Alex is making a short film for 
 `examples/jobs/`, and Smith Renovations' books in `examples/example.journal`. Keep the profiles,
 this table and the data telling one story: a profile only claims features that exist.
 
+**Fair game** (djp, 2026-10-13). The examples are a sandbox: embellish the people's stories in
+example scenarios, and use their data freely for testing and experiments: edit it, break it,
+run checks and new features against it. It's safe because `features/.tools/reset.sh` puts any
+part back from the git tag `pristine`, and the README export reads only that tag. So the one
+rule: move `pristine` only for changes meant to ship (look at `git -C ~/.nb/features diff
+pristine HEAD` first), never for an experiment, and reset when an experiment is done.
+
 **Pronouns.** Examples rarely need one: address the reader as "you" and use names. When one is
 needed, use **they/them** for Pat, Sam, Kim and Alex.
 
