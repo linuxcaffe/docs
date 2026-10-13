@@ -11,7 +11,7 @@ processed: true
 
 **Navigation:** [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#toc — Table of Contents|toc]]  
 **Introspection:** [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#sysadmin — Admin Dashboard|sysadmin]]  
-**Authoring:** [[#toolbar — Shortcut Buttons|toolbar]] · [[#csv — Spreadsheet Table|csv]]  
+**Authoring:** [[#toolbar — Shortcut Buttons|toolbar]] · [[#csv — Spreadsheet Table|csv]] · [[#add — Create Wizards|add]]  
 **External data:** [[#tw — Taskwarrior|tw]] · [[#hl — Accounting|hl]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]]  
 **Time tracking:** [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]]  
 **Testing:** [[#test — Embedded Assertions|test]]  
@@ -212,6 +212,14 @@ Tools for writing notes and entering data.
 ---
 
 {{inline: docs:blocks/csv/files.md}}
+
+---
+
+{{inline: docs:blocks/add.md}}
+
+---
+
+{{inline: docs:blocks/add/wizards.md}}
 
 ---
 
