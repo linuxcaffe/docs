@@ -7,7 +7,15 @@ processed: true
 
 # Codeblocks
 
-[[#Block Types|Block Types]] · [[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]] · [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#toc — Table of Contents|toc]] · [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#sysadmin — Admin Dashboard|sysadmin]] · [[#toolbar — Shortcut Buttons|toolbar]] · [[#csv — Spreadsheet Table|csv]] · [[#tw — Taskwarrior|tw]] · [[#hl — Accounting|hl]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]] · [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]] · [[#test — Embedded Assertions|test]] · [[#chart — Financial Charts|chart]] · [[#cine — Film Production|cine]]
+[[#Block Controls|Block Controls]] · [[#Access Gates|Access Gates]]
+
+**Navigation:** [[#nav — Folder Navigator|nav]] · [[#gallery — Image Gallery|gallery]] · [[#toc — Table of Contents|toc]]  
+**Introspection:** [[#fm — Frontmatter Filter|fm]] · [[#cfg — Config Inheritance Tree|cfg]] · [[#sysadmin — Admin Dashboard|sysadmin]]  
+**Authoring:** [[#toolbar — Shortcut Buttons|toolbar]] · [[#csv — Spreadsheet Table|csv]]  
+**External data:** [[#tw — Taskwarrior|tw]] · [[#hl — Accounting|hl]] · [[#nb — nb Panel|nb]] · [[#git — Git Log|git]]  
+**Time tracking:** [[#t — Timeclock|t]] · [[#timedot — Time Journal|timedot]]  
+**Testing:** [[#test — Embedded Assertions|test]]  
+**Under review:** [[#chart — Financial Charts|chart]] · [[#cine — Film Production|cine]]
 
 ---
 
@@ -143,7 +151,9 @@ See [[docs:dev/dev-security.md]] for the full access level scheme.
 
 ---
 
-## Block Types
+## Navigation
+
+Move around your notes without leaving the one you are in.
 
 {{inline: docs:blocks/nav.md}}
 
@@ -157,187 +167,23 @@ See [[docs:dev/dev-security.md]] for the full access level scheme.
 
 ---
 
-### fm — Frontmatter Filter
+## Introspection
 
-````markdown
-```fm
-shot: | All shots
-```
-````
+Look at the notes and settings themselves: frontmatter, config, the server.
 
-Renders a collapsible list of notes matching frontmatter field conditions. Results are clickable — opening the note in the preview pane. Hover any row to see all frontmatter fields in a tooltip.
+{{inline: docs:blocks/fm.md}}
 
-**Scope prefix** — leading bare words (no colon) name notebooks to search. No prefix = all notebooks. **`.`** resolves to the current note's notebook.
-
-**Folder scope** — a scope token can also carry a folder path: `notebook:folder/path/` (trailing slash required). Recursive — matches notes in nested subfolders too, not just the folder's immediate contents. A colon-bearing token only counts as folder scope when it ends in `/`; without the trailing slash it's parsed as the first filter instead, not a folder.
-
-**Pseudo-fields** — `mtime` (last-modified date, `YYYY-MM-DD`), `wordcount`, and `linecount` (both counted from the note's body, frontmatter excluded) are computed per note, not stored in YAML, and filterable with the exact same `field:value` syntax as real frontmatter:
-
-```fm
-mtime:2026-08-04 | Touched today
-```
-
-A pseudo-field always overrides a real frontmatter field of the same name if a note happens to have one.
-
-**Filter conditions** (AND logic):
-
-| Syntax | Meaning |
-|--------|---------|
-| `field:value` | Field equals value (case-insensitive) |
-| `field:` | Field exists (any value) |
-| `field:""` | Field absent or empty |
-| `field:>value` | Field greater than value |
-| `field:<value` | Field less than value |
-| `field:value1,value2` | Field equals any of the listed values |
-| `-field:value` | Negates any of the above — field does *not* match |
-
-`>`/`<` try numeric comparison first (so `seq:>6` correctly treats `10 > 6`, not a lexicographic `"10" < "6"`), falling back to string comparison — which is exactly right for `mtime` and any other `YYYY-MM-DD` field, since lexicographic order matches chronological order for that format:
-
-```fm
-mtime:>2026-07-28 | Touched this week
-```
-
-A note missing the field entirely never matches a `>`/`<`, `eq`, or any-of filter (same as `eq` always has) — **except under negation**, where a missing field counts as a pass: `-type:cut` matches a note with no `type:` at all just as readily as one with `type: something-else`, since it certainly isn't `type: cut`.
-
-type:story,plotline | Story or plotline cards
-```fm
-type:story,plotline | Story or plotline cards
-```
 ---
-type:story,plotline | Story or plotline cards
-```fm
-type:story,plotline | Story or plotline cards
-```
 
--type:cut | Everything except cut material
-```fm
--type:cut | Everything except cut material
-```
+{{inline: docs:blocks/fm/aggregate.md}}
 
-**`sort:`/`limit:`** — directives, not match conditions; can appear anywhere among the filters, not just at the end:
+---
 
-| Syntax | Meaning |
-|--------|---------|
-| `sort:field` | Order ascending by field's value |
-| `sort:-field` | Order descending (leading `-` on the field name) |
-| `limit:N` | Keep only the first N results, after sorting |
+{{inline: docs:blocks/fm/list.md}}
 
-Applied after the fact to whatever the scan already matched — a display-level cap, separate from the query's own internal safety limit (500 matches max, regardless of `limit:`). Same numeric-first-then-string comparison as `>`/`<`, so `sort:-mtime` correctly orders by real date and `sort:-seq` correctly orders `10` after `6`, not lexicographically:
+---
 
-Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
-```fm
-Takeout:storylines/film-school/ type:story sort:-mtime limit:5 | 5 most recently touched
-```
-
-`limit:` composes with `count`/`sum:` too — `count type:story limit:5` (count capped at 5) and `sum:budget sort:-mtime limit:5` (total spend across the 5 most recent) are both valid, if less common, shapes.
-
-**`\| Label`** — optional label shown in the header bar.
-
-**Examples:**
-
-````markdown
-```fm
-shot: | All shots
-```
-````
-Takeout type:shot loc:LG | Lee Gardens shots
-```fm
-Takeout type:shot loc:LG | Lee Gardens shots
-```
-
-Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
-```fm
-Takeout:storylines/film-school/ type:story sort:seq | Film School story cards
-```
-
-model:true | Example notes
-```fm
-model:true | Example notes
-```
-
-#### fm: group — Grouped Counts
-
-````markdown
-```fm
-group:plotline Takeout:storylines/ type:story | Story cards per plotline
-```
-````
-
-A leading `group:<field>` verb (same reserved-prefix convention `list` uses — must be the very first token) buckets matches by that field's value instead of rendering one flat list. Each bucket shows as its own labeled sub-list, largest group first. Notes missing the field land in a `(none)` bucket rather than being dropped — a completeness scan wants those surfaced, not hidden.
-
-Scope and filters after the `group:` token work exactly like the plain form — folder scope, multiple filters, and the `| Label` suffix all compose normally:
-
-````markdown
-```fm
-group:type Takeout:storylines/film-school/
-```
-````
-
-#### fm: count / sum — Header-Only Aggregates
-
-````markdown
-```fm
-count Takeout:storylines/film-school/ type:story
-```
-````
-
-```fm
-sum:budget Takeout:storylines/ type:story
-```
-
-Two more leading verbs, same reserved-prefix convention as `group`/`list`. Neither renders a list — just the header, with the number. `count` shows the match count; `sum:<field>` totals that field's numeric value across every match. For counting inline in prose instead of as a standalone block, see `{{fm: count ...}}` in [[docs:inline-queries.md|Inline live queries]] — same underlying query, different rendering surface.
-
-`sum:` silently skips any matching note that lacks the field or holds a non-numeric value for it — the header shows `(counted/total)` so that's visible rather than hidden, and a missing/bad value is never treated as `0` (which would understate nothing but silently implies every match contributes, which usually isn't true — a budget field genuinely unset on 3 of 10 cards is very different from those 3 being budgeted at zero). Works for pseudo-fields too: `sum:wordcount` totals word count across every match, e.g. total words written across all scenes in a folder — no separate `wordcount` verb needed since it's exactly this with a fixed field name.
-
-#### fm: list — FM Key Browser
-
-````markdown
-```fm
-list
-```
-````
-
-Shows a scrollable table of every frontmatter key found across the current notebook — sorted by note count. Columns: **Key · # notes · Sample values**. Click any row to drill into that field's note list (the same view as `field:`). A **← list** button returns to the browser.
-
-**Scope tokens** narrow the key set:
-
-| Token | Keys shown |
-|-------|-----------|
-| `list` | All keys in the notebook |
-| `list-core` | Built-in nb-web keys (title, type, status, tags, access…) |
-| `list-cine` | Film production keys (scene, shot, loc, cast, day_night…) |
-| `list-empty` | Keys present in notes but with a null or empty value — useful for finding cruft |
-
-**Row limit** — an integer after the token sets how many rows are visible before scrolling. Default is 8.
-
-````markdown
-```fm
-list 20
-```
-
-```fm
-list-core
-```
-
-```fm
-list-empty 12
-```
-````
-
-FM-mode syntax (`fm: list-core 10` in frontmatter) is also supported — the key browser appears as a collapsible FM strip block.
-
-#### fm: edit — the frontmatter form in the body
-
-````markdown
-```fm
-edit |Edit this recipe
-```
-````
-
-A button (labelled after the `|`, default `fm-edit`) that opens the same form as the toolbar's
-**FM** button, right there in the note: one input per field, plus the fields the folder declares
-that the note doesn't have yet. See [[docs:FOLDER-CONFIG.md#Constraints|Folder config: constraints]].
-`changes` is the old name and still works.
+{{inline: docs:blocks/fm/edit.md}}
 
 ---
 
@@ -377,6 +223,10 @@ crontab
 **Access note**: this block type is also gated in `codeblock_access` (`{read: tech}`, added 2026-07-21) — belt-and-suspenders on top of each mode's own independent backend check above, so the block silently disappears from the page for a sub-`tech` viewer instead of showing an inline denial.
 
 ---
+
+## Authoring
+
+Tools for writing notes and entering data.
 
 ### toolbar — Shortcut Buttons
 
@@ -505,6 +355,10 @@ This is a different, simpler path than the codeblock above — any `.csv` file a
 
 ---
 
+## External data
+
+Live views of your other tools: tasks, accounts, notebooks, git.
+
 ### tw — Taskwarrior
 
 ````markdown
@@ -584,6 +438,10 @@ The first word is a repo **alias** (configured in `nb-settings.json`) or **`.`**
 Permitted subcommands (read-only): `branch`, `describe`, `diff`, `log`, `ls-files`, `remote`, `shortlog`, `show`, `stash`, `status`, `tag`.
 
 ---
+
+## Time tracking
+
+Clock in and out, and log time.
 
 ### t — Timeclock
 
@@ -826,6 +684,10 @@ timedot_file: ~/freelance/time.timedot
 When both keys are set on a note that has both a `t` block and a `timedot` block, the `t` block's clock-in/out and dot-mode toggle, and the `timedot` block's `+` add form, all write to the same pair of files — keeping timeclock and timedot in sync for the same project.
 
 ---
+
+## Testing
+
+Checks that warn you when something is wrong.
 
 ### test — Embedded Assertions
 
@@ -1070,6 +932,10 @@ See [[docs:dev/dev-security.md#ii-access-control]] and `.rules/access.md` for th
 ---
 
 ---
+
+## Under review
+
+Not yet checked against the code: `chart`'s display is currently missing, and `cine` belongs to a plugin.
 
 ### chart — Financial Charts
 
