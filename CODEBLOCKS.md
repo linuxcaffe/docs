@@ -151,7 +151,7 @@ See [[docs:dev/dev-security.md]] for the full access level scheme.
 
 ---
 
-## Navigation
+# Navigation
 
 Move around your notes without leaving the one you are in.
 
@@ -167,7 +167,7 @@ Move around your notes without leaving the one you are in.
 
 ---
 
-## Introspection
+# Introspection
 
 Look at the notes and settings themselves: frontmatter, config, the server.
 
@@ -224,7 +224,7 @@ crontab
 
 ---
 
-## Authoring
+# Authoring
 
 Tools for writing notes and entering data.
 
@@ -355,7 +355,7 @@ This is a different, simpler path than the codeblock above — any `.csv` file a
 
 ---
 
-## External data
+# External data
 
 Live views of your other tools: tasks, accounts, notebooks, git.
 
@@ -439,7 +439,7 @@ Permitted subcommands (read-only): `branch`, `describe`, `diff`, `log`, `ls-file
 
 ---
 
-## Time tracking
+# Time tracking
 
 Clock in and out, and log time.
 
@@ -685,7 +685,7 @@ When both keys are set on a note that has both a `t` block and a `timedot` block
 
 ---
 
-## Testing
+# Testing
 
 Checks that warn you when something is wrong.
 
@@ -933,7 +933,7 @@ See [[docs:dev/dev-security.md#ii-access-control]] and `.rules/access.md` for th
 
 ---
 
-## Under review
+# Under review
 
 Not yet checked against the code: `chart`'s display is currently missing, and `cine` belongs to a plugin.
 
