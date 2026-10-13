@@ -23,7 +23,7 @@ single value; anything that's really a report belongs in a codeblock.
 ```
 Current cash: {{hledger: bal Assets:Cash --no-total}}
 Pending tasks: {{tw: count status:pending +work}}
-Open jobs: {{fm: count features:examples/jobs/ -status:done}}
+Open jobs: {{fm: count features:examples/jobs/ type:job -status:done}}
 This note's tags: {{fm: tags}}
 Date: {{date: %A, %B %d}}
 Today: {{day: }}
@@ -49,17 +49,17 @@ returning a number instead of a list:
 
 ```
 Jobs: {{fm: count features:examples/jobs/ type:job}}
-Not done yet: {{fm: count features:examples/jobs/ -status:done}}
-Quoted or active: {{fm: count features:examples/jobs/ status:quoted,active}}
-Over $5,000: {{fm: count features:examples/jobs/ budget:>5000}}
-No budget yet: {{fm: count features:examples/jobs/ budget:""}}
+Not done yet: {{fm: count features:examples/jobs/ type:job -status:done}}
+Quoted or active: {{fm: count features:examples/jobs/ type:job status:quoted,active}}
+Over $5,000: {{fm: count features:examples/jobs/ type:job budget:>5000}}
+No budget yet: {{fm: count features:examples/jobs/ type:job budget:""}}
 ```
 
 Live, against the example jobs in [[features:examples/jobs/|features:examples/jobs/]]:
 
 - Jobs: {{fm: count features:examples/jobs/ type:job}}
-- Not done yet: {{fm: count features:examples/jobs/ -status:done}}
-- Over $5,000: {{fm: count features:examples/jobs/ budget:>5000}}
+- Not done yet: {{fm: count features:examples/jobs/ type:job -status:done}}
+- Over $5,000: {{fm: count features:examples/jobs/ type:job budget:>5000}}
 
 Only `count` renders inline; `sum:`/`group:` return more than one value and need the codeblock.
 

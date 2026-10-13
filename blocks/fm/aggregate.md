@@ -23,12 +23,12 @@ The word goes first, before where to look:
 
 ````markdown
 ```fm
-group:status features:examples/jobs/ | Jobs by status
+group:status features:examples/jobs/ type:job | Jobs by status
 ```
 ````
 
 ```fm
-group:status features:examples/jobs/ | Jobs by status
+group:status features:examples/jobs/ type:job | Jobs by status
 ```
 
 **`group:field`** makes one list per value of the field, the biggest group first, with each
@@ -36,7 +36,7 @@ group's size beside its name. Notes without the field go in a `(none)` group, so
 what's missing:
 
 ```fm
-group:client features:examples/jobs/ | Jobs by client
+group:client features:examples/jobs/ type:job | Jobs by client
 ```
 
 A list field (`tags: [kitchen, acme]`) groups by the whole list, not by each item.
@@ -45,12 +45,12 @@ A list field (`tags: [kitchen, acme]`) groups by the whole list, not by each ite
 
 ````markdown
 ```fm
-count features:examples/jobs/ -status:done | Open jobs
+count features:examples/jobs/ type:job -status:done | Open jobs
 ```
 ````
 
 ```fm
-count features:examples/jobs/ -status:done | Open jobs
+count features:examples/jobs/ type:job -status:done | Open jobs
 ```
 
 **`sum:field`** adds up a field across the matches. A note whose field is missing or not a number
@@ -59,12 +59,12 @@ as in `(4/6)`:
 
 ````markdown
 ```fm
-sum:budget features:examples/jobs/ | Booked
+sum:budget features:examples/jobs/ type:job | Booked
 ```
 ````
 
 ```fm
-sum:budget features:examples/jobs/ | Booked
+sum:budget features:examples/jobs/ type:job | Booked
 ```
 
 Two of the six jobs have no number for `budget` (one says `TBD`, one has none), so the total

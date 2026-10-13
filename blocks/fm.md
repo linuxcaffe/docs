@@ -22,7 +22,7 @@ count, total or group the matches, list every key in a notebook, or show an edit
 
 ````markdown
 ```fm
-features:examples/jobs/ status:active | Active jobs
+features:examples/jobs/ type:job status:active | Active jobs
 ```
 ````
 
@@ -40,7 +40,7 @@ The live examples on this page query the made-up jobs in
 `status`, `budget`, `due` and `tags`.
 
 ```fm
-features:examples/jobs/ status:active | Active jobs
+features:examples/jobs/ type:job status:active | Active jobs
 ```
 
 ### Filters
@@ -67,12 +67,12 @@ written `YYYY-MM-DD`: `due:<2026-12-31` is due before the new year.
 
 ````markdown
 ```fm
-features:examples/jobs/ -status:done due:<2026-12-31 | Open, due this year
+features:examples/jobs/ type:job -status:done due:<2026-12-31 | Open, due this year
 ```
 ````
 
 ```fm
-features:examples/jobs/ -status:done due:<2026-12-31 | Open, due this year
+features:examples/jobs/ type:job -status:done due:<2026-12-31 | Open, due this year
 ```
 
 **Fields every note has.** `mtime` (the day the file last changed, `YYYY-MM-DD`), `wordcount`
@@ -104,7 +104,7 @@ notebook. Click a row to open the note; hover it to see all its fields, `mtime`,
 `linecount` included.
 
 **In the header strip.** As frontmatter, the same query shows above the note instead of in it:
-`fm: features:examples/jobs/ status:active`.
+`fm: features:examples/jobs/ type:job status:active`.
 
 ## Reference
 
