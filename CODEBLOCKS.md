@@ -199,130 +199,19 @@ Look at the notes and settings themselves: frontmatter, config, the server.
 
 Tools for writing notes and entering data.
 
-### toolbar — Shortcut Buttons
-
-Notes with `toolbar: true` frontmatter appear as icon shortcut buttons in the list toolbar — instant one-click access to any note regardless of which folder or sort is active.
-
-```yaml
----
-title: Cashflow Report
-toolbar: true
-toolbar_icon: 💰
----
-```
-
-The button appears in the list header bar alongside any plugin-provided toolbar buttons. Clicking it opens the note in the preview pane immediately.
-
-**`toolbar_icon:`** — sets the icon displayed on the button. Falls back in order: `toolbar_icon:` value → plugin icon function (if the note's type has a registered icon) → `indicator:` frontmatter → 📌.
-
-**Scope** — toolbar notes are scanned notebook-wide at load time. A note in any folder of the current notebook can expose a button. Switching notebooks rebuilds the toolbar.
-
-**Common patterns:**
-
-| Note | `toolbar_icon:` | Purpose |
-|------|----------------|---------|
-| `cashflow.md` | `💰` | Jump to financial overview |
-| `checklist.md` | `📋` | Daily checklist |
-| `schedule.md` | `🗓` | Weekly schedule |
-| `dashboard.md` | `📊` | Project hub |
-
-There is no codeblock form — `toolbar: true` is a frontmatter-only directive. No FM-mode slot; the button itself is the presentation.
+{{inline: docs:blocks/toolbar.md}}
 
 ---
 
-### csv — Spreadsheet Table
-
-Renders an editable spreadsheet grid directly in the note preview. Data lives inside the fenced block and is written back on save — no separate file, no sync step.
-
-````markdown
-```csv
-Item,Qty,Price
-Wrench,2,14.99
-Tape,5,3.50
-```
-````
-
-The first row is always the **column header**. Remaining rows are data. The grid uses [Jspreadsheet CE](https://bossanova.uk/jspreadsheet/) — you can sort, resize columns, and manage rows via right-click context menu.
-
-**Controls:**
-
-| Control | Action |
-|---------|--------|
-| Click header bar | Collapse / expand the block |
-| Right-click cell | Jspreadsheet context menu — insert/delete rows and columns, copy, paste |
-| **↓** (save button) | Write current grid contents back to the note |
-
-Changes made directly in the grid are **not auto-saved** — click **↓** when done.
+{{inline: docs:blocks/csv.md}}
 
 ---
 
-#### csv templates
+{{inline: docs:blocks/csv/templates.md}}
 
-A named token after `csv` loads a reusable column template from `~/.nb/.lib/<token>.csv`, keeping column structure out of the note body.
+---
 
-````markdown
-```csv materials
-Copper pipe 1/2,3,m,4.50,13.50
-PVC elbow fitting,6,ea,1.20,7.20
-```
-````
-
-The template file (`~/.nb/.lib/materials.csv`) defines the structure:
-
-```csv
-Description,Qty,Unit,Unit Cost,Total
-contents
-TOTAL,,,,=SUM(E1:E1)
-```
-
-**Template format:**
-
-| Row | Role |
-|-----|------|
-| First row | Column headers — displayed as the spreadsheet header |
-| `contents` | Sentinel — separates header rows from footer rows |
-| Rows after `contents` | Footer rows — appended after user data; formula cells are evaluated by Jspreadsheet |
-
-The `contents` row never appears in the rendered grid. Rows above it become column headers; rows below become a fixed footer (useful for `=SUM()` totals). The codeblock body holds only the **data rows** — the template rows are never written back to the note.
-
-**Formula ranges are rewritten at render time.** The upper bound of any range starting at row 1 is replaced with the actual data row count before the grid is initialised. This prevents circular references when the footer row lands inside the formula range (which happens whenever the data is shorter than the range you wrote).
-
-In practice: always write footer formulas with `1` as the upper bound — `=SUM(E1:E1)`, `=SUM(D1:D1)`. The renderer expands it to the correct last row automatically. You never need to update the template when rows are added or removed, and the same template works correctly for notes with one row or a hundred.
-
-**Template controls:**
-
-| Control | Action |
-|---------|--------|
-| **CSV** badge (header) | Open the catalog checklist picker (see below) |
-| **↓** button | Save data rows back to the note (header and footer rows excluded) |
-| Right-click | Jspreadsheet context menu for row/column management |
-
-**Creating a template:** write a plain `.csv` file to `~/.nb/.lib/` with the token name. The `contents` sentinel and footer rows are optional — a template with only a header row is valid. Formula syntax is standard spreadsheet style (`=SUM(E1:E6)`, `=E2*D2`); adjust row ranges to match your expected data size.
-
-#### Checklist picker
-
-Click the **CSV** badge on any template block header to open a catalog checklist. It reads the nearest `type: <token>` note (walking up the folder tree) and shows all its items grouped by heading.
-
-Items already present in the spreadsheet are pre-checked. Check or uncheck items, then click **Save** — the selection replaces the spreadsheet's data rows and writes immediately back to the note. The catalog remains untouched.
-
-This is the primary way to populate a template block from a master list: write the catalog once, pick from it per-note.
-
-#### csv in FM-mode — compact catalog view
-
-Declaring `csv: <token>` in frontmatter renders a compact read-only summary in the FM strip instead of a full spreadsheet. This is useful for a quick cost overview without expanding the grid.
-
-```yaml
-csv: materials
-csv: materials 12
-```
-
-The value is the catalog token. An optional integer sets the visible row limit before scrolling (default 8). The FM strip shows **description left, cost right**, grouped by the catalog's headings. Clicking a group heading opens the catalog note.
-
-#### Opening a `.csv` file directly
-
-This is a different, simpler path than the codeblock above — any `.csv` file anywhere in a notebook opens as a full-pane spreadsheet editor automatically, no fence needed. Column widths are set from actual content (same as the codeblock form), and the grid fills the whole preview pane.
-
-**Header row** is a manual toggle (**First row is header**, in the toolbar next to Save/Cancel) — off by default, every time you open the file. It's not remembered between sessions and never auto-detected: a raw export file (bank statement, etc.) often has no header row at all, and guessing wrong would risk quietly turning a real data row into a column title. Check it to pin row 1 as column headers and pull it out of the data grid; uncheck to put it back. Toggling preserves any edits you've already made — it doesn't reload the file.
+{{inline: docs:blocks/csv/files.md}}
 
 ---
 
