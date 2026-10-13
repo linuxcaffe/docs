@@ -25,6 +25,10 @@ med
 ```
 ````
 
+```gallery
+thumb
+```
+
 | Body | Finds images in |
 |---|---|
 | *(size only, e.g. `med`)* | The nearest `images/` folder, walking up from the note |
