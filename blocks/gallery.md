@@ -70,4 +70,4 @@ Renderer: `_loadGalleryBlock` (`plugins/nbweb-codeblocks.js`), backed by `/api/g
 image-embed modal (`_openImageEmbedModal`, `main.js`) is a separate feature sharing the same
 `images/` convention and size scale. Already on the shared `_buildBarHeader`/
 `_initCollapseToggle` header. Broader renderer architecture: [[docs:dev/dev-codeblocks.md]]
-(#TODO not yet reviewed against code).
+#REVIEW.

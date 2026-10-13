@@ -52,5 +52,4 @@ cascades through the config chain the same way `toc:` itself does (folder → no
 Renderer: `_loadTocBlock` (`plugins/nbweb-codeblocks.js`) — reads headings live from
 `#nb-preview-content`, not from parsed markdown, so it reflects whatever `{{inline:}}` chapters
 have actually landed in the DOM. Already on the shared `_buildBarHeader`/`_initCollapseToggle`
-header. Broader renderer architecture: [[docs:dev/dev-codeblocks.md]] (#TODO not yet reviewed
-against code).
+header. Broader renderer architecture: [[docs:dev/dev-codeblocks.md]] #REVIEW.
