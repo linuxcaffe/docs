@@ -1,6 +1,6 @@
 ---
 type: dashboard
-draft: true
+draft: 
 access: guest
 pinned: true
 date: 2026-07-15
