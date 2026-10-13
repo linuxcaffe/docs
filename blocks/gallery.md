@@ -26,7 +26,7 @@ med
 ````
 
 ```gallery
-thumb
+thumb features:images/
 ```
 
 | Body | Finds images in |
