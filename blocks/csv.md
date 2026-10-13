@@ -14,7 +14,7 @@ processed: true
 
 A `csv` block turns comma-separated rows into a spreadsheet grid right in the note: the first row
 is the column headers, the rest is data. Edit cells, add and remove rows and columns from the
-right-click menu, then click **↓** to write the grid back into the note. Name a template after
+right-click menu, then click **Save** to write the grid back into the note. Name a template after
 `csv` (`csv materials`) for a fixed set of columns, a totals row and a pick-list. The data stays in
 the note as plain text.
 
@@ -37,9 +37,10 @@ This is Pat's lumber order for the Jones deck, live (pulled in from
 **Editing.** Click a cell to change it. Right-click for the grid's menu: insert or delete rows and
 columns, copy and paste. Column widths fit the content. Click the header to fold the block away.
 
-**Saving.** Edits aren't saved by themselves: click **↓** when you're done. It writes back every
-grid in the note at once, rewriting each `csv` block's rows. A grid inside a chapter pulled in with
-`{{inline:}}` has no **↓**: open the chapter's own note to edit it.
+**Saving.** Edits aren't saved by themselves: click **Save** in the block's header (or press
+`Ctrl+Enter` after clicking in the grid) when you're done. It writes back every grid in the note at
+once, rewriting each `csv` block's rows. A grid inside a chapter pulled in with `{{inline:}}` has
+no **Save**: open the chapter's own note to edit it.
 
 **More than one block** in a note is fine; each gets its own grid.
 

@@ -53,8 +53,8 @@ never changes it.
 note come after the others, marked as new. They're saved only if you fill them in. A field the
 folder marks `required: true` has a `*`.
 
-**Save** writes the fields and reopens the note; **Cancel** closes the form. Nothing below the
-frontmatter changes.
+**Save** (or `Ctrl+Enter`) writes the fields and reopens the note; **Cancel** (or `Escape`) closes
+the form. Nothing below the frontmatter changes.
 
 ## Reference
 

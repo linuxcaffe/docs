@@ -59,7 +59,7 @@ A template saved from a spreadsheet program is fine: trailing commas (`contents,
 Click the **CSV** badge on a template table's header. It finds the nearest note with
 `type: <name>` (here `type: materials`), looking in the note's folder and then each folder above
 it, and lists that note's items: each heading in it is a group, each `csv` table under a heading
-is the group's items. Items already in your table are ticked. Tick and untick, then **Save**: the
+is the group's items. Items already in your table are ticked. Tick and untick, then **Save** (or `Ctrl+Enter`; `Escape` closes it): the
 ticked items become the table's rows, saved at once. The price list itself isn't changed.
 
 Pat's price list is [[features:examples/materials.md|Materials]].
