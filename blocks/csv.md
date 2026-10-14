@@ -53,8 +53,7 @@ no **Save**: open the chapter's own note to edit it.
 - Spreadsheet formulas (`=SUM(B1:B3)`) work in the grid; they're saved as written.
 - In frontmatter, `csv:` shows a price list in the header strip, not a grid; see
   [[docs:blocks/csv/templates.md|csv templates]].
-- A `.csv` file opens as a full-page spreadsheet of its own; see [[docs:blocks/csv/files.md|csv
-  files]].
+- A `.csv` file opens as a full-page spreadsheet of its own; see [[docs:blocks/csv/files.md|csv files]].
 
 ## For developers
 

@@ -55,8 +55,7 @@ Folders and notebooks can add more with `add_org_add:`. It lists each wizard's s
 - Names you type become file and folder names: anything but letters, digits, `_` and `-` turns
   into `_`.
 - No access level of its own: you can only create what your account could create by hand.
-- Writing wizards, the `[+]` settings and the step kinds: [[docs:blocks/add/wizards.md|writing a
-  wizard]].
+- Writing wizards, the `[+]` settings and the step kinds: [[docs:blocks/add/wizards.md|writing a wizard]].
 
 ## For developers
 

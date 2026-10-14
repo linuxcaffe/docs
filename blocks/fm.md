@@ -112,8 +112,7 @@ notebook. Click a row to open the note; hover it to see all its fields, `mtime`,
   [[docs:blocks/fm/list.md|the key browser]] (`list`), [[docs:blocks/fm/edit.md|the edit form]]
   (`edit`).
 - **In a sentence:** `{{fm: count …}}` takes the same query and shows just the number, and
-  `{{fm: tags}}` shows one field of the current note. See [[docs:inline-queries.md|Inline live
-  queries]].
+  `{{fm: tags}}` shows one field of the current note. See [[docs:inline-queries.md|Inline live queries]].
 - **Access:** `admin` by default (`codeblock_access: fm:` in `~/.nb/.nb.md`, or `read:` in the
   block). Whatever the level, the results only ever include notes you can open, from notebooks
   your account may use.

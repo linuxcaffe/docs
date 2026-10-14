@@ -28,8 +28,7 @@ Cabinet hinge,ea,4.50,Main St Hardware,54.00
 ```
 ````
 
-The materials for Pat's Jones kitchen, live (from [[features:examples/jobs/jones-kitchen.md|the
-job note]]; open it to try the pick-list):
+The materials for Pat's Jones kitchen, live (from [[features:examples/jobs/jones-kitchen.md|the job note]]; open it to try the pick-list):
 
 {{inline: features:examples/jobs/jones-kitchen.md#Materials}}
 
