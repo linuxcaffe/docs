@@ -235,22 +235,7 @@ Live views of your other tools: tasks, accounts, notebooks, git.
 
 ---
 
-### nb — nb Panel
-
-````markdown
-```nb
-notebooks
-```
-````
-
-Embeds a live nb panel. Supported commands:
-
-| Command | What it shows |
-|---------|--------------|
-| `notebooks` | All notebooks with note count and last-modified age; click any to switch |
-| `backlinks [N]` | Notes that wiki-link `[[to this note]]`; N caps results (default 20) |
-
-The active notebook is highlighted in the `notebooks` view.
+{{inline: docs:blocks/nb.md}}
 
 ---
 
