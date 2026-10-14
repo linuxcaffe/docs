@@ -227,27 +227,7 @@ Tools for writing notes and entering data.
 
 Live views of your other tools: tasks, accounts, notebooks, git.
 
-### tw — Taskwarrior
-
-````markdown
-```tw
-project:myproject +next
-```
-````
-
-Renders a live task table from any `task` filter or report expression.
-
-- Columns auto-hide when empty (project, priority, due, tags)
-- Click any **ID** to expand `task information` inline (one at a time)
-- **+** button opens an inline form to create tasks with description, project, due, priority, tags
-- Override column selection with a `columns:` line in the fence body:
-
-````markdown
-```tw
-columns:id,description,due
-+work
-```
-````
+{{inline: docs:blocks/tw.md}}
 
 ---
 
