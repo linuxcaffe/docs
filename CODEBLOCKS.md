@@ -239,36 +239,7 @@ Live views of your other tools: tasks, accounts, notebooks, git.
 
 ---
 
-### git — Git Log
-
-````markdown
-```git
-nb-web log --oneline -10
-```
-````
-
-The first word is a repo **alias** (configured in `nb-settings.json`) or **`.`** to use the current note's notebook. The rest is the git subcommand and flags. Useful for dev-journal notes, project planning pages, or any note that lives alongside a codebase.
-
-**`.` (current notebook)** — resolves to the notebook containing the open note:
-
-````markdown
-```git
-. log --oneline -6
-```
-````
-
-**Configuration** — add repo aliases to `nb-settings.json`:
-
-```json
-{
-  "git_repos": {
-    "nb-web":    "~/dev/nb-web",
-    "myproject": "~/dev/myproject"
-  }
-}
-```
-
-Permitted subcommands (read-only): `branch`, `describe`, `diff`, `log`, `ls-files`, `remote`, `shortlog`, `show`, `stash`, `status`, `tag`.
+{{inline: docs:blocks/git.md}}
 
 ---
 
