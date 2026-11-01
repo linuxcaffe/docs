@@ -526,3 +526,24 @@ Rules:
     - **git** (`58ca204`): `/api/nb/git` screened only the subcommand, so `diff/log/show --output=<file>` wrote any file and bare `stash` / `branch <name>` / `tag <name>` mutated the configured repo. `_git_read_only` refuses output-file options and allows `stash`/`branch`/`tag` only in listing/showing forms.
 
     The repeating shape: user text is a query, the command is nb-web's. Tests: `test_tw_injection.py`, `test_hledger_output_opt.py`, `test_backlinks_scope.py`, `test_grep_scope.py`, `test_git_block_writes.py`. The next tool-backed block (e.g. `t`/`timedot` over timeclock) wants the same guard from the start.
+
+83. **Task notes: `nb tw` through `run_nb` only; task actions keyed by the note** (2026-11-01,
+    tw-nb-interop M6). `tw.nb-plugin` takes nb-web's own flock (`.logs/nb-web-nb.lock`) for every
+    run, so it can be used from the CLI safely, unless `NB_LOCK_HELD=1` says the caller already
+    holds it. `run_nb` holds that lock while nb runs, so before M6 a `run_nb('tw', …)` would have
+    waited on itself forever; `run_nb` now always sets `NB_LOCK_HELD=1`
+    (`test_run_nb_tells_nb_children_the_lock_is_held`). A direct `subprocess` call to `nb` that
+    bypasses `run_nb` would bring the hang back.
+
+    The task header's endpoints (`/api/tw/note-tasks`, `/api/tw/note-action`) take a note
+    selector, not a uuid: the note's access and lock decide, and the uuid must be one of the
+    note's own `tw:` values. That keeps invariant 82 (nothing user-written reaches `task`) and 79
+    (access per note) without a new task-level access model. `/api/tw/note` is the one endpoint
+    that takes a bare uuid, and only to make a note, gated like any create.
+
+    Adding a task frames tw-web's `/embed-add`. tw-web allows exactly one framing origin, its
+    `nb` annotation launcher's (`frame-ancestors`), and nb-web finds tw-web via `tw_web_url`.
+    Change nb-web's port or host and the dialog won't open: NbTwAdd says so after 6 s rather
+    than failing silently. Tests: `test_tw_note_endpoint.py`, `test_tw_note_tasks.py`,
+    `tw-add.spec.js`, `tw-task-header.spec.js`.
+
