@@ -53,6 +53,7 @@ The arrow keys act on whichever pane has focus, the **list** or the **preview**.
 | `c` | open the calendar |
 | `C` | show **Contacts** |
 | `T` | open the terminal |
+| `W` | go to tw-web (when `tw_web_url` is set; the menu has the same link) |
 | `,` | open Settings |
 | `.` | show or hide the extras (frontmatter table and annotation) |
 | `Backspace` | go back |

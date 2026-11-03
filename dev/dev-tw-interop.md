@@ -45,6 +45,16 @@ title: Retile the Jones kitchen
 `type: task` is in `_FM_TYPES`; `_note_status()` turns `tw_status` into the list icon
 (`INDICATORS` `task_<status>`: ☐ pending, ⏳ waiting, 🔁 recurring, ☑ completed, ✖ deleted).
 
+## Getting from one app to the other
+
+Each app links to the other from its own setting only, and shows nothing when it's unset:
+nb-web's menu footer has **tw-web** and the `W` key (`tw_web_url`, via `/api/tw/embed-url`, `user`
+floor); tw-web's nav bar has **nb-web** and the `N` key (its `nb` annotation launcher, when that's a
+web address). Same tab, so Back returns. In the bundle (`~/dev/tw-nb-bundle`: nb-web at `/`,
+tw-web at `/tw/`, one origin) both stay in one window: tw-web names its files relatively
+(`api/…`, never `/api/…`), each service worker keeps to its own caches (invariant 8), and
+`tw_web_url` may carry the path (`http://localhost:5080/tw`).
+
 ## Adding a task from nb-web
 
 nb-web doesn't copy tw-web's dialog: it **frames** it, so hooks, recurrence and parent links all
