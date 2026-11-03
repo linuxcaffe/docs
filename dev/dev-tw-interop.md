@@ -51,8 +51,10 @@ nb-web doesn't copy tw-web's dialog: it **frames** it, so hooks, recurrence and 
 behave exactly as in tw-web, and new fields there appear here with no change.
 
 1. Add bar ☑ Task (or the task header's +) calls `NbTwAdd.open({description, project, notebook})`.
-2. `GET /api/tw/embed-url` gives `tw_web_url` (a setting: tw-web's origin as the *browser*
-   reaches it, `scheme://host[:port]` only).
+2. `GET /api/tw/embed-url` gives `tw_web_url` (a setting: tw-web's address as the *browser*
+   reaches it, `scheme://host[:port]` plus an optional plain path, such as `/tw` when a proxy
+   serves tw-web beside nb-web on one origin; no query, fragment or `..`). Frame messages are
+   checked against its origin (`new URL(url).origin`), not the whole setting.
 3. An overlay frames `<tw_web_url>/embed-add?description=…&project=…`. tw-web serves it with
    `Content-Security-Policy: frame-ancestors` naming the origin of tw-web's own `nb`
    annotation launcher, so **only that nb-web can frame it**.
