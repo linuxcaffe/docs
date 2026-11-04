@@ -55,7 +55,12 @@ tw_tags: [reno]
 open asks (`NbWeb.choose`): delete the note and keep the task (the default: `note-action`
 `unlink`), delete both (`note-action` `delete`, hooks on), or keep it as a plain note
 (`nb tw unlink`: `type: note`, frontmatter kept, `tw:` renamed `tw_was:`, so the plugin never
-adopts it again). A closed task: the plain confirm. Deletes that bypass nb-web (`nb delete`,
+adopts it again). A closed task: the plain confirm, saying what still points at the note (a completed task's journal
+entry; a deleted task's own link) and leaving the task alone. **An orphan** (its task deleted
+elsewhere, or gone): the note is never deleted behind your back; the header's **Orphaned ⋯**
+offers undelete (`note-action` `undelete`, only for a deleted task: 409 otherwise), keep it as a
+plain note (`unlink`, which passes `--note` so it works for a purged task too) or delete the
+note. Deletes that bypass nb-web (`nb delete`,
 git) leave the task linked to nothing: `.checks/tw-tasknote-deleted.sh` in the `tasknotes:`
 dashboard lists them, with `nb tw restore` (the note back from git), `nb tw unlink` or
 `task <uuid> delete`. A link that only doesn't resolve here (another station's notebook), or a
