@@ -67,6 +67,11 @@ it with a prompt." Where each caller stands:
   through `run_nb`).
 - `mobilize init`: asks at a terminal, installs with `--yes`, names it otherwise.
 - tw-web only checks for it (`/api/nb/health`); tw2nb doesn't need it.
+- **Updates** (2026-11-05): an ordinary copy that differs from nb-plugins' main is replaced
+  (nbnotes 1.1.1, nb-plugins 1.3.1, `mobilize init` 0.10.4); a symlink is never touched; no
+  network keeps the copy and says so. The phone gets updates only from `mobilize init`: tw
+  doesn't update there (the update station's job) and `~/.nb/.plugins` isn't shared. s5's
+  copy had fallen behind yoga's because every installer said "already installed".
 
 ## Each station's hooks
 
