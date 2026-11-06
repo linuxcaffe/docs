@@ -85,7 +85,7 @@ and `tw.update_station` (shared rc) names the one station that installs; anywher
 | `~/.task` | gittw's on-exit hook | **commits only**, after every change (`gittw.autocommit`) |
 | `~/.task` | tw-web's auto-sync (`gittw sync`) | 10 s after start, 60 s after a change, every 900 s; retry after 300 s (`AUTO_SYNC_*`, setting `sync_auto`); and tw-web's Sync |
 | notebooks, phone | m-sync | every 15 min with a network (Termux job 7301), soon after a quick note (7302) |
-| notebooks, desktop | nb-web's Sync | when pressed |
+| notebooks, desktop | nb-web's Sync | when pressed; on yoga also every 15 min: `nb-sync-notebooks.timer` runs `~/.nb/.tools/sync-notebooks.py`, which asks nb-web's `/api/sync` for each notebook with a remote (djp's setup, not shipped with nb-web) |
 
 A task command does **not** pull or push (a 2026-11-05 answer got this wrong). Until both
 syncs have run, a station can have the link without the note, or the note without the link.
@@ -136,7 +136,6 @@ m-sync's next run.
 
 - A link whose note hasn't synced yet: nb-web said "failed to load" and offered an Edit that
   can't save. Being fixed (a "not on this station yet: Sync" message).
-- Yoga never syncs its notebooks on its own; a timer is being added.
 - The task header doesn't show the task's annotations.
 
 ## Releases and checksums
