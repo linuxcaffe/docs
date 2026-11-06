@@ -134,9 +134,15 @@ m-sync's next run.
 
 ## Gaps, as of 2026-11-05
 
-- A link whose note hasn't synced yet: nb-web said "failed to load" and offered an Edit that
-  can't save. Being fixed (a "not on this station yet: Sync" message).
 - The task header doesn't show the task's annotations.
+
+## A link that arrives before its note
+
+Until both syncs have run, nb-web may get a link to a note it doesn't have. `openNote` on a
+404 calls `_showMissingNote` (main.js): "This note isn't on this station", no toolbar (an Edit
+there once failed to save with "unknown error"), and **Sync <notebook>** (`/api/sync`), which
+tries the note again; still missing, it says to let the other station sync first. The note
+isn't kept as the one to reopen. Test: e2e `note-missing.spec.js`.
 
 ## Releases and checksums
 
