@@ -24,7 +24,7 @@ nb-web is a Flask + vanilla JS web interface for [nb](https://github.com/xwmx/nb
 | [[docs:dev/dev-plugins.md]] | Plugin system — writing plugins, dispatch, `listItemIcon`, toolbar hooks |
 | [[docs:dev/dev-wikilinks.md]] | Wikilink resolution algorithm, `_wikilinkCache`, `term:` link handling |
 | [[docs:dev/dev-templates.md]] | `_resolve_template_vars`, placeholder API, annotation templates |
-| [[docs:dev/dev-sync.md]] | Pull-then-push flow, `git-wire` internals, status API |
+| [[docs:dev/dev-sync.md]] | Pull-then-push flow, conflicts (copies, never markers), `git-wire` internals, status API |
 | [[docs:dev/dev-storage.md]] | Git topology: undercarriage repo, branch-per-notebook, restore sequence |
 | [[docs:dev/dev-checks.md]] | Writing and running nb-web check scripts via the `check` codeblock |
 | [[docs:dev/dev-check-sweep.md]] | `check-sweep.py` — bulk check triage across notebooks, cron-driven ambient sweeping, execution dedup |
@@ -35,5 +35,6 @@ nb-web is a Flask + vanilla JS web interface for [nb](https://github.com/xwmx/nb
 | [[docs:dev/dev-security.md]] | Auth scheme — session login, user cards, dotfolder notebooks, level-based access |
 | [[docs:dev/dev-notebook-config.md]] | `.<notebook>.md` config file — themes, icon, colour, plugin config, UI flags, vision doc |
 | [[docs:dev/dev-tw-interop.md]] | Taskwarrior task notes: `tw.nb-plugin`, `tasknotes:`, framing tw-web's Add dialog, the task header and its endpoints |
+| [[docs:dev/dev-task-notes-round-trip.md]] | Task notes across stations: nbnotes, who syncs what, conflicts, finding the other app, nb Docs offline, checksums |
 | [[docs:dev/dev-claude-integration.md]] | nbweb-claude internals — MCP tool wrapper, tier gating, barblock rendering, session/token tracking |
 
