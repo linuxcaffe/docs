@@ -30,7 +30,7 @@ on a phone with none.
 | tw-web | `~/dev/tw-web` | `nb:` links on cards, `N`, the menu line, auto-sync of `~/.task`, the Documents fallback |
 | nb-web | `~/dev/nb-web` | the task header, `W`, Add task, Sync of the notebooks |
 | m-sync, mobilize | `~/dev/tw-mobilize` | the phone's notebook sync; a station's hooks, plugin check, Documents step |
-| nb Docs | `~/dev/nb-Docs` (fork of Fossify Documents; rebrand pending) | opens and edits a note offline on the phone |
+| nb Docs | `~/dev/nb-Docs` (Fossify Documents with the fork's additions; `io.github.linuxcaffe.nbdocs`) | opens and edits a note offline on the phone |
 
 ## The request
 
@@ -139,8 +139,10 @@ Both menus end with the station (`/api/station`, `gittw.device`), the other app,
 When no nb-web answers, tw-web's card calls `POST /api/nb/open`, which opens the note in
 Documents through Termux's documents provider: `am start -a VIEW -t text/markdown -d
 content://com.termux.documents/tree/<enc tasknotes root>/document/<enc path> -n
-<pkg>/org.fossify.documents.activities.DocumentOpenActivity` (`<pkg>` from `pm list packages`:
-`org.fossify.documents.debug` or `org.fossify.documents`; the rebrand will change it).
+<pkg>/org.fossify.documents.activities.DocumentOpenActivity` (`<pkg>` from the whole `pm list packages`,
+first of `io.github.linuxcaffe.nbdocs`, its `.debug`, then Fossify's two; a `pm` filter is a
+substring and hid nb Docs). The class keeps Fossify's name: nb Docs changed only its app id.
+The card names the app it used (`/api/nb/open` → `app`).
 `termux-open` is the last resort: it hands a file to another app only with
 `allow-external-apps=true`, which stays **off** on s5. An edit made there is committed by
 m-sync's next run.
@@ -156,6 +158,16 @@ Until both syncs have run, nb-web may get a link to a note it doesn't have. `ope
 there once failed to save with "unknown error"), and **Sync <notebook>** (`/api/sync`), which
 tries the note again; still missing, it says to let the other station sync first. The note
 isn't kept as the one to reopen. Test: e2e `note-missing.spec.js`.
+
+## nb Docs releases
+
+`~/dev/nb-Docs`: `main` is the Documents fork's `phone` branch plus the branding (id, name,
+icon from `graphics/nb-docs-icon.py`, workflows). Features are still offered upstream from
+`linuxcaffe/Documents`. A release: set `VERSION_NAME` (`<Fossify's>-nb.<n>`) and `VERSION_CODE`
+(+1), commit, push a `v<VERSION_NAME>` tag; `nb-docs-release.yml` signs it with the key whose only
+copies are `~/.android-keys/nb-docs/` and the repo's `SIGNING_*` secrets (SHA-256
+`4C:F4:E4:78:…:BB:14:C4`; check an APK with `~/.claude/skills/termux/apkcert.py`). First release
+`v1.1.0-nb.1`, 2026-11-05, on s5; Fossify's debug build uninstalled.
 
 ## Releases and checksums
 
