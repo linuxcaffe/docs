@@ -39,6 +39,14 @@ on a phone with none.
   (`nb: tasks:42`, tw2nb's archive) match `^nb: [\w.-]+:\d+$` and cost nothing.
 - **on-exit, not on-modify:** on-modify runs before Taskwarrior writes, so the plugin's
   `task export` would see the old task. on-exit sees what was written.
+- **Never holds a task command up** (nbnotes 1.1.0): the nb work runs in a process of its own
+  (its own session, none of Taskwarrior's pipes, or Taskwarrior would wait for it anyway); the
+  hook waits at most `NBNOTES_WAIT` (3 s). Incident: on s5 `nb tw note` takes several seconds
+  (2.4 s just for a status) and tw-web gives a command 15 (`TASK_TIMEOUT`), so deleting a task
+  with a bare `nb:` "failed" in tw-web though it went through, and the note came 8 s later.
+  After the wait, problems go to `~/.task/logs/nbnotes.log`.
+- **No note for a deleted task:** a request on a task whose status is `deleted` is dropped (an
+  on-exit hook sees only the result, not what changed). A completed task's request is made.
 - **Never fails a task command.** Problems go to stderr. No nb on the station: silent (the
   notes live elsewhere). nb but no plugin: one line naming the install, once per run.
 - **Where the note goes:** `tasknotes:` (or the notebook named), a folder from the top of the
